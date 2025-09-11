@@ -39,6 +39,13 @@ dependencies {
 	testImplementation 'org.springframework.security:spring-security-test'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 	implementation 'io.jsonwebtoken:jjwt:0.12.6'
+
+    /*
+    *   [BJW]
+    *   객체간의 매핑을 쉽게 하기 위해 ModelMapper 라이브러리를 추가
+    *   DTO와 Entity 간의 변환을 간편하게 처리할 수 있음
+    */
+    implementation 'org.modelmapper:modelmapper:3.1.0'
 }
 
 tasks.named('test') {

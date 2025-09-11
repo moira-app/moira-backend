@@ -1,5 +1,7 @@
-package com.org.server;
+package com.org.server.member.domain;
 
+
+import com.org.server.util.BaseTime;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -12,7 +14,7 @@ import lombok.NoArgsConstructor;
 @Entity
 @Getter
 @NoArgsConstructor
-public class Member extends BaseTime{
+public class Member extends BaseTime {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
