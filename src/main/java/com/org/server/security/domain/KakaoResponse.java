@@ -25,18 +25,18 @@ public class KakaoResponse implements OAuth2Response {
         return (String) KakaoAccount(attributes).get("email");
     }
     @Override
-    public String getBirthday() {
+    public Integer getBirthday() {
         String brith=(String)KakaoAccount(attributes).get("birthday");
-        return brith.substring(2,3);
+        return Integer.parseInt(brith.substring(2,3));
     }
     @Override
-    public String getBirthYear() {
-        return (String)KakaoAccount(attributes).get("birthyear");
+    public Integer getBirthYear() {
+        return Integer.parseInt((String)KakaoAccount(attributes).get("birthyear"));
     }
     @Override
-    public String getBirthMonth() {
+    public Integer getBirthMonth() {
         String brith=(String)KakaoAccount(attributes).get("birthday");
-        return brith.substring(0,1);
+        return Integer.parseInt(brith.substring(0,1));
     }
     @Override
     public GenderType getGender() {

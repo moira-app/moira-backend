@@ -29,19 +29,19 @@ public class NaverResponse implements OAuth2Response{
         return (String) getAttrs().get("email");
     }
     @Override
-    public String getBirthday() {
+    public Integer getBirthday() {
 
         String birth=(String) getAttrs().get("birthday");
-        return birth.split("-")[1];
+        return Integer.parseInt(birth.split("-")[1]);
     }
     @Override
-    public String getBirthYear() {
-        return (String) getAttrs().get("year");
+    public Integer getBirthYear() {
+        return (Integer) getAttrs().get("year");
     }
     @Override
-    public String getBirthMonth() {
+    public Integer getBirthMonth() {
         String birth=(String) getAttrs().get("birthday");
-        return birth.split("-")[0];
+        return Integer.parseInt(birth.split("-")[0]);
     }
     @Override
     public GenderType getGender() {

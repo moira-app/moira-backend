@@ -6,8 +6,8 @@ import com.org.server.member.MemberType;
 public interface OAuth2Response {
     MemberType getProvider();
     String getEmail();
-    String getBirthday();
-    String getBirthYear();
-    String getBirthMonth();
+    Integer getBirthday();
+    Integer getBirthYear();
+    Integer getBirthMonth();
     GenderType getGender();
 }

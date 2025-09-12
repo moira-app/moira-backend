@@ -1,6 +1,7 @@
 package com.org.server.security.filters;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.org.server.exception.MoiraException;
 import com.org.server.redis.service.RedisUserInfoService;
 import com.org.server.security.domain.CustomUserDetail;
 import com.org.server.util.jwt.JwtUtil;
@@ -60,11 +61,11 @@ public class JwtAuthFilter extends UsernamePasswordAuthenticationFilter {
             String password=data.get("password");
             UsernamePasswordAuthenticationToken token=
                     new UsernamePasswordAuthenticationToken(mail,password);
-            return token;
+            return authenticationManager.authenticate(token);
         }
         catch (IOException e){
             log.debug("유저정보 파싱중 발생한 에러");
-            throw new RuntimeException();
+            throw new MoiraException("사용자 정보를 불러오기에 실패했습니다",HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -81,6 +82,7 @@ public class JwtAuthFilter extends UsernamePasswordAuthenticationFilter {
     @Override
     protected void unsuccessfulAuthentication(HttpServletRequest request, HttpServletResponse response,
                                               AuthenticationException failed) throws IOException, ServletException {
+
         if(failed.getClass().getSimpleName().equals("BadCredentialsException")){
             sendErrorResponse(response,HttpStatus.BAD_REQUEST,"비밀번호가 일치하지 않습니다.");
             return ;
