@@ -20,8 +20,8 @@ spring:
         registration:
           naver:
             client-name: naver
-            client-id:
-            client-secret:
+            client-id: sdf
+            client-secret: asdsd
             authorization-grant-type: authorization_code
             scope:
               - email
@@ -31,14 +31,14 @@ spring:
             redirect-uri: "{baseUrl}/{action}/oauth2/code/{registrationId}"
           google:
             client-name: google
-            client-id:
-            client-secret:
+            client-id: asdasd
+            client-secret: asdad
             scope:
               - email
           kakao:
             client-name: kakao
-            client-id:
-            client-secret:
+            client-id: adsd
+            client-secret: asasd
             client-authentication-method: client_secret_post
             authorization-grant-type: authorization_code
             scope:

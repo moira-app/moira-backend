@@ -24,17 +24,17 @@ public class GoogleResponse implements OAuth2Response{
     }
 
     @Override
-    public String getBirthday() {
+    public Integer getBirthday() {
         return null;
     }
 
     @Override
-    public String getBirthYear() {
+    public Integer getBirthYear() {
         return null;
     }
 
     @Override
-    public String getBirthMonth() {
+    public Integer getBirthMonth() {
         return null;
     }
 
