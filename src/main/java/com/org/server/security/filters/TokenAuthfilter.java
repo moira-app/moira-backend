@@ -37,7 +37,7 @@ public class TokenAuthfilter extends OncePerRequestFilter {
         this.memberRepository = memberRepository;
     }
 
-    private static final String[] freePassPath = {"/login"
+    private static final String[] freePassPath = {"/login","/cert"
     };
 
     @Override

@@ -65,7 +65,20 @@ spring:
       host: localhost
       port: 6379
       password: test
-
+  mail :
+    host : smtp.gmail.com
+    port : 587
+    username :
+    password :
+    properties :
+      mail :
+        smtp :
+          auth : true
+          starttls :
+            enable : true
 jwt:
   issuer: "JWT_ISSUER"
   secret-key: "mySuperSecretKeyForJwtAuthThatIsLongEnough1234"
+
+
+

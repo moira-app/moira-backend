@@ -38,6 +38,10 @@ public class SecurityConfig {
     private final JwtUtil jwtUtil;
 
 
+    private final static String [] freePassUrl={
+            "/cert/**",
+    };
+
     @Bean
     public BCryptPasswordEncoder passwordEncoder(){
         return new BCryptPasswordEncoder();
@@ -85,7 +89,8 @@ public class SecurityConfig {
                 .permitAll());
 
         http.authorizeHttpRequests(req->
-                req.anyRequest().authenticated());
+                req.requestMatchers(freePassUrl).permitAll()
+                        .anyRequest().authenticated());
 
         return http.build();
     };
