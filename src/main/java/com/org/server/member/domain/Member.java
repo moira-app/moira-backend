@@ -4,12 +4,10 @@ package com.org.server.member.domain;
 import com.org.server.member.GenderType;
 import com.org.server.member.MemberType;
 import com.org.server.util.BaseTime;
-
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.criteria.CriteriaBuilder;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
