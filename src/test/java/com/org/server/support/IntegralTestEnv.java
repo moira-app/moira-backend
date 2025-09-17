@@ -103,8 +103,8 @@ public class IntegralTestEnv {
     }
     protected Ticket createTicket(Member m, Project p,String alias){
         Ticket t=Ticket.builder()
-                .member(m)
-                .project(p)
+                .memberId(m.getId())
+                .projectId(p.getId())
                 .alias(alias)
                 .build();
         t=ticketRepository.save(t);

@@ -34,14 +34,12 @@ public class TicketService {
 
     public void createTicket(TicketDto ticketDto){
 
-        Project project=projectRepository.findById(ticketDto.getId()).get();
         Member m=memberRepository.findByEmail(ticketDto.getEmail()).get();
 
-        if(ticketRepository.existsByMemberIdAndProjectId(m.getId(),project.getId())){
+        if(ticketRepository.existsByMemberIdAndProjectId(m.getId(),ticketDto.getId())){
             throw new MoiraException("이미 초대된 유저입니다", HttpStatus.BAD_REQUEST);
         }
-
-        Ticket ticket= new Ticket(project,m,ticketDto.getAlias());
+        Ticket ticket= new Ticket(ticketDto.getId(),m.getId(),ticketDto.getAlias());
         ticketRepository.save(ticket);
     }
 

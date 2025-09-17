@@ -28,11 +28,9 @@ public class ProjectAdvanceRepo {
                             project.title
                             ))
                     .from(ticket)
-                    .join(member)
-                    .on(ticket.member.eq(member))
                     .join(project)
-                    .on(ticket.project.eq(project))
-                    .where(member.eq(m))
+                    .on(project.id.eq(ticket.projectId))
+                    .where(ticket.memberId.eq(m.getId()))
                     .fetch();
             return projectDtoList;
     }

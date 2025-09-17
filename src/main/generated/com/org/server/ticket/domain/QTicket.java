@@ -7,7 +7,6 @@ import com.querydsl.core.types.dsl.*;
 import com.querydsl.core.types.PathMetadata;
 import javax.annotation.processing.Generated;
 import com.querydsl.core.types.Path;
-import com.querydsl.core.types.dsl.PathInits;
 
 
 /**
@@ -17,8 +16,6 @@ import com.querydsl.core.types.dsl.PathInits;
 public class QTicket extends EntityPathBase<Ticket> {
 
     private static final long serialVersionUID = -553663096L;
-
-    private static final PathInits INITS = PathInits.DIRECT2;
 
     public static final QTicket ticket = new QTicket("ticket");
 
@@ -34,30 +31,20 @@ public class QTicket extends EntityPathBase<Ticket> {
     //inherited
     public final DateTimePath<java.time.LocalDateTime> lastModifiedDate = _super.lastModifiedDate;
 
-    public final com.org.server.member.domain.QMember member;
+    public final NumberPath<Long> memberId = createNumber("memberId", Long.class);
 
-    public final com.org.server.project.domain.QProject project;
+    public final NumberPath<Long> projectId = createNumber("projectId", Long.class);
 
     public QTicket(String variable) {
-        this(Ticket.class, forVariable(variable), INITS);
+        super(Ticket.class, forVariable(variable));
     }
 
     public QTicket(Path<? extends Ticket> path) {
-        this(path.getType(), path.getMetadata(), PathInits.getFor(path.getMetadata(), INITS));
+        super(path.getType(), path.getMetadata());
     }
 
     public QTicket(PathMetadata metadata) {
-        this(metadata, PathInits.getFor(metadata, INITS));
-    }
-
-    public QTicket(PathMetadata metadata, PathInits inits) {
-        this(Ticket.class, metadata, inits);
-    }
-
-    public QTicket(Class<? extends Ticket> type, PathMetadata metadata, PathInits inits) {
-        super(type, metadata, inits);
-        this.member = inits.isInitialized("member") ? new com.org.server.member.domain.QMember(forProperty("member")) : null;
-        this.project = inits.isInitialized("project") ? new com.org.server.project.domain.QProject(forProperty("project")) : null;
+        super(Ticket.class, metadata);
     }
 
 }
