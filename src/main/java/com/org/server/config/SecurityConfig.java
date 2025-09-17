@@ -6,10 +6,12 @@ import com.org.server.redis.service.RedisUserInfoService;
 import com.org.server.security.detailservices.CustomOAuth2Service;
 import com.org.server.security.detailservices.CustomUserDetailService;
 import com.org.server.security.filters.JwtAuthFilter;
+import com.org.server.security.filters.ProjectTicketFilter;
 import com.org.server.security.filters.TokenAuthfilter;
 import com.org.server.security.handlers.CustomLogOutHandler;
 import com.org.server.security.handlers.OAuth2FailHandler;
 import com.org.server.security.handlers.OAuth2SuccessHandler;
+import com.org.server.ticket.service.TicketService;
 import com.org.server.util.jwt.JwtUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -36,6 +38,7 @@ public class SecurityConfig {
     private final MemberRepository memberRepository;
     private final WebConfig webConfig;
     private final JwtUtil jwtUtil;
+    private final TicketService ticketService;
 
 
     private final static String [] freePassUrl={
@@ -68,6 +71,7 @@ public class SecurityConfig {
         ), UsernamePasswordAuthenticationFilter.class);
         http.addFilterBefore(new TokenAuthfilter(jwtUtil,redisUserInfoService,memberRepository)
                 , JwtAuthFilter.class);
+        http.addFilterAfter(new ProjectTicketFilter(redisUserInfoService,ticketService),TokenAuthfilter.class);
 
         http.sessionManagement(session->
                 session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));

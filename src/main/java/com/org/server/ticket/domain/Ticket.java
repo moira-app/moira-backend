@@ -19,9 +19,11 @@ public class Ticket extends BaseTime{
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
-
+    
+    //1:다
     private Long projectId;
 
+    //1:다
     private Long memberId;
 
     private String alias;

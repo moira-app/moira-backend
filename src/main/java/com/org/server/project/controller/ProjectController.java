@@ -16,20 +16,9 @@ import java.util.List;
 public class ProjectController {
 
     private final ProjectService projectService;
-
-
     @PostMapping("/create")
     public ResponseEntity<ApiResponse<String>> createProject(@RequestBody ProjectDto projectDto){
         projectService.createProject(projectDto.getTitle());
         return ResponseEntity.ok(ApiResponse.CreateApiResponse("ok",null));
     }
-
-    @GetMapping("/list")
-    public ResponseEntity<ApiResponse<List<ProjectDto>>> getProjectList(){
-        return ResponseEntity.ok(ApiResponse.CreateApiResponse("ok",
-                projectService.getProjectList()));
-    }
-
-
-
 }

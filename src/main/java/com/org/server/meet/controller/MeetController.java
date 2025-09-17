@@ -20,19 +20,6 @@ public class MeetController {
 
 
     private final MeetService meetService;
-
-    @PostMapping("/create")
-    public ResponseEntity<ApiResponse<String>> createMeet(@RequestBody MeetDto meetDto){
-        meetService.createMeet(meetDto);
-        return ResponseEntity.ok(ApiResponse.CreateApiResponse("ok",null));
-
-    }
-    @GetMapping("/checkIn/{meetId}")
-    public ResponseEntity<ApiResponse<MeetConnectDto>> checkIn(@PathVariable(name = "meetId")Long meetId){
-        return ResponseEntity.ok(ApiResponse.CreateApiResponse("ok",
-                meetService.checkIn(meetId)));
-    }
-
     @GetMapping("/meetList/{date}")
     public ResponseEntity<ApiResponse<List<MeetDateDto>>> getMeetList(@PathVariable(name="date")
                                                            String date){
