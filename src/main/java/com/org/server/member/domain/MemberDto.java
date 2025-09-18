@@ -13,10 +13,7 @@ public class MemberDto {
     private Long id;
     private String nickName;
     private String email;
-    private GenderType genderType;
-    private int birthDay;
-    private int birthMonth;
-    private int birthYear;
+
 
 
     public static MemberDto createMemberDto(Member member){
@@ -24,23 +21,16 @@ public class MemberDto {
         return MemberDto.builder()
                 .id(member.getId())
                 .email(member.getEmail())
-                .genderType(member.getGenderType())
+
                 .nickName(member.getNickName())
-                .birthDay(member.getBirthDay())
-                .birthYear(member.getBirthYear())
-                .birthMonth(member.getBirthMonth())
                 .build();
     }
 
     @Builder
-    public MemberDto(Long id, String nickName, String email, GenderType genderType,
-                     int birthDay, int birthMonth, int birthYear) {
+    public MemberDto(Long id, String nickName, String email) {
         this.id = id;
         this.nickName = nickName;
         this.email = email;
-        this.genderType = genderType;
-        this.birthDay = birthDay;
-        this.birthMonth = birthMonth;
-        this.birthYear = birthYear;
+
     }
 }

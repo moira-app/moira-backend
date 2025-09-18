@@ -46,12 +46,6 @@ public class MemberServiceImpl implements MemberService{
 
             member.updateNickName(memberUpdateDto.getNickName());
         }
-        if(!memberUpdateDto.getGenderType().equals(member.getGenderType())){
-            member.updateGenderType(memberUpdateDto.getGenderType());
-        }
-        member.updateBirth(memberUpdateDto.getBirthDay()
-                ,memberUpdateDto.getBirthMonth(),memberUpdateDto.getBirthYear());
-
         member=memberRepository.save(member);
         return MemberDto.createMemberDto(member);
     }
