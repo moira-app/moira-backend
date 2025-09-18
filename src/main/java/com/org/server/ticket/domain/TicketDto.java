@@ -8,7 +8,6 @@ import lombok.NoArgsConstructor;
 @Getter
 @NoArgsConstructor
 public class TicketDto {
-    private Long id;
     private String email;
     private String alias;
 }

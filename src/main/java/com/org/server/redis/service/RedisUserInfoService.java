@@ -15,6 +15,8 @@ public class RedisUserInfoService {
     private static final String refresh_token_key="X-REFRESH-KEY-";
     private static final String mail_cert_key="MAIL-CERT-";
 
+    private static final String ticket_key="TICKET-KEY-";
+
     public void saveRefreshToken(Long memberId, String refreshToken){
         redisTemplate.opsForValue().set(refresh_token_key+memberId.toString(),refreshToken,
                 TimeUnit.DAYS.toDays(30L));
@@ -38,5 +40,11 @@ public class RedisUserInfoService {
             return true;
         }
         return false;
+    }
+    public void setTicketKey(String email,String ticketId){
+        redisTemplate.opsForSet().add(ticket_key+email,ticketId);
+    }
+    public Boolean checkTicketKey(String email,String checkInId){
+       return redisTemplate.opsForSet().isMember(ticket_key+email,checkInId);
     }
 }

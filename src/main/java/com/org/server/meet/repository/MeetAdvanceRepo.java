@@ -35,15 +35,13 @@ public class MeetAdvanceRepo {
                             project.title,
                             meet.startTime.stringValue()
                             ))
-                    .from(ticket)
+                    .from(meet)
                     .join(project)
-                    .on(project.eq(ticket.project))
-                    .join(member)
-                    .on(member.eq(ticket.member))
-                    .join(meet)
-                    .on(meet.project.eq(project))
+                    .on(project.eq(meet.project))
+                    .join(ticket)
+                    .on(ticket.projectId.eq(project.id))
                     .where(meet.startTime.goe(startTime).and(meet.startTime.lt(endTime))
-                            .and(member.eq(m)))
+                            .and(ticket.memberId.eq(m.getId())))
                     .fetch();
 
     }

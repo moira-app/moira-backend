@@ -7,12 +7,9 @@ import lombok.NoArgsConstructor;
 @Getter
 @NoArgsConstructor
 public class MeetDto {
-
-    private Long projectId;
     private String startTime;
 
-    public MeetDto(Long projectId, String startTime) {
-        this.projectId = projectId;
+    public MeetDto(String startTime) {
         this.startTime = startTime;
     }
 }

@@ -36,20 +36,6 @@ public class MeetService {
     private final SecurityMemberReadService securityMemberReadService;
     private final TicketRepository ticketRepository;
 
-    public void createMeet(MeetDto meetDto){
-
-        Project project=projectRepository.findById(meetDto.getProjectId()).get();
-        String meetUrl=RandomCharSet.createRandomName();
-        LocalDateTime startTime=LocalDateTime.parse(meetDto.getStartTime(),
-                DateTimeMapUtil.formatByDot);
-        Meet m=Meet.builder()
-                .project(project)
-                .meetUrl(meetUrl)
-                .startTime(startTime)
-                .build();
-        meetRepository.save(m);
-
-    }
 
     public MeetConnectDto checkIn(Long id) {
         LocalDateTime now = LocalDateTime.now();
