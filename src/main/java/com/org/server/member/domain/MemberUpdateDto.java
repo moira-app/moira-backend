@@ -17,17 +17,5 @@ public class MemberUpdateDto {
     @Size(min = 4,max=12,message = "닉네임은 4~12자입니다")
     private String nickName;
     private String password;
-    @NotNull(message = "출생일은 비면안됩니다.")
-    @Max(value = 31,message = "최대 31일까지입니다.")
-    @Min(value =1,message = "최소 1일입니다")
-    private int birthDay;
-    @NotNull(message = "출생월은 비면안됩니다")
-    @Max(value = 12,message = "최대 12월입니다")
-    @Min(value =1,message = "최소 1월입니다.")
-    private int birthMonth;
-    @NotNull(message = "출생년도는 비면안됩니다.")
-    @Min(value =1899)
-    @Max(value = 3000)
-    private int birthYear;
-    private GenderType genderType;
+
 }

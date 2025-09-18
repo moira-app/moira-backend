@@ -3,6 +3,7 @@ package com.org.server.support;
 
 import com.org.server.certification.CertificationTest;
 import com.org.server.certification.service.CertificationService;
+import com.org.server.certification.service.ProjectCertService;
 import com.org.server.meet.domain.Meet;
 import com.org.server.meet.repository.MeetRepository;
 import com.org.server.meet.service.MeetService;
@@ -67,11 +68,12 @@ public class IntegralTestEnv {
     protected ProjectService projectService;
     @Autowired
     protected TicketService ticketService;
-
     @Autowired
-    protected JwtUtil jwtUtil;
+    protected ProjectCertService projectCertService;
 
     //else
+    @Autowired
+    protected JwtUtil jwtUtil;
     @Autowired
     protected PasswordEncoder passwordEncoder;
 
@@ -103,8 +105,8 @@ public class IntegralTestEnv {
     }
     protected Ticket createTicket(Member m, Project p,String alias){
         Ticket t=Ticket.builder()
-                .member(m)
-                .project(p)
+                .memberId(m.getId())
+                .projectId(p.getId())
                 .alias(alias)
                 .build();
         t=ticketRepository.save(t);

@@ -7,9 +7,10 @@ import com.org.server.meet.domain.MeetDateDto;
 import com.org.server.meet.domain.MeetDto;
 import com.org.server.project.domain.Project;
 import com.org.server.project.domain.ProjectDto;
-import com.org.server.security.domain.CustomUserDetail;
+
 import com.org.server.support.IntegralTestEnv;
 import com.org.server.ticket.domain.Ticket;
+import com.org.server.util.DateTimeMapUtil;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import com.org.server.member.domain.Member;
@@ -17,10 +18,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContext;
-import org.springframework.security.core.context.SecurityContextHolder;
-
+import java.time.LocalDate;
 import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -39,7 +37,8 @@ public class ProjectMeetTicket extends IntegralTestEnv {
 
     Member m;
 
-
+    String monthCurrent;
+    String monthFuture;
 
     private static DataSource testDataSource;
 
@@ -75,13 +74,18 @@ public class ProjectMeetTicket extends IntegralTestEnv {
         p2=createProject("test2");
         t=createTicket(m,p,null);
         createTicket(m2,p2,"p2");
-        String startTime="2025.09.16.00.00";
+
+        String startTime=LocalDate.now().atStartOfDay().format(DateTimeMapUtil.formatByDot);
+        String startTime2=LocalDate.now().plusMonths(1L).atStartOfDay().format(DateTimeMapUtil.formatByDot);
+        monthCurrent=LocalDate.now().format(DateTimeMapUtil.formatByDot2);
+        monthFuture=LocalDate.now().plusMonths(1L).format(DateTimeMapUtil.formatByDot2);
 
         for(int i=0;5>i;i++) {
-            meetService.createMeet(new MeetDto(p.getId(),startTime));
+            projectCertService.createMeet(new MeetDto(startTime),p.getId());
+            projectCertService.createMeet(new MeetDto(startTime2),p.getId());
         }
         for(int i=0;5>i;i++) {
-            meetService.createMeet(new MeetDto(p2.getId(),startTime));
+            projectCertService.createMeet(new MeetDto(startTime),p2.getId());
         }
     }
 
@@ -93,7 +97,7 @@ public class ProjectMeetTicket extends IntegralTestEnv {
         Mockito.when(securityMemberReadService.securityMemberRead())
                 .thenReturn(m);
 
-        List<ProjectDto> projectDtoList=projectService.getProjectList();
+        List<ProjectDto> projectDtoList=projectCertService.getProejctList();
         assertThat(projectDtoList.size()).isEqualTo(1);
     }
     @Test
@@ -104,11 +108,11 @@ public class ProjectMeetTicket extends IntegralTestEnv {
         Mockito.when(securityMemberReadService.securityMemberRead())
                 .thenReturn(m);
 
-        List<MeetDateDto> meetDateDtos = meetService.getMeetList("2025.09.01");
+        List<MeetDateDto> meetDateDtos = meetService.getMeetList(monthCurrent);
         assertThat(meetDateDtos.size()).isEqualTo(5);
 
-        List<MeetDateDto> meetDateDtos2 = meetService.getMeetList("2025.10.01");
-        assertThat(meetDateDtos2.size()).isEqualTo(0);
+        List<MeetDateDto> meetDateDtos2 = meetService.getMeetList(monthFuture);
+        assertThat(meetDateDtos2.size()).isEqualTo(5);
     }
 
     @Test
@@ -119,7 +123,7 @@ public class ProjectMeetTicket extends IntegralTestEnv {
                 .thenReturn(m);
 
 
-        ticketService.changeAlias("change",p.getId());
+        projectCertService.changeAlias("change",p.getId());
         Ticket t2=ticketRepository.findById(t.getId()).get();
         assertThat(t2.getAlias()).isEqualTo("change");
     }

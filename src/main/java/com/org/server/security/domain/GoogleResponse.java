@@ -23,23 +23,4 @@ public class GoogleResponse implements OAuth2Response{
         return (String) attrs.get("email");
     }
 
-    @Override
-    public Integer getBirthday() {
-        return null;
-    }
-
-    @Override
-    public Integer getBirthYear() {
-        return null;
-    }
-
-    @Override
-    public Integer getBirthMonth() {
-        return null;
-    }
-
-    @Override
-    public GenderType getGender() {
-        return null;
-    }
 }

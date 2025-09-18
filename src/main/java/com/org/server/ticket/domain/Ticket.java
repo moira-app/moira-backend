@@ -19,21 +19,19 @@ public class Ticket extends BaseTime{
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
+    
+    //1:다
+    private Long projectId;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "projectId")
-    private Project project;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "memberId")
-    private Member member;
+    //1:다
+    private Long memberId;
 
     private String alias;
 
     @Builder
-    public Ticket(Project project, Member member, String alias) {
-        this.project = project;
-        this.member = member;
+    public Ticket(Long projectId,Long memberId, String alias) {
+        this.projectId=projectId;
+        this.memberId=memberId;
         this.alias = alias;
     }
 

@@ -62,10 +62,6 @@ public class CustomOAuth2Service extends DefaultOAuth2UserService {
                 .email(response.getEmail())
                 .memberType(response.getProvider())
                 .nickName(RandomCharSet.createRandomName())
-                .genderType(response.getGender())
-                .birthDay(response.getBirthday())
-                .birthMonth(response.getBirthMonth())
-                .birthYear(response.getBirthYear())
                 .build();
 
         memberRepository.save(newMember);
