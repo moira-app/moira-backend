@@ -17,9 +17,7 @@ import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.web.servlet.MockMvc;
 import static org.assertj.core.api.Assertions.*;
-import static org.springframework.mock.http.server.reactive.MockServerHttpRequest.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 @AutoConfigureMockMvc
 public class MemberCreateTest extends IntegralTestEnv {
@@ -77,6 +75,10 @@ public class MemberCreateTest extends IntegralTestEnv {
         SecurityContext securityContext = Mockito.mock(SecurityContext.class);
         Mockito.when(securityContext.getAuthentication()).thenReturn(authentication);
         SecurityContextHolder.setContext(securityContext);
+
+
+        Mockito.when(securityMemberReadService.securityMemberRead())
+                .thenReturn(member);
 
         MemberUpdateDto memberUpdateDto=new MemberUpdateDto(
                 member.getId(),
