@@ -62,19 +62,19 @@ dependencies {
 }
 
 
-test{
-	useJUnitPlatform()
-}
-
-/*tasks.named('test') {
+/*test{
 	useJUnitPlatform()
 }*/
+
+tasks.named('test') {
+	useJUnitPlatform()
+}
 
 
 def querydslDir = "src/main/generated"
 
 sourceSets {
-	main.java.srcDirs+=[querydslDir]
+	main.java.srcDir querydslDir
 }
 
 tasks.withType(JavaCompile) {
