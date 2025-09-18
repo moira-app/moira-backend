@@ -28,25 +28,5 @@ public class NaverResponse implements OAuth2Response{
     public String getEmail() {
         return (String) getAttrs().get("email");
     }
-    @Override
-    public Integer getBirthday() {
 
-        String birth=(String) getAttrs().get("birthday");
-        return Integer.parseInt(birth.split("-")[1]);
-    }
-    @Override
-    public Integer getBirthYear() {
-        return (Integer) getAttrs().get("year");
-    }
-    @Override
-    public Integer getBirthMonth() {
-        String birth=(String) getAttrs().get("birthday");
-        return Integer.parseInt(birth.split("-")[0]);
-    }
-    @Override
-    public GenderType getGender() {
-        String gender=(String) getAttrs().get("gender");
-        return gender.equals("F") ? GenderType.Female :
-                gender.equals("U") ? null:GenderType.Male;
-    }
 }

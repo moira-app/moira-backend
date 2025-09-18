@@ -83,19 +83,12 @@ public class MemberCreateTest extends IntegralTestEnv {
         MemberUpdateDto memberUpdateDto=new MemberUpdateDto(
                 member.getId(),
                 "testing",
-                "12345",
-                1,
-                12,
-                2000,
-                GenderType.Female
+                "12345"
         );
         memberService.updateMemberInfo(memberUpdateDto);
         Member test=memberRepository.findById(member.getId()).get();
         assertThat(test.getNickName()).isEqualTo("testing");
-        assertThat(test.getBirthDay()).isEqualTo(1);
-        assertThat(test.getBirthMonth()).isEqualTo(12);
-        assertThat(test.getBirthYear()).isEqualTo(2000);
-        assertThat(test.getGenderType()).isEqualTo(GenderType.Female);
+
 
         String requestBody="""
                 {
