@@ -42,7 +42,7 @@ public class SecurityConfig {
 
 
     private final static String [] freePassUrl={
-            "/cert/**",
+            "/cert/**","/member/signIn"
     };
 
     @Bean

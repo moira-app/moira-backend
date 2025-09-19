@@ -21,7 +21,7 @@ public class MailFactory {
         }
     }
     public <T> MailSend<T> supplyMailSend(EmailType emailType,Class<T> clazz){
-        if(emailType==EmailType.CERTIFICATION){
+        if(emailType==EmailType.CERTIFICATION||emailType==EmailType.PASSWORD){
             log.info("적당한 전략 전달");
             return (MailSend<T>) mailMap.get(emailType);
         }
