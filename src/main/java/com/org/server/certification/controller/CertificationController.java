@@ -21,11 +21,17 @@ public class CertificationController {
         certificationService.createCertCode(mail);
         return ResponseEntity.ok(ApiResponse.CreateApiResponse("ok",null));
     }
-
     @GetMapping("/check/{mail}/{code}")
     public ResponseEntity<ApiResponse<String>> checkCode(@PathVariable(name = "mail")String mail,
                                                          @PathVariable(name="code")String code){
         certificationService.checkCode(mail,code);
         return ResponseEntity.ok(ApiResponse.CreateApiResponse("ok",null));
+    }
+    @GetMapping("/password/{mail}")
+    public ResponseEntity<ApiResponse<String>> makeNewPassWord
+            (@PathVariable(name ="mail")String mail){
+        certificationService.createNewPassword(mail);
+        return ResponseEntity.ok(ApiResponse.CreateApiResponse("ok",null));
+
     }
 }
