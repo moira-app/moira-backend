@@ -22,13 +22,15 @@ public class Meet extends BaseTime{
     @JoinColumn(name = "projectId")
     private Project project;
     private LocalDateTime startTime;
+    private LocalDateTime endTime;
     private String meetUrl;
 
 
     @Builder
-    public Meet(Project project, LocalDateTime startTime, String meetUrl) {
+    public Meet(Project project, LocalDateTime startTime, String meetUrl,LocalDateTime endTime) {
         this.project = project;
         this.startTime = startTime;
         this.meetUrl = meetUrl;
+        this.endTime=endTime;
     }
 }
