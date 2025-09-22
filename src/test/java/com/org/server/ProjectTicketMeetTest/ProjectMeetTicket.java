@@ -76,16 +76,18 @@ public class ProjectMeetTicket extends IntegralTestEnv {
         createTicket(m2,p2,"p2");
 
         String startTime=LocalDate.now().atStartOfDay().format(DateTimeMapUtil.formatByDot);
+        String endTime=LocalDate.now().atStartOfDay().plusDays(1L).format(DateTimeMapUtil.formatByDot);
         String startTime2=LocalDate.now().plusMonths(1L).atStartOfDay().format(DateTimeMapUtil.formatByDot);
+        String endTime2=LocalDate.now().plusMonths(1L).plusDays(1L).atStartOfDay().format(DateTimeMapUtil.formatByDot);
         monthCurrent=LocalDate.now().format(DateTimeMapUtil.formatByDot2);
         monthFuture=LocalDate.now().plusMonths(1L).format(DateTimeMapUtil.formatByDot2);
 
         for(int i=0;5>i;i++) {
-            projectCertService.createMeet(new MeetDto(startTime),p.getId());
-            projectCertService.createMeet(new MeetDto(startTime2),p.getId());
+            projectCertService.createMeet(new MeetDto(startTime,endTime),p.getId());
+            projectCertService.createMeet(new MeetDto(startTime2,endTime2),p.getId());
         }
         for(int i=0;5>i;i++) {
-            projectCertService.createMeet(new MeetDto(startTime),p2.getId());
+            projectCertService.createMeet(new MeetDto(startTime,endTime),p2.getId());
         }
     }
 

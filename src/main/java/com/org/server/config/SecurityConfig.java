@@ -42,7 +42,7 @@ public class SecurityConfig {
 
 
     private final static String [] freePassUrl={
-            "/cert/**",
+            "/cert/**","/swagger-ui/**","/swagger-resources/**","/v3/api-docs/**"
     };
 
     @Bean

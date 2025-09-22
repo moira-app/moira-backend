@@ -15,10 +15,8 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.filter.OncePerRequestFilter;
-
 import java.io.IOException;
 import java.util.Arrays;
-
 import static com.org.server.util.jwt.TokenEnum.TOKEN_PREFIX;
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 
@@ -37,7 +35,9 @@ public class TokenAuthfilter extends OncePerRequestFilter {
         this.memberRepository = memberRepository;
     }
 
-    private static final String[] freePassPath = {"/login","/cert"
+
+
+    private static final String[] freePassPath = {"/login","/cert","/swagger-ui","/v3/api-docs"
     };
 
     @Override

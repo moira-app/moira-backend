@@ -43,7 +43,7 @@ public class MeetService {
         if (meet.isEmpty()) {
             throw new MoiraException("존재하지 않는 회의입니다", HttpStatus.BAD_REQUEST);
         }
-        if (now.isBefore(meet.get().getStartTime())) {
+        if (now.isBefore(meet.get().getStartTime())||now.isAfter(meet.get().getEndTime())) {
             throw new MoiraException("회의 시간 전입니다", HttpStatus.BAD_REQUEST);
         }
         Member m = securityMemberReadService.securityMemberRead();
