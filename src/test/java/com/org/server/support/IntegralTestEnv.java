@@ -1,10 +1,10 @@
 package com.org.server.support;
 
-
-import com.org.server.certification.CertificationTest;
+import com.org.server.certification.repository.ProjectCertRepo;
 import com.org.server.certification.service.CertificationService;
-import com.org.server.certification.service.ProjectCertService;
-import com.org.server.meet.domain.Meet;
+import com.org.server.certification.service.ProjectMeetEntranceService;
+import com.org.server.certification.service.ProjectPageS3Service;
+import com.org.server.certification.service.S3Service;
 import com.org.server.meet.repository.MeetRepository;
 import com.org.server.meet.service.MeetService;
 import com.org.server.member.MemberType;
@@ -20,11 +20,12 @@ import com.org.server.ticket.domain.Ticket;
 import com.org.server.ticket.repository.TicketRepository;
 import com.org.server.ticket.service.TicketService;
 import com.org.server.util.jwt.JwtUtil;
-import org.junit.jupiter.api.AfterAll;
+import com.org.server.whiteBoardAndPage.domain.Page;
+import com.org.server.whiteBoardAndPage.domain.WhiteBoard;
+import com.org.server.whiteBoardAndPage.repository.PageRepo;
+import com.org.server.whiteBoardAndPage.repository.WhiteBoardRepo;
 import org.junit.jupiter.api.AfterEach;
-import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.AutoConfigureOrder;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -50,8 +51,22 @@ public class IntegralTestEnv {
     @Autowired
     protected ProjectRepository projectRepository;
 
+    @Autowired
+    protected WhiteBoardRepo whiteBoardRepo;
+
+    @Autowired
+    protected PageRepo pageRepo;
+
+    @Autowired
+    protected ProjectCertRepo projectCertRepo;
 
     //service
+
+    @Autowired
+    protected ProjectPageS3Service projectPageS3Service;
+
+    @Autowired
+    protected S3Service s3Service;
 
     @Autowired
     protected MemberServiceImpl memberService;
@@ -69,7 +84,7 @@ public class IntegralTestEnv {
     @Autowired
     protected TicketService ticketService;
     @Autowired
-    protected ProjectCertService projectCertService;
+    protected ProjectMeetEntranceService projectCertService;
 
     //else
     @Autowired
@@ -86,11 +101,27 @@ public class IntegralTestEnv {
 
         ticketRepository.deleteAllInBatch();
         meetRepository.deleteAllInBatch();
+        whiteBoardRepo.deleteAllInBatch();
+        pageRepo.deleteAllInBatch();
         projectRepository.deleteAllInBatch();
         memberRepository.deleteAllInBatch();
     }
 
 
+    protected Page createPage(Long whiteBoardId){
+        Page page=Page.builder()
+                .pageName("test")
+                .whiteBoardId(whiteBoardId)
+                .build();
+        page=pageRepo.save(page);
+        return page;
+    }
+    protected WhiteBoard createWhiteBoard(Project project){
+        WhiteBoard whiteBoard=WhiteBoard.builder()
+                .project(project)
+                .build();
+        return whiteBoardRepo.save(whiteBoard);
+    }
 
     protected Member createMember(Long idx){
 
@@ -103,7 +134,7 @@ public class IntegralTestEnv {
         member=memberRepository.save(member);
         return member;
     }
-    protected Ticket createTicket(Member m, Project p,String alias){
+    protected Ticket createTicket(Member m, Project p, String alias){
         Ticket t=Ticket.builder()
                 .memberId(m.getId())
                 .projectId(p.getId())

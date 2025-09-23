@@ -1,4 +1,16 @@
 spring:
+  cloud:
+    aws:
+      credential:
+        access-key: "1234"
+        secret-key:  "1234"
+      s3:
+        bucket: "1234"
+
+      region:
+        static: "ap-northeast-2"
+
+
   datasource:
     url: jdbc:h2:mem:~/playhive;MODE=MySQL;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
     driver-class-name: org.h2.Driver

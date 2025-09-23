@@ -2,10 +2,7 @@ package com.org.server.whiteBoardAndPage.domain;
 
 
 import com.org.server.util.BaseTime;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -23,6 +20,7 @@ public class Page extends BaseTime {
     //1:다 관계
     private String pageName;
     private Long whiteBoardId;
+    @Column(length=512)
     private String fileLocation;
 
     @Builder
@@ -30,5 +28,12 @@ public class Page extends BaseTime {
         this.whiteBoardId = whiteBoardId;
         this.fileLocation = fileLocation;
         this.pageName=pageName;
+    }
+
+    public void updatePageName(String pageName){
+        this.pageName=pageName;
+    }
+    public void updateFileLocation(String fileLocation){
+        this.fileLocation=fileLocation;
     }
 }

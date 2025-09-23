@@ -5,11 +5,11 @@ import lombok.Getter;
 
 @Getter
 public class PageDto {
-    private String pageName;
+    private String value;
     private Long pageId;
 
-    public PageDto(String pageName, Long pageId) {
-        this.pageName = pageName;
+    public PageDto(String value, Long pageId) {
+        this.value=value;
         this.pageId = pageId;
     }
 }

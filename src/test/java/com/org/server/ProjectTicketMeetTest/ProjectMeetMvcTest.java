@@ -75,7 +75,7 @@ public class ProjectMeetMvcTest extends IntegralTestEnv{
                 "alias": "1234"
         }""";
 
-        mockMvc.perform(post("/projectCert/"+val+"/create")
+        mockMvc.perform(post("/enter/"+val+"/create")
                         .contentType(MediaType.APPLICATION_JSON)
                         .header("Authorization","Bearer "+accessToken)
                         .contentType(requestBody))

@@ -52,7 +52,9 @@ dependencies {
     implementation 'org.modelmapper:modelmapper:3.1.0'
 
 
-
+	//aws s3
+	implementation platform('io.awspring.cloud:spring-cloud-aws-dependencies:3.1.1')
+	implementation 'io.awspring.cloud:spring-cloud-aws-starter-s3'
 
 	//Querydsl 추가
 	implementation 'com.querydsl:querydsl-jpa:5.0.0:jakarta'

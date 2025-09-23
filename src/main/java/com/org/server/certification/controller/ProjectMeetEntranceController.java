@@ -1,27 +1,26 @@
 package com.org.server.certification.controller;
 
 
-import com.org.server.certification.service.ProjectCertService;
+import com.org.server.certification.service.ProjectMeetEntranceService;
 import com.org.server.meet.domain.MeetConnectDto;
 import com.org.server.meet.domain.MeetDto;
 import com.org.server.project.domain.ProjectDto;
 import com.org.server.ticket.domain.TicketDto;
 import com.org.server.util.ApiResponseUtil;
-import com.org.server.whiteBoardAndPage.domain.PageDto;
+import com.org.server.whiteBoardAndPage.domain.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
-import org.springframework.web.multipart.MultipartFile;
+
 import java.util.List;
 
 @RestController
-@RequestMapping("/projectCert")
+@RequestMapping("/enter")
 @RequiredArgsConstructor
-public class ProjectCertificationController {
+public class ProjectMeetEntranceController {
 
 
-    private final ProjectCertService projectCertService;
+    private final ProjectMeetEntranceService projectCertService;
 
     @GetMapping("/list")
     public ResponseEntity<ApiResponseUtil<List<ProjectDto>>> getProjectList(){
@@ -61,27 +60,6 @@ public class ProjectCertificationController {
         return ResponseEntity.ok(ApiResponseUtil.CreateApiResponse("ok",null));
     }
 
-    @GetMapping("/{projectId}/get/page/{pageId}")
-    public ResponseEntity<StreamingResponseBody> getPageData(
-            @PathVariable(name = "pageId") Long pageId){
-        return projectCertService.getPageDataByStreaming(pageId);
-    }
 
-    @GetMapping("/{projectId}/get/pageList")
-    public ResponseEntity<ApiResponseUtil<List<PageDto>>> getPageList(
-            @PathVariable(name = "projectId") Long projectId
-    ){
-        return ResponseEntity.ok(
-                ApiResponseUtil.CreateApiResponse("ok"
-                ,projectCertService.getPageList(projectId)));
-    }
 
-    @PostMapping("/{projectId}/save/page/{pageId}")
-    public ResponseEntity<ApiResponseUtil<String>> savePageData(
-            @PathVariable(name = "pageId") Long pageId,
-            @RequestParam("file") MultipartFile file
-    ){
-        projectCertService.savePageData(pageId,file);
-        return ResponseEntity.ok(ApiResponseUtil.CreateApiResponse("ok",null));
-    }
 }
