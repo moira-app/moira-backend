@@ -32,7 +32,7 @@ public class ProjectCertRepo {
                 .from(ticket)
                 .join(project)
                 .on(project.id.eq(ticket.projectId))
-                .where(ticket.memberId.eq(m.getId()))
+                .where(ticket.memberId.eq(m.getId()).and(project.deleted.isFalse()))
                 .fetch();
         return projectDtoList;
     }
@@ -44,7 +44,7 @@ public class ProjectCertRepo {
                 .from(whiteBoard)
                 .join(project)
                 .on(project.eq(whiteBoard.project))
-                .where(project.id.eq(projectId))
+                .where(project.id.eq(projectId).and(project.deleted.isFalse()))
                 .fetchOne());
         if(board.isEmpty()){
             throw new MoiraException("화이트 보드가 존재하지않습니다", HttpStatus.BAD_REQUEST);

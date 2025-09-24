@@ -21,13 +21,11 @@ public class ProjectMeetEntranceController {
 
 
     private final ProjectMeetEntranceService projectCertService;
-
     @GetMapping("/list")
     public ResponseEntity<ApiResponseUtil<List<ProjectDto>>> getProjectList(){
         return ResponseEntity.ok(ApiResponseUtil.CreateApiResponse("ok",
                 projectCertService.getProejctList()));
     }
-
     @PostMapping("/{projectId}/create")
     public ResponseEntity<ApiResponseUtil<String>> createTicket(
             @PathVariable(name = "projectId") Long projectId,
@@ -43,13 +41,20 @@ public class ProjectMeetEntranceController {
         projectCertService.changeAlias(alias,projectId);
         return ResponseEntity.ok(ApiResponseUtil.CreateApiResponse("ok",null));
     }
+    @PostMapping("/{projectId}/del/meet/{meetId}")
+    public ResponseEntity<ApiResponseUtil<String>> delMeet(
+            @PathVariable(name = "meetId") Long meetId
+    ){
+        projectCertService.delMeet(meetId);
+        return ResponseEntity.ok(ApiResponseUtil.CreateApiResponse("ok",null));
+    }
 
     @GetMapping("/{projectId}/checkIn/meet/{meetId}")
-    public ResponseEntity<ApiResponseUtil<MeetConnectDto>> checkIn(
+    public ResponseEntity<ApiResponseUtil<MeetConnectDto>> checkInMeet(
             @PathVariable(name = "projectId")Long projectId,
             @PathVariable(name = "meetId")Long meetId){
         return ResponseEntity.ok(ApiResponseUtil.CreateApiResponse("ok",
-                projectCertService.checkIn(meetId,projectId)));
+                projectCertService.checkInMeet(meetId,projectId)));
     }
 
     @PostMapping("/{projectId}/create/meet")
@@ -57,6 +62,15 @@ public class ProjectMeetEntranceController {
             @PathVariable(name = "projectId") Long projectId,
             @RequestBody MeetDto meetDto){
         projectCertService.createMeet(meetDto,projectId);
+        return ResponseEntity.ok(ApiResponseUtil.CreateApiResponse("ok",null));
+    }
+
+    @DeleteMapping("/{projectId}/del/ticket/{ticketId}")
+    public ResponseEntity<ApiResponseUtil<String>> delTicket(
+            @PathVariable(name = "projectId")Long projectId,
+            @PathVariable(name = "ticketId")Long ticketId
+    ){
+        projectCertService.delTicket(projectId,ticketId);
         return ResponseEntity.ok(ApiResponseUtil.CreateApiResponse("ok",null));
     }
 

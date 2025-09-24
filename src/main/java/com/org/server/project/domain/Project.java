@@ -16,9 +16,11 @@ public class Project extends BaseTime{
     private Long id;
     @Column(nullable = false)
     private String title;
-
-
+    private Boolean deleted=false;
     public Project(String title) {
         this.title = title;
+    }
+    public void updateDeleted(){
+        this.deleted=!this.deleted;
     }
 }

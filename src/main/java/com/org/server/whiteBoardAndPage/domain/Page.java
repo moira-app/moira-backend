@@ -22,6 +22,7 @@ public class Page extends BaseTime {
     private Long whiteBoardId;
     @Column(length=512)
     private String fileLocation;
+    private Boolean deleted;
 
     @Builder
     public Page(Long whiteBoardId, String pageName,String fileLocation) {
@@ -30,10 +31,14 @@ public class Page extends BaseTime {
         this.pageName=pageName;
     }
 
+
     public void updatePageName(String pageName){
         this.pageName=pageName;
     }
-    public void updateFileLocation(String fileLocation){
-        this.fileLocation=fileLocation;
+    public void updateFileLocation(String fileLocation) {
+        this.fileLocation = fileLocation;
+    }
+    public void updateDeleted(){
+        this.deleted = !deleted;
     }
 }

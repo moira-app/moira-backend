@@ -83,11 +83,11 @@ public class ProjectMeetTicket extends IntegralTestEnv {
         monthFuture=LocalDate.now().plusMonths(1L).format(DateTimeMapUtil.formatByDot2);
 
         for(int i=0;5>i;i++) {
-            projectCertService.createMeet(new MeetDto(startTime,endTime),p.getId());
-            projectCertService.createMeet(new MeetDto(startTime2,endTime2),p.getId());
+            projectCertService.createMeet(new MeetDto("Test",startTime,endTime),p.getId());
+            projectCertService.createMeet(new MeetDto("test",startTime2,endTime2),p.getId());
         }
         for(int i=0;5>i;i++) {
-            projectCertService.createMeet(new MeetDto(startTime,endTime),p2.getId());
+            projectCertService.createMeet(new MeetDto("test",startTime,endTime),p2.getId());
         }
     }
 
@@ -137,7 +137,8 @@ public class ProjectMeetTicket extends IntegralTestEnv {
         Mockito.when(securityMemberReadService.securityMemberRead())
                 .thenReturn(m);
         List<Meet> meets=meetRepository.findAll();
-        MeetConnectDto meetConnectDto=meetService.checkIn(meets.getFirst().getId());
+        MeetConnectDto meetConnectDto=projectCertService.checkInMeet(meets.getFirst().getId(),
+                p.getId());
         assertThat(meetConnectDto.getAlias()).isEqualTo("test1");
     }
 }

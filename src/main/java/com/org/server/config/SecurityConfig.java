@@ -2,6 +2,7 @@ package com.org.server.config;
 
 
 import com.org.server.member.repository.MemberRepository;
+import com.org.server.member.service.SecurityMemberReadService;
 import com.org.server.redis.service.RedisUserInfoService;
 import com.org.server.security.detailservices.CustomOAuth2Service;
 import com.org.server.security.detailservices.CustomUserDetailService;
