@@ -40,7 +40,6 @@ public class SecurityConfig {
     private final WebConfig webConfig;
     private final JwtUtil jwtUtil;
     private final TicketService ticketService;
-    private final SecurityMemberReadService service;
 
 
     private final static String [] freePassUrl={
@@ -104,7 +103,7 @@ public class SecurityConfig {
     @Bean
     public AuthenticationManager authenticationManager(){
         DaoAuthenticationProvider provider=new DaoAuthenticationProvider(
-                new CustomUserDetailService(service)
+                new CustomUserDetailService(memberRepository)
         );
         provider.setPasswordEncoder(passwordEncoder());
         return new ProviderManager(provider);
