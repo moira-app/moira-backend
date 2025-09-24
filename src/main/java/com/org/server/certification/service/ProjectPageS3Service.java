@@ -35,7 +35,7 @@ public class ProjectPageS3Service {
         return pages.stream()
                 .map(x -> {
                     if(x.getFileLocation()==null){
-                        return null;
+                        return new PageDto(null,x.getId());
                     }
                     return new PageDto(s3Service.getPagePreSignUrl(x.getFileLocation()),
                             x.getId());
@@ -72,6 +72,7 @@ public class ProjectPageS3Service {
                 page.get().getFileLocation());
     }
     public Long savePage(Long projectId,Long pageId,String fileLocation,String fileName){
+        //페이지의 최초 저장시
         if(pageId==null&&fileLocation==null){
             Page p=Page.builder()
                     .pageName(fileName)
@@ -80,14 +81,18 @@ public class ProjectPageS3Service {
             p=pageRepo.save(p);
             return p.getId();
         }
+        //이미 저장된 페이지를 저장하는 케이스
         Optional<Page> p = pageRepo.findById(pageId);
-        if(p.isPresent()&&!fileName.equals(p.get().getPageName())) {
-            p.get().updatePageName(fileName);
+        if(p.isPresent()){
+            if(!fileName.equals(p.get().getPageName())) {
+                p.get().updatePageName(fileName);
+            }
+            if(p.get().getFileLocation()==null&&fileLocation!=null){
+                p.get().updateFileLocation(fileLocation);
+            }
+            return p.get().getId();
         }
-        if(p.get().getFileLocation()==null&&fileLocation!=null){
-            p.get().updateFileLocation(fileLocation);
-        }
-        return p.get().getId();
+        throw new MoiraException("존재 하지 않는 페이지입니다",HttpStatus.BAD_REQUEST);
     }
     public void delPage(Long pageId){
         Optional<Page> page=pageRepo.findById(pageId);
