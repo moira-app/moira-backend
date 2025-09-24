@@ -72,13 +72,13 @@ public class TokenAuthfilter extends OncePerRequestFilter {
             response.setHeader(AUTHORIZATION,TOKEN_PREFIX.getValue()+accessToken);
         }
 
-        Member m=memberRepository.findById(claims.get("id",Long.class)).get();
+        Optional<Member> m=memberRepository.findById(claims.get("id",Long.class));
 
-        if(m.getDeleted()){
+        if(m.isEmpty()||m.get().getDeleted()){
             sendErrorResponse(response,HttpStatus.BAD_REQUEST,"없는 회원 입니다");
             return;
         }
-        CustomUserDetail customUserDetail=new CustomUserDetail(m);
+        CustomUserDetail customUserDetail=new CustomUserDetail(m.get());
         Authentication auth=new UsernamePasswordAuthenticationToken(
                 customUserDetail,null,customUserDetail.getAuthorities());
         SecurityContextHolder.getContext().setAuthentication(auth);

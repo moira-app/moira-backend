@@ -23,7 +23,7 @@ public class TicketService {
 
     private final TicketRepository ticketRepository;
     private final RedisUserInfoService redisUserInfoService;
-    private final MemberRepository memberRepository;
+
    public Boolean checkIn(Long projectId,Long memberId){
         Optional<Ticket> ticket=
                 ticketRepository.findByMemberIdAndProjectId(memberId,projectId);
@@ -40,7 +40,7 @@ public class TicketService {
        }
        ticket.get().updateDeleted();
        ticketRepository.save(ticket.get());
-       Member m=memberRepository.findById(memberId).get();
-       redisUserInfoService.delTicketKey(m.getEmail(),String.valueOf(ticket.get().getId()));
+       redisUserInfoService.delTicketKey(String.valueOf(memberId)
+               ,String.valueOf(ticket.get().getId()));
    }
 }

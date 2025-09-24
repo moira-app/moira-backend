@@ -2,6 +2,7 @@ package com.org.server.config;
 
 
 import com.org.server.member.repository.MemberRepository;
+import com.org.server.member.service.SecurityMemberReadService;
 import com.org.server.redis.service.RedisUserInfoService;
 import com.org.server.security.detailservices.CustomOAuth2Service;
 import com.org.server.security.detailservices.CustomUserDetailService;
@@ -39,6 +40,7 @@ public class SecurityConfig {
     private final WebConfig webConfig;
     private final JwtUtil jwtUtil;
     private final TicketService ticketService;
+    private final SecurityMemberReadService service;
 
 
     private final static String [] freePassUrl={
@@ -102,7 +104,7 @@ public class SecurityConfig {
     @Bean
     public AuthenticationManager authenticationManager(){
         DaoAuthenticationProvider provider=new DaoAuthenticationProvider(
-                new CustomUserDetailService(memberRepository)
+                new CustomUserDetailService(service)
         );
         provider.setPasswordEncoder(passwordEncoder());
         return new ProviderManager(provider);

@@ -41,8 +41,8 @@ public class RedisUserInfoService {
         }
         return false;
     }
-    public void setTicketKey(String email,String ticketId){
-        redisTemplate.opsForSet().add(ticket_key+email,ticketId);
+    public void setTicketKey(String memberId,String ticketId){
+        redisTemplate.opsForSet().add(ticket_key+memberId,ticketId);
     }
     public Boolean checkTicketKey(String email,String checkInId){
        return redisTemplate.opsForSet().isMember(ticket_key+email,checkInId);

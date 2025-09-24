@@ -38,9 +38,7 @@ public class MeetService {
         LocalDateTime startTime=LocalDate.parse(date,DateTimeMapUtil.formatByDot2).atStartOfDay();
         LocalDateTime endTime=startTime.plusMonths(1L);
         Member m=securityMemberReadService.securityMemberRead();
-
         List<MeetDateDto> meetList=meetAdvanceRepo.getMeetList(startTime,endTime,m);
-
         meetList.forEach(x->{
             x.updateDate(DateTimeMapUtil.provideTimePattern(x.getDate()));
 
