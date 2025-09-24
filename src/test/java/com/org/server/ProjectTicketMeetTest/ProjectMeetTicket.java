@@ -137,7 +137,8 @@ public class ProjectMeetTicket extends IntegralTestEnv {
         Mockito.when(securityMemberReadService.securityMemberRead())
                 .thenReturn(m);
         List<Meet> meets=meetRepository.findAll();
-        //meet check in 함수
+        MeetConnectDto meetConnectDto=projectCertService.checkIn(meets.getFirst().getId(),
+                p.getId());
         assertThat(meetConnectDto.getAlias()).isEqualTo("test1");
     }
 }
