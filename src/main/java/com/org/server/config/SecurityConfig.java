@@ -2,6 +2,7 @@ package com.org.server.config;
 
 
 import com.org.server.member.repository.MemberRepository;
+import com.org.server.member.service.SecurityMemberReadService;
 import com.org.server.redis.service.RedisUserInfoService;
 import com.org.server.security.detailservices.CustomOAuth2Service;
 import com.org.server.security.detailservices.CustomUserDetailService;
@@ -42,7 +43,7 @@ public class SecurityConfig {
 
 
     private final static String [] freePassUrl={
-            "/cert/**",
+            "/cert/**","/swagger-ui/**","/swagger-resources/**","/v3/api-docs/**"
     };
 
     @Bean

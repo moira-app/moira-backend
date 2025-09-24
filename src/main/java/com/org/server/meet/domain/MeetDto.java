@@ -8,8 +8,10 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class MeetDto {
     private String startTime;
+    private String endTime;
 
-    public MeetDto(String startTime) {
+    public MeetDto(String startTime,String endTime) {
         this.startTime = startTime;
+        this.endTime=endTime;
     }
 }

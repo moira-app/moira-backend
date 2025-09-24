@@ -3,10 +3,13 @@ package com.org.server.security.detailservices;
 import com.org.server.member.MemberType;
 import com.org.server.member.domain.Member;
 import com.org.server.member.repository.MemberRepository;
+import com.org.server.member.service.SecurityMemberReadService;
 import com.org.server.security.domain.*;
 import com.org.server.util.RandomCharSet;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.autoconfigure.kafka.KafkaProperties;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
 import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
@@ -14,6 +17,7 @@ import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.util.Optional;
+import com.org.server.exception.MoiraException;
 
 @Slf4j
 public class CustomOAuth2Service extends DefaultOAuth2UserService {
@@ -38,6 +42,9 @@ public class CustomOAuth2Service extends DefaultOAuth2UserService {
         else{
             log.info("{}-유저가 로그인 시도",registrationId);
             Optional<Member> member=memberRepository.findByEmail(response.getEmail());
+            if(member.isPresent()&&member.get().getDeleted()){
+                throw new MoiraException("없는 회원입니다", HttpStatus.BAD_REQUEST);
+            }
             if(member.isPresent()){
                 return whenExistMember(member.get(),response.getProvider());
             }

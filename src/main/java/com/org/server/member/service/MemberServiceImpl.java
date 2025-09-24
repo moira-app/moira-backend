@@ -55,6 +55,11 @@ public class MemberServiceImpl implements MemberService{
         return MemberDto.createMemberDto(member);
     }
 
+    public void delMember(){
+        Member m=securityMemberRead.securityMemberRead();
+        m.updateDeleted();
+        memberRepository.save(m);
+    }
 
 
 }
