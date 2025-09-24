@@ -104,4 +104,10 @@ public class MemberController {
     @GetMapping("/oauth2/authorization/{registrationId}")
     public void memberOAuth2Login(@PathVariable(name = "registrationId") String registarionId){
     }
+
+    @PostMapping("/del")
+    public ResponseEntity<ApiResponseUtil<String>> delMember(){
+        memberService.delMember();
+        return ResponseEntity.ok(ApiResponseUtil.CreateApiResponse("ok",null));
+    }
 }

@@ -24,6 +24,7 @@ public class Meet extends BaseTime{
     private LocalDateTime startTime;
     private LocalDateTime endTime;
     private String meetUrl;
+    private Boolean deleted=false;
 
 
     @Builder
@@ -32,5 +33,8 @@ public class Meet extends BaseTime{
         this.startTime = startTime;
         this.meetUrl = meetUrl;
         this.endTime=endTime;
+    }
+    public void updateDeleted(){
+        this.deleted=!this.deleted;
     }
 }
