@@ -1,5 +1,6 @@
 package com.org.server.security.filters;
 
+import com.org.server.member.domain.Member;
 import com.org.server.member.repository.MemberRepository;
 import com.org.server.redis.service.RedisUserInfoService;
 import com.org.server.security.domain.CustomUserDetail;
@@ -19,7 +20,7 @@ import java.io.IOException;
 import java.util.Arrays;
 import static com.org.server.util.jwt.TokenEnum.TOKEN_PREFIX;
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
-
+import java.util.Optional;
 @Slf4j
 
 public class TokenAuthfilter extends OncePerRequestFilter {
@@ -70,8 +71,14 @@ public class TokenAuthfilter extends OncePerRequestFilter {
             accessToken=jwtUtil.genAccessToken(claims.get("id", Long.class));
             response.setHeader(AUTHORIZATION,TOKEN_PREFIX.getValue()+accessToken);
         }
-        CustomUserDetail customUserDetail=
-                new CustomUserDetail(memberRepository.findById(claims.get("id",Long.class)).get());
+
+        Member m=memberRepository.findById(claims.get("id",Long.class)).get();
+
+        if(m.getDeleted()){
+            sendErrorResponse(response,HttpStatus.BAD_REQUEST,"없는 회원 입니다");
+            return;
+        }
+        CustomUserDetail customUserDetail=new CustomUserDetail(m);
         Authentication auth=new UsernamePasswordAuthenticationToken(
                 customUserDetail,null,customUserDetail.getAuthorities());
         SecurityContextHolder.getContext().setAuthentication(auth);

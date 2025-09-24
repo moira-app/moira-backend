@@ -25,4 +25,5 @@ public class WhiteBoard extends BaseTime{
     public WhiteBoard(Project project) {
         this.project=project;
     }
+
 }

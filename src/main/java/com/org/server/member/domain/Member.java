@@ -24,6 +24,7 @@ public class Member extends BaseTime {
     private String nickName;
     private String password;
     private MemberType memberType;
+    private Boolean deleted=false;
 
 
     @Builder
@@ -41,5 +42,9 @@ public class Member extends BaseTime {
 
     public void updateNickName(String nickName){
         this.nickName=nickName;
+    }
+
+    public void updateDeleted(){
+        this.deleted=!this.deleted;
     }
 }

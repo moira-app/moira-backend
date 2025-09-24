@@ -47,4 +47,7 @@ public class RedisUserInfoService {
     public Boolean checkTicketKey(String email,String checkInId){
        return redisTemplate.opsForSet().isMember(ticket_key+email,checkInId);
     }
+    public void delTicketKey(String email,String ticketId){
+        redisTemplate.opsForSet().remove(email,ticketId);
+    }
 }

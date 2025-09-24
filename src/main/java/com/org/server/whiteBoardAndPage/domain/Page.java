@@ -24,11 +24,15 @@ public class Page extends BaseTime {
     private String pageName;
     private Long whiteBoardId;
     private String fileLocation;
+    private Boolean deleted;
 
     @Builder
     public Page(Long whiteBoardId, String pageName,String fileLocation) {
         this.whiteBoardId = whiteBoardId;
         this.fileLocation = fileLocation;
         this.pageName=pageName;
+    }
+    public void updateDeleted(){
+        this.deleted=!deleted;
     }
 }

@@ -44,7 +44,6 @@ public class ProjectTicketFilter extends OncePerRequestFilter{
         Member m=customUserDetail.getMember();
         if(!redisUserInfoService.checkTicketKey(m.getEmail(),arr[2])){
             if(!ticketService.checkIn(Long.parseLong(arr[2]),m.getId())){
-
                 sendErrorResponse(response,HttpStatus.BAD_REQUEST,
                         "해당 프로젝트에 대한 권한이없습니다");
                 return;

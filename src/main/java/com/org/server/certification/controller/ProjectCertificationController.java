@@ -28,7 +28,6 @@ public class ProjectCertificationController {
         return ResponseEntity.ok(ApiResponseUtil.CreateApiResponse("ok",
                 projectCertService.getProejctList()));
     }
-
     @PostMapping("/{projectId}/create")
     public ResponseEntity<ApiResponseUtil<String>> createTicket(
             @PathVariable(name = "projectId") Long projectId,

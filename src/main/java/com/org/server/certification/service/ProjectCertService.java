@@ -59,7 +59,7 @@ public class ProjectCertService {
         Member m=memberRepository.findByEmail(ticketDto.getEmail()).get();
 
         if(ticketRepository.existsByMemberIdAndProjectId(m.getId(),projectId)){
-            throw new MoiraException("이미 초대된 유저입니다", HttpStatus.BAD_REQUEST);
+            throw new MoiraException("이미 초대되었거나 혹은 퇴출된 유저입니다", HttpStatus.BAD_REQUEST);
         }
         Ticket ticket= new Ticket(projectId,m.getId(),ticketDto.getAlias());
         ticketRepository.save(ticket);
@@ -79,7 +79,7 @@ public class ProjectCertService {
     public MeetConnectDto checkIn(Long id,Long projectId) {
         LocalDateTime now = LocalDateTime.now();
         Optional<Meet> meet = meetRepository.findById(id);
-        if (meet.isEmpty()) {
+        if (meet.isEmpty()||meet.get().getDeleted()) {
             throw new MoiraException("존재하지 않는 회의입니다", HttpStatus.BAD_REQUEST);
         }
         if (now.isBefore(meet.get().getStartTime())) {
@@ -109,7 +109,7 @@ public class ProjectCertService {
 
     public List<PageDto> getPageList(Long projectId) {
         Long boardId = projectCertRepo.getWhiteBoardId(projectId);
-        List<Page> pages = pageRepo.findByWhiteBoardId(boardId);
+        List<Page> pages = pageRepo.findByWhiteBoardIdAndDeleted(boardId,false);
         return pages.stream()
                 .map(x -> {
                     return new PageDto(x.getPageName(), x.getId());

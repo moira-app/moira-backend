@@ -31,31 +31,8 @@ import java.time.LocalDate;
 public class MeetService {
 
     private final MeetRepository meetRepository;
-    private final ProjectRepository projectRepository;
     private final MeetAdvanceRepo meetAdvanceRepo;
     private final SecurityMemberReadService securityMemberReadService;
-    private final TicketRepository ticketRepository;
-
-
-    public MeetConnectDto checkIn(Long id) {
-        LocalDateTime now = LocalDateTime.now();
-        Optional<Meet> meet = meetRepository.findById(id);
-        if (meet.isEmpty()) {
-            throw new MoiraException("존재하지 않는 회의입니다", HttpStatus.BAD_REQUEST);
-        }
-        if (now.isBefore(meet.get().getStartTime())||now.isAfter(meet.get().getEndTime())) {
-            throw new MoiraException("회의 시간 전입니다", HttpStatus.BAD_REQUEST);
-        }
-        Member m = securityMemberReadService.securityMemberRead();
-        if (ticketRepository.existsByMemberIdAndProjectId(m.getId(), meet.get().getProject().getId())) {
-            Ticket t = ticketRepository.findByMemberIdAndProjectId(m.getId(),
-                    meet.get().getProject().getId()).get();
-
-            return new MeetConnectDto(meet.get().getMeetUrl(), t.getAlias()==null ?
-                    m.getNickName() :t.getAlias());
-        }
-        throw new MoiraException("참가할수없는 회의입니다", HttpStatus.BAD_REQUEST);
-    }
 
     public List<MeetDateDto> getMeetList(String date){
         LocalDateTime startTime=LocalDate.parse(date,DateTimeMapUtil.formatByDot2).atStartOfDay();
@@ -68,8 +45,14 @@ public class MeetService {
             x.updateDate(DateTimeMapUtil.provideTimePattern(x.getDate()));
 
         });
-
         return meetList;
+    }
 
+    public void delMeet(Long meetId){
+        Meet m=meetRepository.findById(meetId).get();
+        if(m.getDeleted()){
+            return ;
+        }
+        m.updateDeleted();
     }
 }
