@@ -22,7 +22,7 @@ public class Page extends BaseTime {
     private Long whiteBoardId;
     @Column(length=512)
     private String fileLocation;
-    private Boolean deleted;
+    private Boolean deleted=false;
 
     @Builder
     public Page(Long whiteBoardId, String pageName,String fileLocation) {

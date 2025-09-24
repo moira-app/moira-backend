@@ -42,8 +42,6 @@ public class ProjectTtest extends IntegralTestEnv {
         assertThat(pageList.size()).isEqualTo(2L);
     }
 
-
-
     @Test
     @DisplayName("해당 프로젝트와 관련된 페이지 리스트 조회 테스트")
     void testGetPageList(){
