@@ -7,7 +7,6 @@ import org.springframework.stereotype.Service;
 
 import com.org.server.chat.domain.ChatRoom;
 import com.org.server.chat.domain.ChatType;
-import com.org.server.chat.repository.ChatRoomMemberRepository;
 import com.org.server.chat.repository.ChatRoomRepository;
 
 import jakarta.transaction.Transactional;

@@ -1,0 +1,21 @@
+### UC-1: 방 보장 + 멤버 추가
+POST http://localhost:8080/api/chat/rooms?chatType=PROJECT&refId=1001
+Content-Type: application/json
+
+[10,20,30]
+
+###
+POST http://localhost:8080/api/chat/rooms/info?refId=1001
+Content-Type: application/json
+
+
+### UC-2: 멤버 추가 + 메시지 전송
+POST http://localhost:8080/api/chat/rooms/1/messages?senderId=7&content=hello
+Content-Type: application/json
+
+[20,30]
+
+###
+
+### UC-3: refId 기준 메시지 전송
+POST http://localhost:8080/api/chat/messages/by-ref?chatType=PROJECT&refId=1001&senderId=7&content=hi

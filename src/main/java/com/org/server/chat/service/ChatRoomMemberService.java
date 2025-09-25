@@ -5,6 +5,7 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 
 import com.org.server.chat.domain.ChatRoomMemberDto;
+import com.org.server.chat.repository.ChatRoomMemberAdvanceRepository;
 import com.org.server.chat.repository.ChatRoomMemberRepository;
 
 import jakarta.transaction.Transactional;
@@ -14,15 +15,16 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class ChatRoomMemberService {
 
-	private final ChatRoomMemberRepository roomMemberRepository;
 
+	private final ChatRoomMemberRepository roomMemberRepository;
+	private final ChatRoomMemberAdvanceRepository roomMemberAdvanceRepository;
 
 	@Transactional
 	public void addMembersIfMissing(Long roomId, List<Long> memberIds) {
 		for (Long memberId : memberIds) {
 			if (memberId == null) continue;
-			roomMemberRepository.findByRoomIdAndMemberId(roomId, memberId)
-				.orElseGet(() -> roomMemberRepository.saveNew(roomId, memberId));
+			roomMemberRepository.findByRoomIdAndTicketId(roomId, memberId)
+				.orElseGet(() -> roomMemberAdvanceRepository.saveNew(roomId, memberId));
 		}
 	}
 
@@ -30,21 +32,21 @@ public class ChatRoomMemberService {
 	@Transactional
 	public void removeMember(Long roomId, Long memberId) {
 		if (memberId != null) {
-			roomMemberRepository.deleteByRoomIdAndMemberId(roomId, memberId);
+			roomMemberRepository.deleteByRoomIdAndTicketId(roomId, memberId);
 		}
 	}
 
 	/** 방의 멤버 ID 리스트 조회 */
 	@Transactional
 	public List<Long> listMemberIds(Long roomId) {
-		return roomMemberRepository.findMemberIdsByRoomId(roomId);
+		return roomMemberAdvanceRepository.findTicketIdsByRoomId(roomId);
 	}
 
 	/** 방 소속 여부 확인 */
 	@Transactional
 	public boolean isMember(Long roomId, Long memberId) {
 		if (roomId == null || memberId == null) return false;
-		return roomMemberRepository.existsByRoomIdAndMemberId(roomId, memberId);
+		return roomMemberRepository.existsByRoomIdAndTicketId(roomId, memberId);
 	}
 
 

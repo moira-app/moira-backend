@@ -56,6 +56,7 @@ public class ChatMessageService {
 			.map(this::toDto);
 	}
 
+
 	@Transactional
 	public ChatMessageDto findLatestMessage(Long roomId) {
 		return messageAdvanceRepository.findLatestByRoomId(roomId)
