@@ -46,4 +46,15 @@ public class ChatUseCase {
 		ChatRoom room = roomService.ensureRoom(chatType, refId);
 		return messageService.sendMessage(room.getId(), senderId, content, chatType);
 	}
+
+	@Transactional
+	public ChatRoomDto getRoomInfo(Long roomId) {
+		ChatRoom room = roomService.getRoom(roomId);
+		return new ChatRoomDto(room.getId(), room.getChatType(), room.getRefId());
+	}
+
+	@Transactional
+	public List<Long> listRoomMemberIds(Long roomId) {
+		return roomMemberService.listMemberIds(roomId);
+	}
 }

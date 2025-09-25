@@ -22,14 +22,12 @@ public class ChatRoomMember {
 	long roomId;
 
 	@Column(nullable = false)
-	long memberId;
+	long ticketId;
 
 
 	@Builder
-	private ChatRoomMember(long roomId, long memberId) {
+	private ChatRoomMember(long roomId, long ticketId) {
 		this.roomId = roomId;
-		this.memberId = memberId;
+		this.ticketId = ticketId;
 	}
-
-
 }

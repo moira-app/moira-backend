@@ -9,14 +9,9 @@ import com.org.server.chat.domain.ChatRoomMember;
 
 public interface ChatRoomMemberRepository extends JpaRepository<ChatRoomMember, Long> {
 
+	void deleteByRoomIdAndTicketId(Long roomId, Long memberId);
 
-	Object saveNew(Long roomId, Long memberId);
+	boolean existsByRoomIdAndTicketId(Long roomId, Long memberId);
 
-	void deleteByRoomIdAndMemberId(Long roomId, Long memberId);
-
-	List<Long> findMemberIdsByRoomId(Long roomId);
-
-	boolean existsByRoomIdAndMemberId(Long roomId, Long memberId);
-
-	Optional<Object> findByRoomIdAndMemberId(Long roomId, Long memberId);
+	Optional<Object> findByRoomIdAndTicketId(Long roomId, Long memberId);
 }
