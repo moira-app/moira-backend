@@ -5,6 +5,7 @@ import com.org.server.exception.MoiraException;
 import com.org.server.member.service.SecurityMemberReadService;
 import com.org.server.project.domain.Project;
 import com.org.server.project.repository.ProjectRepository;
+import com.org.server.project.service.ProjectService;
 import com.org.server.redis.service.RedisUserInfoService;
 import com.org.server.ticket.domain.Ticket;
 import com.org.server.ticket.domain.TicketDto;
@@ -23,11 +24,15 @@ public class TicketService {
 
     private final TicketRepository ticketRepository;
     private final RedisUserInfoService redisUserInfoService;
+    private final ProjectService projectService;
 
    public Boolean checkIn(Long projectId,Long memberId){
         Optional<Ticket> ticket=
                 ticketRepository.findByMemberIdAndProjectId(memberId,projectId);
         if(ticket.isEmpty()||ticket.get().getDeleted()){
+            return false;
+        }
+        if(projectService.checkProject(ticket.get().getId())){
             return false;
         }
         return true;

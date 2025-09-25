@@ -1,4 +1,4 @@
-package com.org.server.certification.service;
+package com.org.server.s3;
 
 
 
@@ -28,7 +28,7 @@ public class S3Service {
     private final S3Presigner presigner;
     private final S3Client s3Client;
 
-    public String getPagePreSignUrl(String fileLocation){
+    public String getPreSignUrl(String fileLocation){
         GetObjectRequest getObjectRequest=GetObjectRequest.builder()
                 .bucket(bucket)
                 .key(fileLocation)
@@ -40,7 +40,7 @@ public class S3Service {
         return presigner.presignGetObject(getObjectPresignRequest).url().toString();
     }
 
-    public String updatePagePreSignUrl(String contentType,String fileLocation){
+    public String updatePreSignUrl(String contentType,String fileLocation){
         PutObjectRequest putObjectRequest= PutObjectRequest.builder()
                 .bucket(bucket)
                 .key(fileLocation)
@@ -53,7 +53,7 @@ public class S3Service {
         return presigner.presignPutObject(putObjectPresignRequest).url().toString();
     }
 
-    public String savePagePreSignUrl(String contentType,String fileName){
+    public String savePreSignUrl(String contentType,String fileName){
         if(!verifyContentType(contentType)){
             throw new MoiraException("잘못된 파일입니다",HttpStatus.BAD_REQUEST);
         }
@@ -71,15 +71,13 @@ public class S3Service {
         return presigner.presignPutObject(putObjectPresignRequest).url().toString();
     }
 
-    public void delPagePreSignUrl(String fileLocation){
+    public void delPreSignUrl(String fileLocation){
         DeleteObjectRequest deleteObjectRequest=DeleteObjectRequest.builder()
                 .bucket(bucket)
                 .key(fileLocation)
                 .build();
         s3Client.deleteObject(deleteObjectRequest);
     }
-
-
     private boolean verifyContentType(String contentType){
         for(MediaType mediaType:MediaType.values()){
             String type=mediaType.getValue();

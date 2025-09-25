@@ -17,24 +17,23 @@ public class MemberDto {
     private String nickName;
     @Schema(description = "회원 이메일입니다.")
     private String email;
-
-
+    private String imgUrl;
 
     public static MemberDto createMemberDto(Member member){
-
         return MemberDto.builder()
                 .id(member.getId())
                 .email(member.getEmail())
-
                 .nickName(member.getNickName())
+                .imgUrl(member.getImgUrl()==null ? "defaulturl":member.getImgUrl())
                 .build();
     }
 
     @Builder
-    public MemberDto(Long id, String nickName, String email) {
+    public MemberDto(Long id, String nickName, String email,String imgUrl) {
         this.id = id;
         this.nickName = nickName;
         this.email = email;
+        this.imgUrl=imgUrl;
 
     }
 }

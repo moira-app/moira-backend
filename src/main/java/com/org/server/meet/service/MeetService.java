@@ -47,11 +47,8 @@ public class MeetService {
     }
     public void delMeet(Long meetId){
         Optional<Meet> m=meetRepository.findById(meetId);
-        if(m.isEmpty()){
+        if(m.isEmpty()||m.get().getDeleted()){
             throw new MoiraException("없는 회의 입니다",HttpStatus.BAD_REQUEST);
-        }
-        if(m.get().getDeleted()){
-            return ;
         }
         m.get().updateDeleted();
     }

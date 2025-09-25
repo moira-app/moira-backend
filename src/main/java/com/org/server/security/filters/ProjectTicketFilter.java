@@ -19,21 +19,18 @@ public class ProjectTicketFilter extends OncePerRequestFilter{
 
 
     private RedisUserInfoService redisUserInfoService;
-
     private  TicketService ticketService;
     public ProjectTicketFilter(RedisUserInfoService redisUserInfoService,
                                TicketService ticketService) {
         this.redisUserInfoService=redisUserInfoService;
         this.ticketService = ticketService;
     }
-
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
         String reqUri=request.getRequestURI();
         return !reqUri.startsWith("/enter") || reqUri.equals("/enter/list")
-                ||!reqUri.startsWith("/s3");
+                ||!reqUri.startsWith("/s3/project");
     }
-
     @Override
     protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {

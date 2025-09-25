@@ -12,6 +12,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -69,8 +70,26 @@ public class MemberController {
         return ResponseEntity.ok(ApiResponseUtil.CreateApiResponse("ok",
                 memberService.updateMemberInfo(memberUpdateDto)));
     }
-
-
+    @Operation(summary = "내 프로필 이미지 업데이트용", description = "내 프로필 이미지를 업데이트" +
+            "하는대 필요한 url을 발급합니다.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "회원가입 성공",useReturnTypeSchema = true),
+            @ApiResponse(responseCode = "401", description = "권한이 부족합니다.",
+                    content = @Content(schema = @Schema(implementation = ApiResponseUtil.class)))
+    })
+    @Parameter(name = "Authorization",
+            description = "요청시 토큰값을 넣어주셔야됩니다.",
+            required = true,
+            example = "Bearer [tokenvalue]",
+            in = ParameterIn.HEADER)
+    @PostMapping("/update/myImg")
+    public ResponseEntity<ApiResponseUtil<String>> memberUpdateImg(
+            @RequestBody @Valid MemberImgUpdate memberUpdateDto,
+            HttpServletRequest request) {
+        memberService.updateMemberImg(memberUpdateDto, request.getContentType());
+        return ResponseEntity.ok(ApiResponseUtil.CreateApiResponse("ok",
+                memberService.updateMemberImg(memberUpdateDto, request.getContentType())));
+    }
     @Operation(summary = "일반 회원 로그인", description = "일반 회원 로그인 api입니다.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "회원가입 성공",
@@ -85,7 +104,6 @@ public class MemberController {
     @PostMapping("/login")
     public void memberLoginApi(@RequestBody NormalLoginDto normalLoginDto){
     }
-
     @Operation(summary = "소셜 로그인", description = "소셜 로그인 api입니다.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "회원가입 성공",

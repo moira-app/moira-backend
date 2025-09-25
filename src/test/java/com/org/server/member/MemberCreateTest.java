@@ -1,6 +1,7 @@
 package com.org.server.member;
 
 import com.org.server.member.domain.Member;
+import com.org.server.member.domain.MemberImgUpdate;
 import com.org.server.member.domain.MemberSignInDto;
 import com.org.server.member.domain.MemberUpdateDto;
 import com.org.server.security.domain.CustomUserDetail;
@@ -111,6 +112,33 @@ public class MemberCreateTest extends IntegralTestEnv {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestBody2))
                 .andExpect(status().isOk());
+    }
+    @Test
+    @DisplayName("회원 이미지 업데이트 테스트")
+    void testGetMemberImgUrlUpdate(){
+
+        Mockito.when(securityMemberReadService.securityMemberRead())
+                .thenReturn(member);
+       String imgUrl= memberService.updateMemberImg(new MemberImgUpdate(member.getId(),"test"),
+                "image/png");
+       assertThat(imgUrl!=null).isTrue();
+       memberService.updateMemberImg(member.getId(),imgUrl);
+       Member m2=memberRepository.findById(member.getId()).get();
+       assertThat(m2.getImgUrl().equals(imgUrl)).isTrue();
+
+    }
+
+    @Test
+    @DisplayName("회원 삭제 테스트")
+    void updateMemberDelTest(){
+        Mockito.when(securityMemberReadService.securityMemberRead())
+                .thenReturn(member);
+        Mockito.doNothing()
+                        .when(redisUserInfoService)
+                                .integralDelMemberInfo(member);
+        memberService.delMember();
+        Member m=memberRepository.findById(member.getId()).get();
+        assertThat(m.getDeleted()).isTrue();
     }
 
     @Test

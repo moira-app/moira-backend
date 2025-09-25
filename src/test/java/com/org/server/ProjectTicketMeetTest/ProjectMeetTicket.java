@@ -123,11 +123,13 @@ public class ProjectMeetTicket extends IntegralTestEnv {
 
         Mockito.when(securityMemberReadService.securityMemberRead())
                 .thenReturn(m);
-
-
         projectCertService.changeAlias("change",p.getId());
         Ticket t2=ticketRepository.findById(t.getId()).get();
         assertThat(t2.getAlias()).isEqualTo("change");
+        List<Meet> meets=meetRepository.findAll();
+        MeetConnectDto meetConnectDto=projectCertService.checkInMeet(meets.getFirst().getId(),
+                p.getId());
+        assertThat(meetConnectDto.getAlias()).isEqualTo("change");
     }
 
     @Test
@@ -140,5 +142,28 @@ public class ProjectMeetTicket extends IntegralTestEnv {
         MeetConnectDto meetConnectDto=projectCertService.checkInMeet(meets.getFirst().getId(),
                 p.getId());
         assertThat(meetConnectDto.getAlias()).isEqualTo("test1");
+    }
+
+    @Test
+    @DisplayName("프로젝트,티켓,회의 삭제 테스트")
+    void delTest(){
+        projectCertService.delTicket(t.getProjectId(),t.getMemberId());
+
+        List<Meet> meets=meetRepository.findAll();
+        projectCertService.delMeet(meets.getFirst().getId());
+
+        Ticket tdel=ticketRepository.findByMemberIdAndProjectId(t.getMemberId(),t.getProjectId())
+                        .get();
+
+
+        Mockito.when(securityMemberReadService.securityMemberRead())
+                .thenReturn(m);
+
+        List<MeetDateDto> meetDateDtos = meetService.getMeetList(monthCurrent);
+        assertThat(meetDateDtos.size()).isEqualTo(4);
+
+
+        assertThat(tdel.getDeleted()).isTrue();
+
     }
 }

@@ -1,20 +1,18 @@
-package com.org.server.certification.service;
+package com.org.server.s3;
 
 
 import com.org.server.certification.repository.ProjectCertRepo;
 import com.org.server.exception.MoiraException;
+import com.org.server.s3.S3Service;
 import com.org.server.util.MediaType;
 import com.org.server.whiteBoardAndPage.domain.Page;
 import com.org.server.whiteBoardAndPage.domain.PageDto;
-import com.org.server.whiteBoardAndPage.domain.WhiteBoard;
 import com.org.server.whiteBoardAndPage.repository.PageRepo;
-import com.org.server.whiteBoardAndPage.repository.WhiteBoardRepo;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.io.File;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -37,7 +35,7 @@ public class ProjectPageS3Service {
                     if(x.getFileLocation()==null){
                         return new PageDto(null,x.getId());
                     }
-                    return new PageDto(s3Service.getPagePreSignUrl(x.getFileLocation()),
+                    return new PageDto(s3Service.getPreSignUrl(x.getFileLocation()),
                             x.getId());
                 })
                 .collect(Collectors.toList());
@@ -54,7 +52,7 @@ public class ProjectPageS3Service {
         if(fileLocation==null){
             throw new MoiraException("아직 저장이 안된 자료입니다", HttpStatus.BAD_REQUEST);
         }
-        return s3Service.getPagePreSignUrl(fileLocation);
+        return s3Service.getPreSignUrl(fileLocation);
     }
 
     //update용url
@@ -64,11 +62,11 @@ public class ProjectPageS3Service {
             throw new MoiraException("존재 하지 않는 페이지입니다",HttpStatus.BAD_REQUEST);
         }
         if(page.get().getFileLocation()==null){
-            return s3Service.savePagePreSignUrl(MediaType.MEDIA_WHITE_BOARD.getValue(),
+            return s3Service.savePreSignUrl(MediaType.MEDIA_WHITE_BOARD.getValue(),
                     page.get().getPageName());
         }
 
-        return s3Service.updatePagePreSignUrl(MediaType.MEDIA_WHITE_BOARD.getValue(),
+        return s3Service.updatePreSignUrl(MediaType.MEDIA_WHITE_BOARD.getValue(),
                 page.get().getFileLocation());
     }
     public Long savePage(Long projectId,Long pageId,String fileLocation,String fileName){
@@ -100,7 +98,8 @@ public class ProjectPageS3Service {
             throw new MoiraException("존재하지 않는 페이지입니다",HttpStatus.BAD_REQUEST);
         }
         if(page.get().getFileLocation()!=null) {
-            s3Service.delPagePreSignUrl(page.get().getFileLocation());
+            s3Service.delPreSignUrl(page.get().getFileLocation());
         }
+        page.get().updateDeleted();
     }
 }

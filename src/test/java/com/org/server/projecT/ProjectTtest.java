@@ -43,12 +43,19 @@ public class ProjectTtest extends IntegralTestEnv {
     }
 
     @Test
-    @DisplayName("해당 프로젝트와 관련된 페이지 리스트 조회 테스트")
+    @DisplayName("해당 프로젝트와 관련된 페이지 리스트 조회 테스트 및 삭제 판정 테스트")
     void testGetPageList(){
 
         List<PageDto> pageDtos=projectPageS3Service.getPageList(p.getId());
         assertThat(pageDtos.size()).isEqualTo(1L);
+
+        projectPageS3Service.delPage(page.getId());
+
+        pageDtos=projectPageS3Service.getPageList(p.getId());
+        assertThat(pageDtos.size()).isEqualTo(0L);
+
     }
+
     @Test
     @DisplayName("해당 페이지로부터 get url 생성여부")
     void testGetUrl(){

@@ -1,6 +1,7 @@
 package com.org.server.certification.controller;
 
 
+import com.org.server.certification.domain.EnterDto;
 import com.org.server.certification.service.ProjectMeetEntranceService;
 import com.org.server.meet.domain.MeetConnectDto;
 import com.org.server.meet.domain.MeetDto;
@@ -34,27 +35,26 @@ public class ProjectMeetEntranceController {
         return ResponseEntity.ok(ApiResponseUtil.CreateApiResponse("ok",null));
     }
 
-    @PostMapping("/{projectId}/change/alias/{alias}")
-    public ResponseEntity<ApiResponseUtil<String>> changeAlias(@PathVariable(name = "alias")
-                                                           String alias, @PathVariable(name ="projectId")
-                                                           Long projectId){
-        projectCertService.changeAlias(alias,projectId);
+    @PostMapping("/{projectId}/change/alias")
+    public ResponseEntity<ApiResponseUtil<String>> changeAlias(@RequestBody EnterDto enterDto,
+                                                               @PathVariable(name ="projectId") Long projectId){
+        projectCertService.changeAlias(enterDto.getValue(),projectId);
         return ResponseEntity.ok(ApiResponseUtil.CreateApiResponse("ok",null));
     }
-    @PostMapping("/{projectId}/del/meet/{meetId}")
+    @PostMapping("/{projectId}/del/meet")
     public ResponseEntity<ApiResponseUtil<String>> delMeet(
-            @PathVariable(name = "meetId") Long meetId
+            @RequestBody EnterDto enterDto
     ){
-        projectCertService.delMeet(meetId);
+        projectCertService.delMeet(enterDto.getId());
         return ResponseEntity.ok(ApiResponseUtil.CreateApiResponse("ok",null));
     }
 
-    @GetMapping("/{projectId}/checkIn/meet/{meetId}")
+    @GetMapping("/{projectId}/checkIn/meet")
     public ResponseEntity<ApiResponseUtil<MeetConnectDto>> checkInMeet(
             @PathVariable(name = "projectId")Long projectId,
-            @PathVariable(name = "meetId")Long meetId){
+            @RequestBody EnterDto enterDto){
         return ResponseEntity.ok(ApiResponseUtil.CreateApiResponse("ok",
-                projectCertService.checkInMeet(meetId,projectId)));
+                projectCertService.checkInMeet(enterDto.getId(),projectId)));
     }
 
     @PostMapping("/{projectId}/create/meet")
@@ -65,12 +65,12 @@ public class ProjectMeetEntranceController {
         return ResponseEntity.ok(ApiResponseUtil.CreateApiResponse("ok",null));
     }
 
-    @DeleteMapping("/{projectId}/del/ticket/{ticketId}")
+    @DeleteMapping("/{projectId}/del/ticket")
     public ResponseEntity<ApiResponseUtil<String>> delTicket(
-            @PathVariable(name = "projectId")Long projectId,
+            @RequestBody EnterDto enterDto,
             @PathVariable(name = "ticketId")Long ticketId
     ){
-        projectCertService.delTicket(projectId,ticketId);
+        projectCertService.delTicket(enterDto.getId(),ticketId);
         return ResponseEntity.ok(ApiResponseUtil.CreateApiResponse("ok",null));
     }
 
