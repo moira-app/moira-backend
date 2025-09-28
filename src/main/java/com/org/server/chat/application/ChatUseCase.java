@@ -2,6 +2,8 @@ package com.org.server.chat.application;
 
 import java.util.List;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import com.org.server.chat.domain.ChatMessageDto;
@@ -34,24 +36,34 @@ public class ChatUseCase {
 
 	/** UC-2: roomId 기준 멤버 추가(멱등) → 메시지 전송 → 메시지 반환 */
 	@Transactional
-	public ChatMessageDto addMembersAndSend(Long roomId, List<Long> memberIds, Long senderId, String content) {
+	public Page<ChatMessageDto> addMembersAndSend(Long roomId, List<Long> memberIds, Long senderId, String content) {
 		ChatRoom room = roomService.getRoom(roomId);
 		roomMemberService.addMembersIfMissing(room.getId(), memberIds);
-		return messageService.sendMessage(room.getId(), senderId, content, room.getChatType());
+		messageService.sendMessage(room.getId(), senderId, content, room.getChatType());
+		return messageService.listMessagesPage(room.getId(), Pageable.ofSize(20));
 	}
 
-	/** UC-3: chatType/refId 기준 방 보장 → 메시지 전송 → 메시지 반환 */
 	@Transactional
-	public ChatMessageDto sendByRef(ChatType chatType, Long refId, Long senderId, String content) {
-		ChatRoom room = roomService.ensureRoom(chatType, refId);
-		return messageService.sendMessage(room.getId(), senderId, content, chatType);
+	public List<ChatMessageDto> listMessages(Long roomId) {
+		return messageService.listMessagesPage(roomId, Pageable.ofSize(100)).toList();
 	}
+
+
+	@Transactional
+	public List<ChatRoomDto> getRoomInfoList(Long roomId) {
+		return roomService.getRooms(roomId)
+			.stream()
+			.map(chatRoom -> new ChatRoomDto(chatRoom.getId(), chatRoom.getChatType(), chatRoom.getRefId()))
+			.toList();
+	}
+
 
 	@Transactional
 	public ChatRoomDto getRoomInfo(Long roomId) {
 		ChatRoom room = roomService.getRoom(roomId);
 		return new ChatRoomDto(room.getId(), room.getChatType(), room.getRefId());
 	}
+
 
 	@Transactional
 	public List<Long> listRoomMemberIds(Long roomId) {

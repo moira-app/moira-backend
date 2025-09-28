@@ -45,8 +45,14 @@ public class ChatRoomService {
 	/** 방 단건 조회(없으면 예외) */
 	@Transactional
 	public ChatRoom getRoom(Long roomId) {
-		return roomRepository.findById(roomId)
-			.orElseThrow(() -> new IllegalArgumentException("ChatRoom not found: " + roomId));
+		return roomRepository.findByid(roomId)
+			.orElseThrow(() -> new IllegalArgumentException("No chat room found with id: " + roomId));
+	}
+
+	/** 방 단건 조회(없으면 예외) */
+	@Transactional
+	public List<ChatRoom> getRooms(Long roomId) {
+		return roomRepository.findByRefIdIs((roomId));
 	}
 
 }

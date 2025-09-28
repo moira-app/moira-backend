@@ -78,7 +78,7 @@ class ChatUseCaseTest {
 			Long roomId = roomService.ensureRoom(chatType, refId).getId();
 
 			// when
-			ChatMessageDto msg = chatUseCase.addMembersAndSend(roomId, members, senderId, content);
+			ChatMessageDto msg = chatUseCase.addMembersAndSend(roomId, members, senderId, content).getContent().get(0);
 
 			// then: 메시지 확인
 			assertThat(msg).isNotNull();
@@ -100,34 +100,4 @@ class ChatUseCaseTest {
 		}
 	}
 
-	@Nested
-	@DisplayName("UC-3: sendByRef")
-	class SendByRefIT {
-
-		@Test
-		@Transactional
-		@DisplayName("chatType/refId로 방 보장 후 메시지 전송")
-		void sendByRef_flow_createsRoomIfMissing() {
-			// given: 아직 존재하지 않는 ref로 테스트
-			ChatType chatType = ChatType.PROJECT;
-			Long refId = 3003L;
-			Long senderId = 7L;
-			String content = "first message by ref";
-
-			// when: 방이 없더라도 내부에서 ensureRoom으로 생성 후 전송
-			ChatMessageDto dto = chatUseCase.sendByRef(chatType, refId, senderId, content);
-
-			// then
-			assertThat(dto).isNotNull();
-			assertThat(dto.scope()).isEqualTo(chatType);
-			assertThat(dto.roomId()).isNotNull();
-			assertThat(dto.senderId()).isEqualTo(senderId);
-			assertThat(dto.content()).isEqualTo(content);
-
-			// 최신 메시지 조회로도 검증
-			ChatMessageDto latest = messageService.findLatestMessage(dto.roomId());
-			assertThat(latest).isNotNull();
-			assertThat(latest.content()).isEqualTo(content);
-		}
-	}
 }

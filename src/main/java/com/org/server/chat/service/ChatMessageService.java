@@ -64,6 +64,7 @@ public class ChatMessageService {
 			.orElse(null);
 	}
 
+
 	private ChatMessageDto toDto(ChatMessage m) {
 		return new ChatMessageDto(
 			m.getId(),
