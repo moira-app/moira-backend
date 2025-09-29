@@ -155,11 +155,6 @@ public class ChatController {
 		return ResponseEntity.ok(msg);
 	}
 
-	// imports에 추가 필요:
-	// import io.swagger.v3.oas.annotations.media.Content;
-	// import io.swagger.v3.oas.annotations.responses.ApiResponse;
-	// import io.swagger.v3.oas.annotations.responses.ApiResponses;
-	// import org.springframework.http.MediaType;
 
 	@Operation(
 		summary = "방의 전체 메시지 조회",
@@ -179,6 +174,8 @@ public class ChatController {
 		List<ChatMessageDto> msgs = chatUseCase.listMessages(roomId);
 		return ResponseEntity.ok(msgs);
 	}
+
+
 
 	/**
 	 * springdoc가 Page<T>를 잘 표현하도록 돕는 래퍼 스키마(문서 전용)

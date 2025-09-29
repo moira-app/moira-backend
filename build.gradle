@@ -37,7 +37,7 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
     implementation 'org.springframework.boot:spring-boot-starter-mail'
     implementation 'com.github.gavlyukovskiy:p6spy-spring-boot-starter:1.12.0'
-
+    implementation "org.springframework.boot:spring-boot-starter-websocket"
     /*   [BJW]
     *   객체간의 매핑을 쉽게 하기 위해 ModelMapper 라이브러리를 추가
     *   DTO와 Entity 간의 변환을 간편하게 처리할 수 있음

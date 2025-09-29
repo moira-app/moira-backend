@@ -46,6 +46,14 @@
                 "uc1Result",
                 (json) => {
                     if (!json) return "응답이 비었습니다.";
+                    // update UI fields with the new roomId for convenience
+                    if (json.id) {
+                        const rid = String(json.id);
+                        ["roomId", "roomIdAll", "socketRoomId"].forEach(tid => {
+                            const el = document.getElementById(tid);
+                            if (el) el.value = rid;
+                        });
+                    }
                     return `Room -> id: ${json.id ?? "-"}, chatType: ${json.chatType ?? "-"}, refId: ${json.refId ?? "-"}`;
                 }
             );
@@ -102,6 +110,62 @@
                 }
             );
         }
+</script>
+    <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
+    <script>
+        // --- WebSocket / STOMP globals ---
+        let stomp = null;
+
+        function logChat(line){
+            const box = document.getElementById('chatLog');
+            if (!box) return;
+            box.textContent += line + "\n";
+            box.scrollTop = box.scrollHeight;
+        }
+
+        function connectSocket(){
+            if (stomp && stomp.connected) { logChat("[info] already connected"); return; }
+            const sock = new SockJS('/ws');
+            stomp = Stomp.over(sock);
+            stomp.debug = null; // disable verbose logs
+            stomp.connect({}, () => logChat("[info] connected"));
+        }
+
+        function subscribeRoomFromInput(){
+            const roomId = document.getElementById('socketRoomId').value;
+            if (!stomp || !stomp.connected) { logChat("[warn] connect first"); return; }
+            stomp.subscribe('/topic/chat/room.' + roomId, (frame) => {
+                try {
+                    const msg = JSON.parse(frame.body);
+                    const sender = msg.senderId ?? msg.sender ?? "-";
+                    const content = msg.content ?? frame.body;
+                    logChat(sender + " : " + content);
+                } catch(e){
+                    logChat("[recv raw] " + frame.body);
+                }
+            });
+            logChat("[subscribed] /topic/chat/room." + roomId);
+        }
+
+        function sendSocket(){
+            const roomId = Number(document.getElementById('socketRoomId').value);
+            const senderId = Number(document.getElementById('socketSenderId').value);
+            const content = document.getElementById('socketContent').value || "";
+            if (!content) { logChat("[warn] content is empty"); return; }
+            if (!stomp || !stomp.connected) { logChat("[warn] connect first"); return; }
+
+            // common envelope for event gateway
+            const env = {
+                type: "chat.message",
+                version: "1.0",
+                data: { roomId, senderId, content },
+                meta: { ts: Date.now() }
+            };
+            stomp.send('/app/event', {}, JSON.stringify(env));
+            logChat("[sent] " + content);
+            document.getElementById('socketContent').value = "";
+        }
     </script>
 </head>
 <body>
@@ -141,6 +205,20 @@
     <button type="submit">실행</button>
 </form>
 <pre id="allResult"></pre>
+
+
+<hr>
+
+<h2>실시간 채팅 (WebSocket / STOMP)</h2>
+<div>
+    RoomId: <input type="number" id="socketRoomId" value="1"><br>
+    SenderId: <input type="number" id="socketSenderId" value="7"><br>
+    Content: <input type="text" id="socketContent" placeholder="메시지를 입력하세요"><br>
+    <button type="button" onclick="connectSocket()">1) Connect</button>
+    <button type="button" onclick="subscribeRoomFromInput()">2) Subscribe</button>
+    <button type="button" onclick="sendSocket()">3) Send</button>
+</div>
+<pre id="chatLog" style="height:220px; overflow:auto; background:#111; color:#f8f8f2; padding:10px; border-radius:6px;"></pre>
 
 
 </body>
