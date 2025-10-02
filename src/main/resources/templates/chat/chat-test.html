@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>Chat API 테스트 (Thymeleaf)</title>
+    <style>
+        body { font-family: system-ui, sans-serif; }
+        form { margin-bottom: 1.25rem; }
+        input { margin: 4px 0; }
+        pre { background:#f6f8fa; padding:10px; border-radius:6px; }
+    </style>
+    <script>
+        async function callApi(url, method, body, resultId, projector) {
+            const opts = { method, headers: {} };
+            if (body !== null && body !== undefined) {
+                opts.headers["Content-Type"] = "application/json";
+                opts.body = body;
+            }
+            try {
+                const res = await fetch(url, opts);
+                const text = await res.text();
+
+                let out;
+                try {
+                    const json = text ? JSON.parse(text) : null;
+                    out = projector ? projector(json) : JSON.stringify(json, null, 2);
+                } catch {
+                    out = text;
+                }
+                document.getElementById(resultId).textContent = out;
+            } catch (e) {
+                document.getElementById(resultId).textContent = "요청 실패: " + e;
+            }
+        }
+
+        // UC-1: 방 보장 + 멤버 추가
+        function uc1() {
+            const chatType = document.getElementById("chatType").value;
+            const refId = document.getElementById("refId").value;
+            const memberIds = document.getElementById("memberIds").value;
+
+            callApi(
+                `/api/chat/rooms?chatType=${encodeURIComponent(chatType)}&refId=${encodeURIComponent(refId)}`,
+                "POST",
+                memberIds,
+                "uc1Result",
+                (json) => {
+                    if (!json) return "응답이 비었습니다.";
+                    // update UI fields with the new roomId for convenience
+                    if (json.id) {
+                        const rid = String(json.id);
+                        ["roomId", "roomIdAll", "socketRoomId"].forEach(tid => {
+                            const el = document.getElementById(tid);
+                            if (el) el.value = rid;
+                        });
+                    }
+                    return `Room -> id: ${json.id ?? "-"}, chatType: ${json.chatType ?? "-"}, refId: ${json.refId ?? "-"}`;
+                }
+            );
+        }
+
+        // UC-2: roomId 기준 멤버 추가(옵션) + 메시지 전송 -> Page<ChatMessageDto>의 content만 표시
+        function uc2() {
+            const roomId = document.getElementById("roomId").value;
+            const senderId = document.getElementById("senderId").value;
+            const content = document.getElementById("content").value;
+            const memberIds = document.getElementById("memberIds2").value;
+
+            // (옵션) 페이지 파라미터가 컨트롤러/리포에서 지원된다면 아래 주석 해제 후 URL에 붙여도 됨.
+            // const page = document.getElementById("page").value;
+            // const size = document.getElementById("size").value;
+
+            const url = `/api/chat/rooms/${encodeURIComponent(roomId)}/messages?senderId=${encodeURIComponent(senderId)}&content=${encodeURIComponent(content)}`;
+            callApi(
+                url,
+                "POST",
+                memberIds,
+                "uc2Result",
+                (json) => {
+                    if (!json) return "응답이 비었습니다.";
+                    console.log("응답 JSON:", json);
+                    // Page 형태 가정: { content: [ {content: "..."} , ...], ... }
+                    if (Array.isArray(json.content)) {
+                        const lines = json.content
+                            .map(m => (m && m.content) ? `${m.sender } : ${m.content}` : null)
+                            .filter(Boolean);
+                        return lines.length ? lines.join("\n") : "메시지 없음";
+                    }
+                    // 혹시 단건이 온다면 content만
+                    if (json.content) return json.content;
+                    return JSON.stringify(json, null, 2);
+                }
+            );
+        }
+
+        function listAll() {
+            const roomId = document.getElementById("roomIdAll").value;
+            callApi(
+                `/api/chat/rooms/${encodeURIComponent(roomId)}/messages/all`,
+                "POST",
+                null,
+                "allResult",
+                (json) => {
+                    console.log("응답 JSON:", json);
+                    if (!Array.isArray(json)) return "메시지 없음 또는 응답 형식이 다릅니다.";
+                    const lines = json
+                        .map(m => (m && m.content) ? `${m.senderId} : ${m.content}` : null)
+                        .filter(Boolean);
+                    return lines.length ? lines.join("\n") : "메시지 없음";
+                }
+            );
+        }
+</script>
+    <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
+    <script>
+        // --- WebSocket / STOMP globals ---
+        let stomp = null;
+
+        function logChat(line){
+            const box = document.getElementById('chatLog');
+            if (!box) return;
+            box.textContent += line + "\n";
+            box.scrollTop = box.scrollHeight;
+        }
+
+        function connectSocket(){
+            if (stomp && stomp.connected) { logChat("[info] already connected"); return; }
+            const sock = new SockJS('/ws');
+            stomp = Stomp.over(sock);
+            stomp.debug = null; // disable verbose logs
+            stomp.connect({}, () => logChat("[info] connected"));
+        }
+
+        function subscribeRoomFromInput(){
+            const roomId = document.getElementById('socketRoomId').value;
+            if (!stomp || !stomp.connected) { logChat("[warn] connect first"); return; }
+            stomp.subscribe('/topic/chat/room.' + roomId, (frame) => {
+                try {
+                    const msg = JSON.parse(frame.body);
+                    const sender = msg.senderId ?? msg.sender ?? "-";
+                    const content = msg.content ?? frame.body;
+                    logChat(sender + " : " + content);
+                } catch(e){
+                    logChat("[recv raw] " + frame.body);
+                }
+            });
+            logChat("[subscribed] /topic/chat/room." + roomId);
+        }
+
+        function sendSocket(){
+            const roomId = Number(document.getElementById('socketRoomId').value);
+            const senderId = Number(document.getElementById('socketSenderId').value);
+            const content = document.getElementById('socketContent').value || "";
+            if (!content) { logChat("[warn] content is empty"); return; }
+            if (!stomp || !stomp.connected) { logChat("[warn] connect first"); return; }
+
+            // common envelope for event gateway
+            const env = {
+                type: "chat.message",
+                version: "1.0",
+                data: { roomId, senderId, content },
+                meta: { ts: Date.now() }
+            };
+            stomp.send('/app/event', {}, JSON.stringify(env));
+            logChat("[sent] " + content);
+            document.getElementById('socketContent').value = "";
+        }
+    </script>
+</head>
+<body>
+<h1>Chat API 테스트 (Thymeleaf)</h1>
+
+<h2>UC-1: 방 보장 + 멤버 추가</h2>
+<form onsubmit="event.preventDefault(); uc1();">
+    ChatType: <input type="text" id="chatType" value="PROJECT"><br>
+    RefId: <input type="number" id="refId" value="1001"><br>
+    MemberIds (JSON 배열): <input type="text" id="memberIds" value="[10,20,30]"><br>
+    <button type="submit">실행</button>
+</form>
+<pre id="uc1Result"></pre>
+
+<hr>
+
+<h2>UC-2: 멤버 추가(옵션) 후 메시지 전송 (roomId 기준, 페이징 응답)</h2>
+<form onsubmit="event.preventDefault(); uc2();">
+    RoomId: <input type="number" id="roomId" value="1"><br>
+    SenderId: <input type="number" id="senderId" value="7"><br>
+    Content: <input type="text" id="content" value="hello"><br>
+    MemberIds (JSON 배열, 옵션): <input type="text" id="memberIds2" value="[20,30]"><br>
+
+    <!-- 필요 시 페이지 파라미터 UI 추가 (컨트롤러가 지원할 때)
+    Page: <input type="number" id="page" value="0" min="0">
+    Size: <input type="number" id="size" value="20" min="1">
+    -->
+
+    <button type="submit">실행</button>
+</form>
+<pre id="uc2Result"></pre>
+
+<!-- UC-3: 방 전체 메시지 조회 -->
+<h2>방 전체 메시지 조회</h2>
+<form onsubmit="event.preventDefault(); listAll();">
+    RoomId: <input type="number" id="roomIdAll" value="1"><br>
+    <button type="submit">실행</button>
+</form>
+<pre id="allResult"></pre>
+
+
+<hr>
+
+<h2>실시간 채팅 (WebSocket / STOMP)</h2>
+<div>
+    RoomId: <input type="number" id="socketRoomId" value="1"><br>
+    SenderId: <input type="number" id="socketSenderId" value="7"><br>
+    Content: <input type="text" id="socketContent" placeholder="메시지를 입력하세요"><br>
+    <button type="button" onclick="connectSocket()">1) Connect</button>
+    <button type="button" onclick="subscribeRoomFromInput()">2) Subscribe</button>
+    <button type="button" onclick="sendSocket()">3) Send</button>
+</div>
+<pre id="chatLog" style="height:220px; overflow:auto; background:#111; color:#f8f8f2; padding:10px; border-radius:6px;"></pre>
+
+
+</body>
+</html>

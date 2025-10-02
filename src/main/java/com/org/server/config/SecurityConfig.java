@@ -42,9 +42,13 @@ public class SecurityConfig {
     private final TicketService ticketService;
 
 
-    private final static String [] freePassUrl={
-            "/cert/**","/swagger-ui/**","/swagger-resources/**","/v3/api-docs/**"
-    };
+	private static final String[] freePassUrl = {
+		"/swagger-ui/**", "/swagger-resources/**", "/v3/api-docs/**",
+		"/cert/**",
+		"/api/chat/test",          // Thymeleaf 테스트 페이지 라우트가 /api/chat/test인 경우
+		"/chat-test", "/chat-socket-test", // 뷰컨트롤러로 열었을 때
+		"/ws/**"                   // SockJS 핸드셰이크(/ws/info 등)
+	};
 
     @Bean
     public BCryptPasswordEncoder passwordEncoder(){
