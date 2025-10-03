@@ -8,7 +8,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 public class Root extends Graph {
     private String rootName;
-    public Root(String id, LocalDateTime localDateTime, Long projectId, String rootName) {
+    public Root(String id, String localDateTime, Long projectId, String rootName) {
         super(id, NodeType.ROOT,localDateTime,projectId);
         this.rootName=rootName;
     }

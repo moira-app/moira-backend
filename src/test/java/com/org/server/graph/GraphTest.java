@@ -20,23 +20,23 @@ public class GraphTest extends IntegralTestEnv {
     String rootID= UUID.randomUUID().toString();
     @BeforeEach
     void settingBeforeTest(){
-        root=new Root(rootID,LocalDateTime.now(),1L,"root");
+        root=new Root(rootID,LocalDateTime.now().toString(),1L,"root");
         root=graphRepository.save(root);
         Root root2=new Root(UUID.randomUUID().toString()
-                ,LocalDateTime.now(),1L,"root");
+                ,LocalDateTime.now().toString(),1L,"root");
         graphRepository.save(root2);
 
         for(int i=0;300>i;i++){
 
             Map<String,Properties> propertiesMap=new HashMap<>();
             for(int j=0;3>j;j++){
-                Properties properties=new Properties("Test",LocalDateTime.now());
+                Properties properties=new Properties("Test",LocalDateTime.now().toString());
                 propertiesMap.put(i+"-"+j,properties);
             }
             Element pages = graphs.isEmpty() ? new Element(UUID.randomUUID().toString(),
-                    root.getId(),propertiesMap,LocalDateTime.now(),1L) :
+                    root.getId(),propertiesMap,LocalDateTime.now().toString(),1L) :
                     new Element(UUID.randomUUID().toString(),
-                            graphs.get(i-1).getId(),propertiesMap,LocalDateTime.now(),null);
+                            graphs.get(i-1).getId(),propertiesMap,LocalDateTime.now().toString(),null);
 
             graphs.add(pages);
             graphRepository.save(pages);

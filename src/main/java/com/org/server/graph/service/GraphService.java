@@ -7,6 +7,7 @@ import com.org.server.graph.domain.*;
 import com.org.server.graph.domain.Properties;
 import com.org.server.graph.repository.GraphRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.aggregation.*;
 import org.springframework.data.mongodb.core.query.Criteria;
@@ -25,6 +26,7 @@ import static org.springframework.data.mongodb.core.query.Criteria.where;
 
 @RequiredArgsConstructor
 @Service
+@Slf4j
 public class GraphService {
 
 
@@ -111,14 +113,14 @@ public class GraphService {
         return domTree;
     }
     public void createRootNode(Long projectId,String rootName,String id){
-        Root root = new Root(id, LocalDateTime.now(),projectId,rootName);
+        Root root = new Root(id, LocalDateTime.now().toString(),projectId,rootName);
         root = graphRepository.save(root);
     }
     public void createElementNode(ElementCreateDto elementCreateDto){
         LocalDateTime now=LocalDateTime.now();
         Element element=
                 new Element(elementCreateDto.getId()
-                        ,elementCreateDto.getParentId(),elementCreateDto.getPropertiesList(),now
+                        ,elementCreateDto.getParentId(),elementCreateDto.getPropertiesList(),now.toString()
                         ,null);
         graphRepository.save(element);
     }
@@ -165,8 +167,17 @@ public class GraphService {
             throw new MoiraException("없는 속성입니다", HttpStatus.BAD_REQUEST);
         }
 
+
+
+        if(propertiesUpdateDto.getModifyDate().isBefore(
+                LocalDateTime.parse(properties.getModifyDate()))
+        ||propertiesUpdateDto.getModifyDate().isEqual(
+                LocalDateTime.parse(properties.getModifyDate()))){
+            throw new MoiraException("업데이트를 할수없습니다",HttpStatus.BAD_REQUEST);
+        }
+
         properties.updateValue(propertiesUpdateDto.getValue());
-        properties.updateModifyDate(propertiesUpdateDto.getModifyDate());
+        properties.updateModifyDate(propertiesUpdateDto.getModifyDate().toString());
 
         Query query=new Query(where("_id").is(propertiesUpdateDto.getNodeId()));
         Update updateData=new Update().set("properties",e.getProperties());

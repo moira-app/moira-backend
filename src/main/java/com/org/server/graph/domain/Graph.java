@@ -16,12 +16,12 @@ public abstract class Graph {
     @Id
     private String id;
     private NodeType nodeType;
-    private LocalDateTime createDate;
+    private String createDate;
     private Boolean deleted=false;
     private Long projectId;
 
 
-    public Graph(String id,NodeType nodeType, LocalDateTime createDate,Long projectId) {
+    public Graph(String id,NodeType nodeType, String createDate,Long projectId) {
         this.id=id;
         this.nodeType =nodeType;
         this.createDate=createDate;

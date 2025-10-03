@@ -36,15 +36,15 @@ public class TestMongoTransaction extends IntegralTestEnv {
     String rootID= UUID.randomUUID().toString();
     @BeforeEach
     void settingBeforeTest(){
-        root=new Root(rootID, LocalDateTime.now(),1L,"root");
+        root=new Root(rootID, LocalDateTime.now().toString(),1L,"root");
         root=graphRepository.save(root);
         Map<String, Properties> propertiesMap=new HashMap<>();
         for(int j=0;5>j;j++){
-            Properties properties=new Properties("Test",LocalDateTime.now());
+            Properties properties=new Properties("Test",LocalDateTime.now().toString());
             propertiesMap.put(0+"-"+j,properties);
         }
         e =new Element(UUID.randomUUID().toString(),
-                root.getId(),propertiesMap,LocalDateTime.now(),1L);
+                root.getId(),propertiesMap,LocalDateTime.now().toString(),1L);
         graphRepository.save(e);
 
     }
@@ -66,7 +66,7 @@ public class TestMongoTransaction extends IntegralTestEnv {
                     }
 
                     properties.updateValue("changed");
-                    properties.updateModifyDate(LocalDateTime.now());
+                    properties.updateModifyDate(LocalDateTime.now().toString());
                     Query query=new Query(where("_id").is(e.getId()));
                     Update updateData=new Update().set("properties",e.getProperties());
                     mongoTemplate.updateFirst(query,updateData,Element.class);

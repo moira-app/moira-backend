@@ -9,8 +9,8 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 public class Properties{
     private String value;
-    private LocalDateTime modifyDate;
-    public Properties(String value,LocalDateTime modifyDate){
+    private String modifyDate;
+    public Properties(String value,String modifyDate){
         this.value = value;
         this.modifyDate=modifyDate;
     }
@@ -18,7 +18,7 @@ public class Properties{
     public void updateValue(String value){
         this.value=value;
     }
-    public void updateModifyDate(LocalDateTime modifyDate){
+    public void updateModifyDate(String modifyDate){
         this.modifyDate=modifyDate;
     }
 }
