@@ -24,15 +24,12 @@ public class GraphTransactionTest extends IntegralTestEnv {
 
     @Autowired
     MongoTemplate mongoTemplate;
-
-
-    LocalDateTime startTime;
     Root root;
     List<Graph> graphs=new ArrayList<>();
     String rootID= UUID.randomUUID().toString();
     @BeforeEach
     void settingBeforeTest(){
-        startTime=LocalDateTime.now();
+        LocalDateTime startTime=LocalDateTime.now();
         root=new Root(rootID, startTime.toString(),1L,"root");
         root=graphRepository.save(root);
         Map<String, Properties> propertiesMap=new HashMap<>();
@@ -43,25 +40,23 @@ public class GraphTransactionTest extends IntegralTestEnv {
         graphRepository.save(pages);
         graphs.add(pages);
     }
-
-
     @DisplayName("트랜잭션 효과 테스트 failcountdownlatch가 1이여야됨.")
     @Test
     void testingGraphTransaction()throws InterruptedException{
-        ExecutorService executorService= Executors.newFixedThreadPool(5);
-        CountDownLatch countDownLatch=new CountDownLatch(5);
-        CountDownLatch checkFailLatch=new CountDownLatch(5);
+        ExecutorService executorService= Executors.newFixedThreadPool(10);
+        CountDownLatch countDownLatch=new CountDownLatch(10);
+        CountDownLatch checkFailLatch=new CountDownLatch(10);
 
         LocalDateTime now=LocalDateTime.now().plusDays(1L);
-
-        for(int i=0;5>i;i++){
+        System.out.printf("rootid:%s",rootID);
+        for(int i=0;10>i;i++){
+            int val=i;
             executorService.submit(()->{
                 try{
                     Element e=(Element)(graphRepository.findById(graphs.get(0).getId()).get());
-                    Long val=Long.parseLong(e.getProperties()
-                            .get("data").getValue());
+
                     PropertiesUpdateDto propertiesUpdateDto=new PropertiesUpdateDto(
-                            e.getId(),now,"data",String.valueOf(val+countDownLatch.getCount())
+                            e.getId(),now,"data",String.valueOf(val)
                     );
                     graphService.updateProperties(propertiesUpdateDto);
                 }
@@ -78,14 +73,15 @@ public class GraphTransactionTest extends IntegralTestEnv {
         Assertions.assertThat(checkFailLatch.getCount()).isEqualTo(1);
     }
 
-    @DisplayName("트랜잭션이 없으므로 fail 카운트 다운이 5여야된다.")
+    @DisplayName("트랜잭션이 없으므로 fail 카운트 다운이 5여야된다.즉 순차처리가 안됨.")
     @Test
     void withOutGraphTransaction() throws InterruptedException{
-        ExecutorService executorService= Executors.newFixedThreadPool(5);
-        CountDownLatch countDownLatch=new CountDownLatch(5);
-        CountDownLatch checkFailLatch=new CountDownLatch(5);
+        ExecutorService executorService= Executors.newFixedThreadPool(10);
+        CountDownLatch countDownLatch=new CountDownLatch(10);
+        CountDownLatch checkFailLatch=new CountDownLatch(10);
         LocalDateTime now=LocalDateTime.now();
-        for(int i=0;5>i;i++){
+        System.out.printf("rootid:%s",root.getId());
+        for(int i=0;10>i;i++){
             int val=i;
             executorService.submit(()->{
                 try{
@@ -95,6 +91,7 @@ public class GraphTransactionTest extends IntegralTestEnv {
                             ||now.isEqual(LocalDateTime.parse(properties.getModifyDate()))){
                         throw new RuntimeException();
                     }
+                    System.out.println(val);
                     properties.updateValue(String.valueOf(val));
                     properties.updateModifyDate(now.toString());
                     Query query=new Query(where("_id").is(e.getId()));
@@ -111,7 +108,7 @@ public class GraphTransactionTest extends IntegralTestEnv {
         }
         countDownLatch.await();
         executorService.shutdown();
-        Assertions.assertThat(checkFailLatch.getCount()).isEqualTo(5);
+        Assertions.assertThat(checkFailLatch.getCount()).isEqualTo(10);
     }
 
 }

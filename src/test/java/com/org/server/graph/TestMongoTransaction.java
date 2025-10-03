@@ -8,6 +8,7 @@ import com.org.server.graph.domain.Root;
 import com.org.server.support.IntegralTestEnv;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
@@ -48,6 +49,8 @@ public class TestMongoTransaction extends IntegralTestEnv {
         graphRepository.save(e);
 
     }
+
+    @DisplayName("한 객체의 각각 다른프로퍼티 수정시 충돌이 일어나는가 테스트 결론은 안일어남.")
     @Test
     void withOutGraphTransaction() throws InterruptedException{
         ExecutorService executorService= Executors.newFixedThreadPool(5);
@@ -89,4 +92,7 @@ public class TestMongoTransaction extends IntegralTestEnv {
         Assertions.assertThat(vals).extracting("value")
                 .contains("changed");
     }
+
+
+
 }

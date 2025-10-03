@@ -153,6 +153,9 @@ public class GraphService {
      * 애는 해당되는 노드의 속성값을 기준으로 락 즉 a노드의 b,c 2가지 속성이 존재시
      * 각각 a-b 락,a-c락을 걸자--> 이유는 한객체의 각기다른 속성 수정시엔 락이 걸릴 이유가없기떄문.
      * 참고로 각 문서의 다른 프로퍼티 수정은 서로 충돌치않음.
+     * graph 트랜잭션을 구현한 이유는 1객체의 속성들을 수정하려고할때 각자 다른 속성들간에는
+     * 충돌없이 수정하게하고 , 같은 속성을 수정하려는 시도는 각각 순서를 지키면서 해당 속성값의 수정시각과
+     * 비교해서 수정해야될지 말아야 할지를 따지기 위함이다.
      * */
     @GraphTransaction
     public void updateProperties(PropertiesUpdateDto propertiesUpdateDto){
