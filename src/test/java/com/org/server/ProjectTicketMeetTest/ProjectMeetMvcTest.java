@@ -35,8 +35,8 @@ public class ProjectMeetMvcTest extends IntegralTestEnv{
     @BeforeEach
     void settingMember(){
         member=createMember(1L);
-        withTicket=createProject("testTicket");
-        withNoTicket=createProject("testNoTicket");
+        withTicket=createProject("testTicket","Dsfdff");
+        withNoTicket=createProject("testNoTicket","zczcxzcxzc");
         createTicket(member,withTicket,"zcx");
     }
 
@@ -64,8 +64,8 @@ public class ProjectMeetMvcTest extends IntegralTestEnv{
                 .thenReturn(member);
 
         Mockito.when(redisUserInfoService.checkTicketKey(String.valueOf(member.getId()),
-                String.valueOf(
-                withNoTicket.getId())))
+                        String.valueOf(
+                                withNoTicket.getId())))
                 .thenReturn(false);
 
         String val=String.valueOf(withNoTicket.getId());
@@ -75,7 +75,7 @@ public class ProjectMeetMvcTest extends IntegralTestEnv{
                 "alias": "1234"
         }""";
 
-        mockMvc.perform(post("/projectCert/"+val+"/create")
+        mockMvc.perform(post("/enter/"+withNoTicket.getId()+"/change/alias")
                         .contentType(MediaType.APPLICATION_JSON)
                         .header("Authorization","Bearer "+accessToken)
                         .contentType(requestBody))

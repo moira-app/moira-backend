@@ -7,11 +7,11 @@ import lombok.NoArgsConstructor;
 @Getter
 @NoArgsConstructor
 public class MeetConnectDto {
-    private String meetUrl;
     private String alias;
+    private String meetName;
 
-    public MeetConnectDto(String meetUrl, String alias) {
-        this.meetUrl = meetUrl;
+    public MeetConnectDto(String meetName,String alias) {
         this.alias = alias;
+        this.meetName=meetName;
     }
 }
