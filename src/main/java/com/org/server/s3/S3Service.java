@@ -15,6 +15,7 @@ import software.amazon.awssdk.services.s3.presigner.model.GetObjectPresignReques
 import software.amazon.awssdk.services.s3.presigner.model.PutObjectPresignRequest;
 
 import java.time.Duration;
+import java.util.List;
 import java.util.UUID;
 
 
@@ -27,36 +28,10 @@ public class S3Service {
     private final S3Presigner presigner;
     private final S3Client s3Client;
 
-    public String getPreSignUrl(String fileLocation){
-        GetObjectRequest getObjectRequest=GetObjectRequest.builder()
-                .bucket(bucket)
-                .key(fileLocation)
-                .build();
-        GetObjectPresignRequest getObjectPresignRequest=GetObjectPresignRequest.builder()
-                .getObjectRequest(getObjectRequest)
-                .signatureDuration(Duration.ofMinutes(5L))
-                .build();
-        return presigner.presignGetObject(getObjectPresignRequest).url().toString();
-    }
-
-    public String updatePreSignUrl(String contentType,String fileLocation){
-        PutObjectRequest putObjectRequest= PutObjectRequest.builder()
-                .bucket(bucket)
-                .key(fileLocation)
-                .contentType(contentType)
-                .build();
-        PutObjectPresignRequest putObjectPresignRequest=PutObjectPresignRequest.builder()
-                .putObjectRequest(putObjectRequest)
-                .signatureDuration(Duration.ofMinutes(5L))
-                .build();
-        return presigner.presignPutObject(putObjectPresignRequest).url().toString();
-    }
-
-    public String savePreSignUrl(String contentType,String fileName){
+    public List<String> savePreSignUrl(String contentType, String fileName){
         if(!verifyContentType(contentType)){
             throw new MoiraException("잘못된 파일입니다", HttpStatus.BAD_REQUEST);
         }
-
         //이거 나중에 s3 에다가 뭘넣을지에따라서 좀 달라질듯.
         String type=contentType.split("/")[0].equals("image") ? "image":"whiteboard";
         String fileLocation=type+"/"+ UUID.randomUUID().toString()+"-"+fileName;
@@ -69,7 +44,8 @@ public class S3Service {
                 .putObjectRequest(putObjectRequest)
                 .signatureDuration(Duration.ofMinutes(5L))
                 .build();
-        return presigner.presignPutObject(putObjectPresignRequest).url().toString();
+        return List.of(fileLocation,
+                presigner.presignPutObject(putObjectPresignRequest).url().toString());
     }
 
     public void delPreSignUrl(String fileLocation){

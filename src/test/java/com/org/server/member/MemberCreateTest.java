@@ -131,7 +131,6 @@ public class MemberCreateTest extends IntegralTestEnv {
         String imgUrl= memberService.updateMemberImg(new MemberImgUpdate(member.getId(),"test"),
                 "image/png");
         assertThat(imgUrl!=null).isTrue();
-        memberService.updateMemberImg(member.getId(),imgUrl);
         Member m2=memberRepository.findById(member.getId()).get();
         assertThat(m2.getImgUrl().equals(imgUrl)).isTrue();
 

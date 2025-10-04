@@ -12,6 +12,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 @Transactional
@@ -54,26 +56,18 @@ public class MemberServiceImpl implements MemberService{
         member=memberRepository.save(member);
         return MemberDto.createMemberDto(member);
     }
-
     public String updateMemberImg(MemberImgUpdate memberImgUpdate,String contentType){
         Member member=memberRepository.findById(memberImgUpdate.getId()).get();
         if(!securityMemberRead.securityMemberRead().getId().equals(member.getId())){
             throw new MoiraException("권한이 부족합니다",HttpStatus.UNAUTHORIZED);
         }
-        if(member.getImgUrl()==null){
-            return s3Service.savePreSignUrl(contentType, memberImgUpdate.getFileName());
+        if(memberImgUpdate.getFileName()==null){
+            throw new MoiraException("파일 이름을 넣어주세요",HttpStatus.UNAUTHORIZED);
         }
-        return s3Service.updatePreSignUrl(contentType,member.getImgUrl());
+        List<String> data=s3Service.savePreSignUrl(contentType,memberImgUpdate.getFileName());
+        member.updateImgUrl(data.get(0));
+        return data.get(1);
     }
-
-    public void updateMemberImg(Long memberId,String fileLocation){
-        Member member=memberRepository.findById(memberId).get();
-        if(!securityMemberRead.securityMemberRead().getId().equals(member.getId())){
-            throw new MoiraException("권한이 부족합니다",HttpStatus.UNAUTHORIZED);
-        }
-        member.updateImgUrl(fileLocation);
-    }
-
     public MemberDto getMyInfo(){
         Member member=securityMemberRead.securityMemberRead();
         return MemberDto.createMemberDto(member);
