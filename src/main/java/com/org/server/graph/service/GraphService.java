@@ -34,6 +34,12 @@ public class GraphService {
     private final MongoTemplate mongoTemplate;
 
 
+
+    public void testing(){
+        Root root=new Root("id",LocalDateTime.now().toString(),1L,"testRoot");
+        graphRepository.save(root);
+    }
+
     public List<Graph> getRootNodes(Long projectId){
         return graphRepository.findByProjectIdAndDeletedAndNodeType(projectId,false, NodeType.ROOT);
     }

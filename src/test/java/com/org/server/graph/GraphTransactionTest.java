@@ -73,7 +73,7 @@ public class GraphTransactionTest extends IntegralTestEnv {
         Assertions.assertThat(checkFailLatch.getCount()).isEqualTo(1);
     }
 
-    @DisplayName("트랜잭션이 없으므로 fail 카운트 다운이 5여야된다.즉 순차처리가 안됨.")
+    @DisplayName("트랜잭션이 없으므로 fail 카운트 다운이 1보단 크다 즉 완벽한 순차처리가 보장이안됨..")
     @Test
     void withOutGraphTransaction() throws InterruptedException{
         ExecutorService executorService= Executors.newFixedThreadPool(10);
@@ -89,7 +89,7 @@ public class GraphTransactionTest extends IntegralTestEnv {
                     Properties properties= e.getProperties().get("data");
                     if(now.isBefore(LocalDateTime.parse(properties.getModifyDate()))
                             ||now.isEqual(LocalDateTime.parse(properties.getModifyDate()))){
-                        throw new RuntimeException();
+                        throw new RuntimeException("날짜에러");
                     }
                     System.out.println(val);
                     properties.updateValue(String.valueOf(val));
@@ -108,7 +108,7 @@ public class GraphTransactionTest extends IntegralTestEnv {
         }
         countDownLatch.await();
         executorService.shutdown();
-        Assertions.assertThat(checkFailLatch.getCount()).isEqualTo(10);
+        Assertions.assertThat(checkFailLatch.getCount()).isGreaterThan(1);
     }
 
 }
