@@ -15,7 +15,8 @@ spring:
         static: ${AWS_S3_REGION}
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://${MY_SQL_END_POINT}:3306/${MY_SQL_DB_NAME}?useSSL=false&serverTimezone=Asia/Seoul
+    url: jdbc:mysql://${MY_SQL_END_POINT}:3306/${MY_SQL_DB_NAME}?serverTimezone=Asia/Seoul
+    #useSSL=false&serverTimezone=Asia/Seoul
     username: ${MY_SQL_DB_USERNAME}
     password: ${MY_SQL_DB_PASSWORD}
 
