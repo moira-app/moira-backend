@@ -23,7 +23,7 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
         with:
-          ref: dev  # 명확하게 dev 브랜치 지정
+          ref: main  # 명확하게 dev 브랜치 지정
 
       - name: Set up JDK 21
         uses: actions/setup-java@v3
@@ -74,9 +74,9 @@ jobs:
           script: |
             echo "Checking if Java is installed..."
             if ! java -version &> /dev/null; then
-              echo "Java not found. Installing OpenJDK 17..."
+              echo "Java not found. Installing OpenJDK 21..."
               sudo apt update
-              sudo apt install -y openjdk-17-jdk
+              sudo apt install -y openjdk-21-jdk
             else
               echo "Java is already installed."
             fi
@@ -89,7 +89,7 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
             # 이동할 디렉토리 설정
-            DEPLOY_DIR=~/play-hive
+            DEPLOY_DIR=~/moira-backend-server
 
             echo "Navigating to deployment directory: $DEPLOY_DIR"
             cd $DEPLOY_DIR || exit
