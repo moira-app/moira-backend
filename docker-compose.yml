@@ -1,0 +1,48 @@
+version: '3.9'
+
+services:
+  app:
+    image: ${DOCKER_USERNAME}/${DOCKER_IMAGE_NAME}:latest # 사용할 이미지 이름
+    build:
+      context: . # Dockerfile이 위치한 디렉토리
+      dockerfile: Dockerfile # 빌드에 사용할 Dockerfile
+    ports:
+      - "8080:8080" # 호스트와 컨테이너의 포트 매핑
+    environment:
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
+      GOOGLE_SECRET_KEY: ${GOOGLE_SECRET_KEY}
+      KAKAO_CLIENT_ID: ${KAKAO_CLIENT_ID}
+      KAKAO_SECRET_KEY: ${KAKAO_SECRET_KEY}
+      NAVER_CLIENT_ID: ${NAVER_CLIENT_ID}
+      NAVER_SECRET_KEY: ${NAVER_SECRET_KEY}
+      SMTP_MAIL_USERNAME: ${SMTP_MAIL_USERNAME}
+      SMTP_MAIL_PASSWORD: ${SMTP_MAIL_PASSWORD}
+      EMAIL_USERNAME: ${EMAIL_USERNAME}
+      DOCKER_USER_NAME: ${DOCKER_USER_NAME}
+      DOCKER_USER_PASSWORD: ${DOCKER_PASSWORD}
+      MY_SQL_END_POINT: ${MY_SQL_END_POINT}
+      FRONTEND_URL: ${FRONTEND_URL}
+      MY_SQL_DB_NAME: ${MY_SQL_DB_NAME}
+      MY_SQL_DB_USERNAME: ${MY_SQL_DB_USERNAME}
+      MY_SQL_DB_PASSWORD: ${MY_SQL_DB_PASSWORD}
+      AWS_ACCESS_KEY: ${AWS_ACCESS_KEY}
+      AWS_SECRET_ACCESS__KEY: ${AWS_SECRET_ACCESS_KEY}
+      AWS_S3_REGION: ${AWS_S3_REGION}
+      AWS_S3_BUCKET: ${AWS_S3_BUCKET}
+      REDIS_HOST: ${REDIS_HOST}
+      REDIS_PORT: ${REDIS_PORT}
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
+      JWT_ISSUER: ${JWT_ISSUER}
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY}
+      DOCKER_IMAGE_NAME: ${DOCKER_IMAGE_NAME}
+      MONGO_USER_NAME: ${MONGO_USER_NAME}
+      MONGO_PASSWORD: ${MONGO_PASSWORD}
+      MONGO_DB_NAME: ${MONGO_DB_NAME}
+      MONGO_DB_PORT: ${MONGO_DB_PORT}
+    networks:
+      - moira-network
+    restart: always
+    
+networks:
+  moira-network:
+    external: true
