@@ -1,6 +1,6 @@
 spring:
-  config:
-    import: optional:classpath:.env[.properties]
+  #config:
+   # import: optional:classpath:.env[.properties]
 
   application:
     name: server
