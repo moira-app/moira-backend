@@ -45,7 +45,8 @@ public class SecurityConfig {
 	private static final String[] freePassUrl = {
 		"/swagger-ui/**", "/swagger-resources/**", "/v3/api-docs/**",
 		"/cert/**",
-		"/api/chat/test",          // Thymeleaf 테스트 페이지 라우트가 /api/chat/test인 경우
+		"/api/chat/**",          // Thymeleaf 테스트 페이지 라우트가 /api/chat/test인 경우
+		"/api/**",          // Thymeleaf 테스트 페이지 라우트가 /api/chat/test인 경우
 		"/chat-test", "/chat-socket-test", // 뷰컨트롤러로 열었을 때
 		"/ws/**"                   // SockJS 핸드셰이크(/ws/info 등)
 	};
@@ -66,11 +67,10 @@ public class SecurityConfig {
 
 
 
-        http.logout(AbstractHttpConfigurer::disable)
-                .formLogin(AbstractHttpConfigurer::disable)
-                .httpBasic(AbstractHttpConfigurer::disable)
-                .cors(AbstractHttpConfigurer::disable)
-                .csrf(AbstractHttpConfigurer::disable);
+        // http.logout(AbstractHttpConfigurer::disable)
+        //         .formLogin(AbstractHttpConfigurer::disable)
+        //         .httpBasic(AbstractHttpConfigurer::disable)
+        //         .cors(AbstractHttpConfigurer::disable);
 
         http.addFilterBefore(new JwtAuthFilter(redisUserInfoService,jwtUtil,authenticationManager()
         ), UsernamePasswordAuthenticationFilter.class);
@@ -88,6 +88,11 @@ public class SecurityConfig {
                         .successHandler(oAuth2SuccessHandler)
                         .failureHandler(oAuth2FailHandler)
         );
+
+		// CSRF: API/Swagger/WS 경로는 무시 (완전 disable 대신 부분 무시 권장)
+		http.csrf(csrf -> csrf
+			.ignoringRequestMatchers("/api/**", "/ws/**", "/swagger-ui/**", "/v3/api-docs/**")
+		);
 
         http.cors(c->c.configurationSource(webConfig.corsConfigurationSource()));
 

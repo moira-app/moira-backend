@@ -44,6 +44,13 @@ public class ChatUseCase {
 	}
 
 	@Transactional
+	public ChatMessageDto sendMessage(Long roomId, Long senderId, String content) {
+		ChatRoom room = roomService.getRoom(roomId);
+		return messageService.sendMessage(room.getId(), senderId, content, room.getChatType());
+	}
+
+
+	@Transactional
 	public List<ChatMessageDto> listMessages(Long roomId) {
 		return messageService.listMessagesPage(roomId, Pageable.ofSize(100)).toList();
 	}
