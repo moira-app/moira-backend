@@ -4,14 +4,19 @@ import com.org.server.graph.domain.*;
 import com.org.server.graph.domain.Properties;
 import com.org.server.graph.dto.PropertyChangeDto;
 import com.org.server.support.IntegralTestEnv;
+import com.org.server.support.TestRedisConfig;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Import;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
+
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.CountDownLatch;
@@ -19,7 +24,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import static org.springframework.data.mongodb.core.query.Criteria.where;
-
+@ExtendWith({SpringExtension.class})
+@Import({TestRedisConfig.class})
 public class GraphTransactionTest extends IntegralTestEnv {
 
 
