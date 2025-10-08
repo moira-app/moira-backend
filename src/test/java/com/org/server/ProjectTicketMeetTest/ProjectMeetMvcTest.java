@@ -2,7 +2,6 @@ package com.org.server.ProjectTicketMeetTest;
 
 
 import com.org.server.member.domain.Member;
-import com.org.server.member.domain.MemberSignInDto;
 import com.org.server.project.domain.Project;
 import com.org.server.security.domain.CustomUserDetail;
 import org.junit.jupiter.api.BeforeEach;
@@ -18,7 +17,6 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.web.servlet.MockMvc;
 import org.mockito.Mockito;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @AutoConfigureMockMvc

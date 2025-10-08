@@ -21,6 +21,6 @@ jobs:
     - name: Test with Gradle
       env:
         SPRING_MONGODB_PORT: ${{ secrets.TEST_MONGO_PORT }}
-        SPRING_MONGODB_URI: mongodb+srv://${{secrets.MONGO_TEST_USER_NAME}}:${{secrets.TEST_MONGO_PASSWORD}}@${{secrets.MONGO_TEST_USER_NAME}}.qayje6x.mongodb.net/?retryWrites=true&w=majority&appName=${{secrets.MONGO_TEST_USER_NAME}};
+        SPRING_MONGODB_URI: mongodb+srv://${{secrets.MONGO_TEST_USER_NAME}}:${{secrets.TEST_MONGO_PASSWORD}}@${{secrets.MONGO_TEST_USER_NAME}}.qayje6x.mongodb.net/?retryWrites=true&w=majority&appName=${{secrets.MONGO_TEST_USER_NAME}}"
         SPRING_MONGODB_DATABASE: ${{secrets.TEST_MONGO_DB_NAME}}
       run: ./gradlew clean test

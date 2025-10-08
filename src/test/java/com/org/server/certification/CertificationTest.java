@@ -3,14 +3,10 @@ package com.org.server.certification;
 import com.org.server.Mail.EmailType;
 import com.org.server.Mail.MailFactory;
 import com.org.server.Mail.MailSend;
-import com.org.server.redis.service.RedisUserInfoService;
 import com.org.server.support.IntegralTestEnv;
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import static org.mockito.Mockito.when;
