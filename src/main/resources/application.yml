@@ -1,15 +1,24 @@
 spring:
-  config:
-    import: optional:classpath:.env[.properties]
+  #config:
+   # import: optional:classpath:.env[.properties]
 
   application:
     name: server
-
+  cloud:
+    aws:
+      credential:
+        access-key: ${AWS_ACCESS_KEY}
+        secret-key: ${AWS_SECRET_ACCESS_KEY}
+      s3:
+        bucket: ${AWS_S3_BUCKET}
+      region:
+        static: ${AWS_S3_REGION}
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: ${MYSQL_URL}
-    username: ${MYSQL_USERNAME}
-    password: ${MYSQL_PASSWORD}
+    url: jdbc:mysql://${MY_SQL_END_POINT}:3306/${MY_SQL_DB_NAME}?serverTimezone=Asia/Seoul
+    #useSSL=false&serverTimezone=Asia/Seoul
+    username: ${MY_SQL_DB_USERNAME}
+    password: ${MY_SQL_DB_PASSWORD}
 
   jpa:
     show-sql: false
@@ -29,8 +38,8 @@ spring:
   mail :
     host : smtp.gmail.com
     port : 587
-    username :
-    password :
+    username : ${SMTP_MAIL_USERNAME}
+    password : ${SMTP_MAIL_PASSWORD}
     properties :
       mail :
         smtp :
@@ -43,6 +52,12 @@ spring:
       host: ${REDIS_HOST}
       port: ${REDIS_PORT}
       password: ${REDIS_PASSWORD}
+  mongodb:
+    port: ${MONGO_DB_PORT}
+    username:
+    password:
+    uri: mongodb+srv://${MONGO_USER_NAME}:${MONGO_PASSWORD}@${MONGO_USER_NAME}.qayje6x.mongodb.net/?retryWrites=true&w=majority&appName=${MONGO_USER_NAME}";
+    database: ${MONGO_DB_NAME}
 
   security:
     oauth2:
@@ -50,8 +65,8 @@ spring:
         registration:
           naver:
             client-name: naver
-            client-id: sdf
-            client-secret: asdsd
+            client-id: ${NAVER_CLIENT_ID}
+            client-secret: ${NAVER_SECRET_KEY}
             authorization-grant-type: authorization_code
             scope:
               - email
@@ -61,14 +76,14 @@ spring:
             redirect-uri: "{baseUrl}/{action}/oauth2/code/{registrationId}"
           google:
             client-name: google
-            client-id: asdasd
-            client-secret: asdad
+            client-id: ${GOOGLE_CLIENT_ID}
+            client-secret: ${GOOGLE_SECRET_KEY}
             scope:
               - email
           kakao:
             client-name: kakao
-            client-id: adsd
-            client-secret: asasd
+            client-id: ${KAKAO_CLIENT_ID}
+            client-secret: ${KAKAO_SECRET_KEY}
             client-authentication-method: client_secret_post
             authorization-grant-type: authorization_code
             scope:
@@ -96,6 +111,6 @@ logging:
 
 
 jwt:
-  secret-key: ${JWT_SECRET}
-  expiration: ${JWT_EXPIRATION}
-  issuer: "JWT_ISSUER"
+  secret-key: ${JWT_SECRET_KEY}
+  #expiration: ${JWT_EXPIRATION}
+  issuer: ${JWT_ISSUER}
