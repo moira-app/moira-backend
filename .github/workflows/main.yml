@@ -12,8 +12,14 @@ jobs:
     services:
       redis:
         image: redis
+        env:
+
+          REDIS_ARGS: "--requirepass test"
+
         ports:
           - 6379:6379
+
+
         #env:
          # REDIS_PASSWORD: test
     steps:

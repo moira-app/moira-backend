@@ -6,7 +6,7 @@ import com.org.server.graph.domain.Properties;
 import com.org.server.graph.dto.PropertyChangeDto;
 import com.org.server.graph.dto.StructureChangeDto;
 import com.org.server.support.IntegralTestEnv;
-import com.org.server.support.TestRedisConfig;
+
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -17,8 +17,6 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.time.LocalDateTime;
 import java.util.*;
-@ExtendWith({SpringExtension.class})
-@Import({TestRedisConfig.class})
 public class GraphUpdateTest extends IntegralTestEnv {
 
 
