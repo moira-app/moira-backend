@@ -80,12 +80,11 @@ spring:
       port: 6379
       password: test
   mongodb:
-    port: 27017
+    port:
     username:
     password:
-    uri: mongodb+srv://${mongousername}:${mongopassword}@${mongousername}.qayje6x.mongodb.net/?retryWrites=true&w=majority&appName=${mongousername}";
-    #mongodb://localhost:27017/mydatabase
-    database: mydatabase
+    uri:
+    database:
   mail :
     host : smtp.gmail.com
     port : 587

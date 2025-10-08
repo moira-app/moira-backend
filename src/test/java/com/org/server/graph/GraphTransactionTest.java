@@ -2,6 +2,7 @@ package com.org.server.graph;
 
 import com.org.server.graph.domain.*;
 import com.org.server.graph.domain.Properties;
+import com.org.server.graph.dto.PropertyChangeDto;
 import com.org.server.support.IntegralTestEnv;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -55,9 +56,13 @@ public class GraphTransactionTest extends IntegralTestEnv {
                 try{
                     Element e=(Element)(graphRepository.findById(graphs.get(0).getId()).get());
 
-                    PropertiesUpdateDto propertiesUpdateDto=new PropertiesUpdateDto(
-                            e.getId(),now,"data",String.valueOf(val)
-                    );
+                    PropertyChangeDto propertiesUpdateDto=PropertyChangeDto.builder()
+                            .nodeId(e.getId())
+                            .name("data")
+                            .modifyDate(now)
+                            .changeType(ChangeType.Property)
+                            .value(String.valueOf(val))
+                            .build();
                     graphService.updateProperties(propertiesUpdateDto);
                 }
                 catch (Exception e){
@@ -108,7 +113,7 @@ public class GraphTransactionTest extends IntegralTestEnv {
         }
         countDownLatch.await();
         executorService.shutdown();
-        Assertions.assertThat(checkFailLatch.getCount()).isGreaterThan(1);
+        Assertions.assertThat(checkFailLatch.getCount()).isLessThan(10);
     }
 
 }

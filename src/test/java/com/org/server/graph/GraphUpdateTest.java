@@ -3,6 +3,8 @@ package com.org.server.graph;
 import com.org.server.exception.MoiraException;
 import com.org.server.graph.domain.*;
 import com.org.server.graph.domain.Properties;
+import com.org.server.graph.dto.PropertyChangeDto;
+import com.org.server.graph.dto.StructureChangeDto;
 import com.org.server.support.IntegralTestEnv;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -41,10 +43,12 @@ public class GraphUpdateTest extends IntegralTestEnv {
 
     @Test
     void updateTest(){
-        PropertiesUpdateDto propertiesUpdateDto=PropertiesUpdateDto.builder()
+
+        PropertyChangeDto propertiesUpdateDto=PropertyChangeDto.builder()
                 .nodeId(graphs.get(0).getId())
-                .modifyDate(LocalDateTime.now())
                 .name("0-0")
+                .modifyDate(LocalDateTime.now())
+                .changeType(ChangeType.Property)
                 .value("testing")
                 .build();
         graphService.updateProperties(propertiesUpdateDto);
@@ -53,10 +57,20 @@ public class GraphUpdateTest extends IntegralTestEnv {
         Assertions.assertThat(properties.getValue()).isEqualTo("testing");
 
         Assertions.assertThatThrownBy(()->{
-                    graphService.updateNodeReference(graphs.getFirst().getId(),graphs.getLast().getId());
+                    graphService.updateNodeReference(
+                            StructureChangeDto.builder()
+                                    .changeType(ChangeType.Structure)
+                                    .nodeId(graphs.getFirst().getId())
+                                    .parentId(graphs.getLast().getId())
+                                    .build());
                 }).isInstanceOf(MoiraException.class)
                 .hasMessage("순환고리를 만들순없습니다.");
-        graphService.updateNodeReference(graphs.getLast().getId(),graphs.getFirst().getId());
+        graphService.updateNodeReference(
+                StructureChangeDto.builder()
+                        .changeType(ChangeType.Structure)
+                        .nodeId(graphs.getLast().getId())
+                        .parentId(graphs.getFirst().getId())
+                        .build());
         e=(Element) graphRepository.findById(graphs.getLast().getId()).get();
         Assertions.assertThat(e.getParentId()).isEqualTo(graphs.getFirst().getId());
 
@@ -72,12 +86,13 @@ public class GraphUpdateTest extends IntegralTestEnv {
     void lateUpdateTest(){
         LocalDateTime modifyDate=LocalDateTime.now().minusDays(1L);
 
-        PropertiesUpdateDto propertiesUpdateDto=new PropertiesUpdateDto(
-                graphs.get(0).getId(),
-                modifyDate,
-                "0-0",
-                "xvcvcvc");
-
+        PropertyChangeDto propertiesUpdateDto=PropertyChangeDto.builder()
+                .nodeId(graphs.get(0).getId())
+                .name("0-0")
+                .modifyDate(modifyDate)
+                .changeType(ChangeType.Property)
+                .value(String.valueOf("xvcvcvc"))
+                .build();
         Assertions.assertThatThrownBy(()->{
             graphService.updateProperties(propertiesUpdateDto);
         }).isInstanceOf(MoiraException.class)

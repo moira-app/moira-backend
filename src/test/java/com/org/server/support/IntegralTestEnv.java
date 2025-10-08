@@ -95,6 +95,7 @@ public class IntegralTestEnv {
 
     @AfterEach
     void deleteAll(){
+        graphRepository.deleteAll();
         memberRepository.deleteAllInBatch();
         ticketRepository.deleteAllInBatch();
         meetRepository.deleteAllInBatch();

@@ -1,6 +1,9 @@
 package com.org.server.graph;
 
 import com.org.server.exception.MoiraException;
+import com.org.server.graph.dto.NodeDto;
+import com.org.server.graph.dto.PropertyChangeDto;
+import com.org.server.graph.dto.StructureChangeDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.ProceedingJoinPoint;
@@ -22,13 +25,37 @@ public class GraphAop {
 
 
     private final RedissonClient redissonClient;
-    private final static String redissonKey="mongo-";
+    private final static String nodeCreateKey="create-";
+    private final static String nodePropertyKey="property-";
+    private final static String nodeStructureChange="structure-";
 
     @Around("@annotation(com.org.server.graph.GraphTransaction)")
     public Object mongoRedissonLock(ProceedingJoinPoint point) throws Throwable{
 
         MethodSignature methodSignature=(MethodSignature) point.getSignature();
-        RLock rLock=redissonClient.getLock(redissonKey+"test");
+
+        NodeDto nodeDto =(NodeDto) point.getArgs()[0];
+        RLock rLock;
+
+        switch (nodeDto.getChangeType()){
+            case ChangeType.Property -> {
+                rLock=redissonClient.getLock(nodePropertyKey+((PropertyChangeDto)nodeDto).getNodeId());
+            }
+            case ChangeType.Structure -> {
+
+                StructureChangeDto structureChangeDto=(StructureChangeDto) nodeDto;
+
+                String nodeId=structureChangeDto.getNodeId();
+                String parentId=structureChangeDto.getParentId();
+                if(0>nodeId.compareTo(parentId)) {
+                    rLock = redissonClient.getLock(nodeStructureChange +nodeId);
+                }
+                else{
+                    rLock = redissonClient.getLock(nodeStructureChange +parentId);
+                }
+            }
+            default -> rLock=redissonClient.getLock("test");
+        }
         try{
             boolean rockState=rLock.tryLock(2000L,2000L, TimeUnit.MILLISECONDS);
             if(!rockState){

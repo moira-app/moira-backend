@@ -3,6 +3,7 @@ package com.org.server.graph;
 
 import com.org.server.graph.domain.*;
 import com.org.server.graph.domain.Properties;
+import com.org.server.graph.dto.NodeCreateDto;
 import com.org.server.support.IntegralTestEnv;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -49,16 +50,32 @@ public class GraphTest extends IntegralTestEnv {
         Map<String,List<Graph>> graphData=graphService.getWholeGraph(rootID);
         Assertions.assertThat(graphData.keySet().size()).isEqualTo(300);
 
-        graphService.createElementNode(new ElementCreateDto(UUID.randomUUID().toString()
-                ,graphs.getLast().getId(),Map.of()));
+        int size=graphData.entrySet().stream()
+                        .mapToInt(x->{
+                            return x.getValue().size();
+                        }).sum();
+        Assertions.assertThat(size).isEqualTo(300);
+        graphService.createElementNode(NodeCreateDto.builder()
+                        .changeType(ChangeType.Create)
+                        .nodeId(UUID.randomUUID().toString())
+                        .parentId(rootID)
+                        .nodeType(NodeType.ELEMENT)
+                        .propertiesList(Map.of())
+                .build());
 
         graphData=graphService.getWholeGraph(rootID);
-        Assertions.assertThat(graphData.keySet().size()).isEqualTo(301);
+        Assertions.assertThat(graphData.keySet().size()).isEqualTo(300);
+        size=graphData.entrySet().stream()
+                .mapToInt(x->{
+                    return x.getValue().size();
+                }).sum();
+        Assertions.assertThat(size).isEqualTo(301);
+
 
         graphService.delGraphNode(graphs.get(0).getId());
 
         graphData=graphService.getWholeGraph(rootID);
-        Assertions.assertThat(graphData.keySet().size()).isEqualTo(0);
+        Assertions.assertThat(graphData.keySet().size()).isEqualTo(1);
 
 
         graphService.delGraphNode(rootID);

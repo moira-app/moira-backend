@@ -1,6 +1,7 @@
-package com.org.server.graph.domain;
+package com.org.server.graph.dto;
 
 import com.org.server.graph.NodeType;
+import com.org.server.graph.domain.Graph;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.springframework.data.mongodb.core.mapping.Field;
