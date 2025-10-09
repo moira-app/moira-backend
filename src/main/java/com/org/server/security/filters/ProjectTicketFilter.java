@@ -30,7 +30,8 @@ public class ProjectTicketFilter extends OncePerRequestFilter{
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
         String reqUri=request.getRequestURI();
-        return !reqUri.startsWith("/projectCert") || reqUri.equals("/projectCert/list");
+        return !reqUri.startsWith("/enter") || reqUri.equals("/enter/list")
+                ||!reqUri.startsWith("/s3/project") || reqUri.startsWith("/enter/project");
     }
 
     @Override
