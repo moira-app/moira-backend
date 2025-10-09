@@ -38,7 +38,8 @@ public class TokenAuthfilter extends OncePerRequestFilter {
 
 
 
-    private static final String[] freePassPath = {"/login","/cert","/swagger-ui","/v3/api-docs" ,"/api/chat"
+    private static final String[] freePassPath = {"/login","/cert","/swagger-ui","/v3/api-docs" ,"/api/chat/"
+			,"/ws/" ,"/api/"
     };
 
     @Override
