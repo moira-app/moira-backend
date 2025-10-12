@@ -47,7 +47,7 @@ public class SecurityConfig {
 		"/cert/**",
 		"/api/chat/**",          // Thymeleaf 테스트 페이지 라우트가 /api/chat/test인 경우
 		"/api/**",          // Thymeleaf 테스트 페이지 라우트가 /api/chat/test인 경우
-     ,"/cert/**"
+     "/cert/**",
 		"/chat-test", "/chat-socket-test", // 뷰컨트롤러로 열었을 때
 		"/ws/**"                   // SockJS 핸드셰이크(/ws/info 등)
 	};
