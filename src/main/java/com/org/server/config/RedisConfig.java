@@ -50,7 +50,7 @@ public class RedisConfig {
     @Bean
     public RedissonClient redissonClient(){
         Config config = new Config();
-        config.useSingleServer().setAddress(redis_prefix + "localhost:6379")
+        config.useSingleServer().setAddress(redis_prefix +host+":"+port)
                 .setPassword(password);
         return Redisson.create(config);
     }
