@@ -36,11 +36,10 @@ public class TokenAuthfilter extends OncePerRequestFilter {
         this.memberRepository = memberRepository;
     }
 
-
-
     private static final String[] freePassPath = {"/login","/cert","/swagger-ui","/v3/api-docs" ,"/api/chat/"
 			,"/ws/" ,"/api/"
     };
+
 
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {

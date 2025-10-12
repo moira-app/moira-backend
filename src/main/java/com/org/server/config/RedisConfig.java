@@ -1,6 +1,9 @@
 package com.org.server.config;
 
 
+import org.redisson.Redisson;
+import org.redisson.api.RedissonClient;
+import org.redisson.config.Config;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -23,6 +26,8 @@ public class RedisConfig {
     @Value("${spring.data.redis.password}")
     private String password;
 
+    private final static String redis_prefix="redis://";
+
     @Bean
     public RedisConnectionFactory redisConnectionFactory(){
         RedisStandaloneConfiguration configuration = new RedisStandaloneConfiguration();
@@ -40,5 +45,13 @@ public class RedisConfig {
         redisTemplate.setValueSerializer(new StringRedisSerializer());
 
         return redisTemplate;
+    }
+
+    @Bean
+    public RedissonClient redissonClient(){
+        Config config = new Config();
+        config.useSingleServer().setAddress(redis_prefix + "localhost:6379")
+                .setPassword(password);
+        return Redisson.create(config);
     }
 }

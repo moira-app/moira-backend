@@ -1,5 +1,6 @@
 package com.org.server.redis.service;
 
+import com.org.server.member.domain.Member;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
@@ -45,9 +46,13 @@ public class RedisUserInfoService {
         redisTemplate.opsForSet().add(ticket_key+memberId,ticketId);
     }
     public Boolean checkTicketKey(String email,String checkInId){
-       return redisTemplate.opsForSet().isMember(ticket_key+email,checkInId);
+        return redisTemplate.opsForSet().isMember(ticket_key+email,checkInId);
     }
     public void delTicketKey(String email,String ticketId){
         redisTemplate.opsForSet().remove(email,ticketId);
+    }
+    public void integralDelMemberInfo(Member m){
+        delRefreshToken(m.getId());
+        redisTemplate.opsForSet().remove(m.getEmail());
     }
 }

@@ -26,23 +26,21 @@ public class MeetAdvanceRepo {
 
     private final JPAQueryFactory queryFactory;
 
-
-
     public List<MeetDateDto> getMeetList(LocalDateTime startTime, LocalDateTime endTime, Member m){
-            return queryFactory.select(Projections.constructor(MeetDateDto.class,
-                            meet.id,
-                            project.id,
-                            project.title,
-                            meet.startTime.stringValue()
-                            ))
-                    .from(meet)
-                    .join(project)
-                    .on(project.eq(meet.project))
-                    .join(ticket)
-                    .on(ticket.projectId.eq(project.id))
-                    .where(meet.startTime.goe(startTime).and(meet.startTime.lt(endTime))
-                            .and(ticket.memberId.eq(m.getId())).and(meet.deleted.isFalse()))
-                    .fetch();
+        return queryFactory.select(Projections.constructor(MeetDateDto.class,
+                        meet.id,
+                        project.id,
+                        project.title,
+                        meet.startTime.stringValue()
+                ))
+                .from(meet)
+                .join(project)
+                .on(project.eq(meet.project))
+                .join(ticket)
+                .on(ticket.projectId.eq(project.id))
+                .where(meet.startTime.goe(startTime).and(meet.startTime.lt(endTime))
+                        .and(ticket.memberId.eq(m.getId())).and(meet.deleted.isFalse()))
+                .fetch();
     }
 
 }

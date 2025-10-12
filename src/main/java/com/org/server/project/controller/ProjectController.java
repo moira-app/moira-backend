@@ -17,7 +17,8 @@ public class ProjectController {
     private final ProjectService projectService;
     @PostMapping("/create")
     public ResponseEntity<ApiResponseUtil<String>> createProject(@RequestBody ProjectDto projectDto){
-        projectService.createProject(projectDto.getTitle());
-        return ResponseEntity.ok(ApiResponseUtil.CreateApiResponse("ok",null));
+        return ResponseEntity.ok(
+                ApiResponseUtil
+                        .CreateApiResponse(projectService.createProject(projectDto.getTitle()),null));
     }
 }
