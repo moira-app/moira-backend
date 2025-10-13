@@ -12,14 +12,17 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/member")
 @RequiredArgsConstructor
+@Slf4j
 @Tag(name = "회원 관련 Api",description = "회원 로그인,회원 가입, 내정보 불러오기, 내정보 업데이트 관련입니다.")
 public class MemberController {
 
@@ -83,7 +86,7 @@ public class MemberController {
                     content = @Content(schema = @Schema(implementation = ApiResponseUtil.class)))
     })
     @PostMapping("/login")
-    public void memberLoginApi(@RequestBody NormalLoginDto normalLoginDto){
+    public void memberLoginApi(@RequestBody NormalLoginDto normalLoginDto, HttpServletRequest request){
     }
 
     @Operation(summary = "소셜 로그인", description = "소셜 로그인 api입니다.")

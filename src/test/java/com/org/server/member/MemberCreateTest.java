@@ -22,6 +22,7 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 @AutoConfigureMockMvc
 public class MemberCreateTest extends IntegralTestEnv {
@@ -66,6 +67,7 @@ public class MemberCreateTest extends IntegralTestEnv {
         mockMvc.perform(post("/member/signIn")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestBody))
+                .andDo(print())
                 .andExpect(status().isBadRequest());
 
     }
@@ -99,7 +101,6 @@ public class MemberCreateTest extends IntegralTestEnv {
         Member test=memberRepository.findById(member.getId()).get();
         assertThat(test.getNickName()).isEqualTo("testing");
 
-
         String requestBody="""
                 {
                 "mail":"test@1test.com",
@@ -112,12 +113,12 @@ public class MemberCreateTest extends IntegralTestEnv {
                 "password": "12345"
         }""";
 
-        mockMvc.perform(post("/login")
+        mockMvc.perform(post("/member/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestBody))
                 .andExpect(status().isBadRequest());
 
-        mockMvc.perform(post("/login")
+        mockMvc.perform(post("/member/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestBody2))
                 .andExpect(status().isOk());

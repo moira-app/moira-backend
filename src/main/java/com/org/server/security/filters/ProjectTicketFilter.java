@@ -27,11 +27,13 @@ public class ProjectTicketFilter extends OncePerRequestFilter{
         this.ticketService = ticketService;
     }
 
+
+
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
         String reqUri=request.getRequestURI();
-        return !reqUri.startsWith("/enter") || reqUri.equals("/enter/list")
-                ||!reqUri.startsWith("/s3/project") || reqUri.startsWith("/enter/project");
+        return !(reqUri.startsWith("/enter") || reqUri.equals("/enter/list")
+                ||reqUri.startsWith("/s3/project") || reqUri.startsWith("/enter/project"));
     }
 
     @Override
