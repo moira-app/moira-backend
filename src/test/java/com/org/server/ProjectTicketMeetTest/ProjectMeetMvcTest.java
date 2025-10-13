@@ -73,7 +73,7 @@ public class ProjectMeetMvcTest extends IntegralTestEnv{
                 "alias": "1234"
         }""";
 
-        mockMvc.perform(post("/enter/"+withNoTicket.getId()+"/change/alias")
+        mockMvc.perform(post("/enter/"+val+"/change/alias")
                         .contentType(MediaType.APPLICATION_JSON)
                         .header("Authorization","Bearer "+accessToken)
                         .contentType(requestBody))

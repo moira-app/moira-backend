@@ -38,23 +38,16 @@ public class JwtAuthFilter extends UsernamePasswordAuthenticationFilter {
         this.redisUserInfoService = redisUserInfoService;
         this.jwtUtils = jwtUtils;
         this.authenticationManager=authenticationManager;
+        setFilterProcessesUrl("/member/login");
     }
     @Override
     public void setFilterProcessesUrl(String filterProcessesUrl) {
-        this.setRequiresAuthenticationRequestMatcher(
-                new OrRequestMatcher(
-                        new RequestMatcher() {
-                            @Override
-                            public boolean matches(HttpServletRequest request) {
-                                return request.getRequestURI().equals("/login");
-                            }
-                        }
-                )
-        );
+        super.setFilterProcessesUrl(filterProcessesUrl);
     }
     @Override
     public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response) throws AuthenticationException {
         try(InputStream inputStream=request.getInputStream()) {
+
             ObjectMapper objectMapper = new ObjectMapper();
             Map<String, String> data = objectMapper.readValue(inputStream, Map.class);
             String mail=data.get("mail");
@@ -78,6 +71,7 @@ public class JwtAuthFilter extends UsernamePasswordAuthenticationFilter {
         redisUserInfoService.saveRefreshToken(userDetail.getMemberId(),refreshToken);
         response.setHeader(AUTHORIZATION,TOKEN_PREFIX.getValue()+accessToken);
         response.setStatus(200);
+        return;
     }
     @Override
     protected void unsuccessfulAuthentication(HttpServletRequest request, HttpServletResponse response,

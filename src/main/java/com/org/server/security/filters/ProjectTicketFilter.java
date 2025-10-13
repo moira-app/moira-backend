@@ -27,17 +27,22 @@ public class ProjectTicketFilter extends OncePerRequestFilter{
         this.ticketService = ticketService;
     }
 
+
+
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
         String reqUri=request.getRequestURI();
-        return !reqUri.startsWith("/enter") || reqUri.equals("/enter/list")
-                ||!reqUri.startsWith("/s3/project") || reqUri.startsWith("/enter/project");
+        if(reqUri.equals("/enter/list")||reqUri.startsWith("/enter/project")){
+            return true;
+        }
+        return !(reqUri.startsWith("/enter"));
     }
 
     @Override
     protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
 
+        log.info("티켓 필터 작동");
         String reqUri=request.getRequestURI();
         String [] arr=reqUri.split("/");
         CustomUserDetail customUserDetail= (CustomUserDetail) SecurityContextHolder.getContext()

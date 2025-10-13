@@ -20,7 +20,7 @@ import lombok.NoArgsConstructor;
 public class ChatMessage extends BaseTime {
 
 	@Id
-	@GeneratedValue(strategy = GenerationType.AUTO)
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 
 	// 채팅 타입 ( PROJECT, MEET )
