@@ -1,6 +1,7 @@
 package com.org.server.graph.service;
 
 import com.org.server.exception.MoiraException;
+import com.org.server.exception.MoiraSocketException;
 import com.org.server.graph.GraphTransaction;
 import com.org.server.graph.NodeType;
 import com.org.server.graph.domain.*;
@@ -53,8 +54,6 @@ public class GraphService {
                 .restrict(filter)//where 즉 필터링
                 .as("descendants");
 
-
-
         ProjectionOperation projectStage = project("pageType", "createDate","parentId","descendants")
                 .and("_id").as("startId");
 
@@ -94,24 +93,25 @@ public class GraphService {
                 });
         return domTree;
     }
-    public void createRootNode(NodeCreateDto nodeCreateDto){
-        if(nodeCreateDto.getNodeType()!=NodeType.ROOT){
-            throw new MoiraException("틀린 값이비다",HttpStatus.BAD_REQUEST);
+    public  void createElementNode(NodeCreateDto nodeCreateDto){
+        if(nodeCreateDto.getNodeType().equals(NodeType.ROOT)){
+            Root root = new Root(nodeCreateDto.getNodeId(), LocalDateTime.now().toString()
+                    ,nodeCreateDto.getProjectId(),nodeCreateDto.getRootName());
+            root = graphRepository.save(root);
+            return ;
         }
-        Root root = new Root(nodeCreateDto.getNodeId(), LocalDateTime.now().toString()
-                ,nodeCreateDto.getProjectId(),nodeCreateDto.getRootName());
-        root = graphRepository.save(root);
-    }
-    public void createElementNode(NodeCreateDto elementCreateDto){
-        if(elementCreateDto.getNodeType()!=NodeType.ELEMENT){
-            throw new MoiraException("틀린 값이비다",HttpStatus.BAD_REQUEST);
+        if(nodeCreateDto.getNodeType().equals(NodeType.ELEMENT)){
+            LocalDateTime now=LocalDateTime.now();
+            Element element=
+                    new Element(nodeCreateDto.getNodeId()
+                            ,nodeCreateDto.getParentId(),
+                            nodeCreateDto.getPropertiesList(),now.toString()
+                            ,null);
+            element=graphRepository.save(element);
+            return ;
         }
-        LocalDateTime now=LocalDateTime.now();
-        Element element=
-                new Element(elementCreateDto.getNodeId()
-                        ,elementCreateDto.getParentId(),elementCreateDto.getPropertiesList(),now.toString()
-                        ,null);
-        graphRepository.save(element);
+        throw new MoiraSocketException("노드 생성 실패"
+                ,nodeCreateDto.getProjectId() ,nodeCreateDto.getRequestId());
     }
     /**
      * moving id는 움직이는애, stayId는 movingId가 그아래로 들어가고자하는 id
@@ -128,13 +128,16 @@ public class GraphService {
         Optional<Graph> stayNode= graphRepository.findById(structureChangeDto.getParentId());
         if(movingNode.isEmpty()||stayNode.isEmpty()||movingNode.get().getDeleted()||stayNode
                 .get().getDeleted()){
-            throw new MoiraException("없는 객체입니다", HttpStatus.BAD_REQUEST);
+            throw new MoiraSocketException("없는 노드에 대한 요청입니다"
+                    ,structureChangeDto.getProjectId(),structureChangeDto.getRequestId());
         }
         if(movingNode.get().getNodeType().equals(NodeType.ROOT)){
-            throw new MoiraException("불가능한 요청입니다", HttpStatus.BAD_REQUEST);
+            throw new MoiraSocketException("불가능한 요청입니다"
+                    ,structureChangeDto.getProjectId(),structureChangeDto.getRequestId());
         }
         if(checkCycleExist(movingNode.get().getId(),stayNode.get().getId())){
-            throw new MoiraException("순환고리를 만들순없습니다.", HttpStatus.BAD_REQUEST);
+            throw new MoiraSocketException("순환고리를 만들수없습니다"
+                    ,structureChangeDto.getProjectId(), structureChangeDto.getRequestId());
         }
         Query query=new Query(where("_id").is(movingNode.get().getId()));
         Update updateData=new Update().set("parentId",stayNode.get().getId());
@@ -153,20 +156,20 @@ public class GraphService {
     public void updateProperties(PropertyChangeDto propertyChangeDto){
         Optional<Graph> g= graphRepository.findById(propertyChangeDto.getNodeId());
         if(g.isEmpty()||g.get().getDeleted()){
-            throw new MoiraException("없는 객체입니다", HttpStatus.BAD_REQUEST);
+            throw new MoiraSocketException("없는 객체입니다", propertyChangeDto.getProjectId(),propertyChangeDto.getRequestId());
         }
         Element e=(Element) g.get();
         Properties properties= e.getProperties().getOrDefault(propertyChangeDto.getName(),
                 null);
         if(properties==null){
-            throw new MoiraException("없는 속성입니다", HttpStatus.BAD_REQUEST);
+            throw new MoiraSocketException("없는 속성입니다" ,propertyChangeDto.getProjectId(),propertyChangeDto.getRequestId());
         }
 
         if(propertyChangeDto.getModifyDate().isBefore(
                 LocalDateTime.parse(properties.getModifyDate()))
         ||propertyChangeDto.getModifyDate().isEqual(
                 LocalDateTime.parse(properties.getModifyDate()))){
-            throw new MoiraException("업데이트를 할수없습니다",HttpStatus.BAD_REQUEST);
+            throw new MoiraSocketException("업데이트를 할수없습니다", propertyChangeDto.getProjectId(),propertyChangeDto.getRequestId());
         }
         properties.updateValue(propertyChangeDto.getValue());
         properties.updateModifyDate(propertyChangeDto.getModifyDate().toString());

@@ -9,6 +9,7 @@ import com.org.server.member.service.SecurityMemberReadService;
 import com.org.server.project.domain.Project;
 import com.org.server.project.domain.ProjectDto;
 import com.org.server.project.repository.ProjectRepository;
+import com.org.server.redis.service.RedisUserInfoService;
 import com.org.server.ticket.domain.Ticket;
 import com.org.server.ticket.domain.TicketDto;
 import com.org.server.ticket.service.TicketService;
@@ -35,6 +36,7 @@ public class ProjectMeetEntranceService {
     private final MeetService meetService;
     private final ProjectRepository projectRepository;
     private final TicketService ticketService;
+    private final RedisUserInfoService redisUserInfoService;
 
     public List<ProjectDto> getProejctList(){
         Member m=securityMemberReadService.securityMemberRead();
@@ -51,6 +53,9 @@ public class ProjectMeetEntranceService {
         }
         Ticket ticket= new Ticket(project.get().getId(),m.getId(),ticketDto.getAlias());
         ticketService.saveTicket(ticket);
+        redisUserInfoService.setTicketKey(String.valueOf(ticket.getMemberId())
+                ,String.valueOf(ticket.getId()));
+
     }
     public void changeAlias(String alias,Long projectId){
         Member m=securityMemberReadService.securityMemberRead();

@@ -113,4 +113,19 @@ public class MemberController {
         memberService.delMember();
         return ResponseEntity.ok(ApiResponseUtil.CreateApiResponse("ok",null));
     }
+
+
+    @Operation(summary = "로그아웃 api입니다.",description = "돌려주는 값은 딱히 신경안써도됩니다.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "로그아웃 성공"),
+            @ApiResponse(responseCode = "400", description = "토큰이 필요합니다.")
+    })
+    @Parameter(name = "Authorization",
+            description = "요청시 토큰값을 넣어주셔야됩니다.",
+            required = true,
+            example = "Bearer [tokenvalue]",
+            in = ParameterIn.HEADER)
+    @GetMapping("/logout")
+    public void logoutMember(){
+    };
 }

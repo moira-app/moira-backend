@@ -58,7 +58,7 @@ public class GraphTest extends IntegralTestEnv {
                         }).sum();
         Assertions.assertThat(size).isEqualTo(300);
         graphService.createElementNode(NodeCreateDto.builder()
-                        .changeType(ChangeType.Create)
+                        .graphActionType(GraphActionType.Create)
                         .nodeId(UUID.randomUUID().toString())
                         .parentId(rootID)
                         .nodeType(NodeType.ELEMENT)

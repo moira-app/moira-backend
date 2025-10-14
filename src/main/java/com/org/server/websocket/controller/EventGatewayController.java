@@ -3,8 +3,10 @@ package com.org.server.websocket.controller;
 import java.security.Principal;
 import java.util.List;
 
+import com.org.server.exception.MoiraSocketException;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
+import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 import org.springframework.stereotype.Controller;
 
 import com.org.server.websocket.domain.EventEnvelope;
@@ -14,6 +16,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
+import org.springframework.web.bind.annotation.PathVariable;
 
 @Controller
 @RequiredArgsConstructor
@@ -39,6 +42,18 @@ public class EventGatewayController {
 			.findFirst()
 			.orElseThrow(() -> new IllegalArgumentException("Unsupported type: " + env.type()))
 			.handle(env, principal);
+	}
+
+	@MessageMapping("/crdt/{projectId}")
+	public void onCrdtEvent(@Payload EventEnvelope env, Principal principal,
+							@PathVariable(name ="projectId") Long projectId){
+		log.info("send crdt start");
+		handlers.stream()
+				.filter(h -> h.supports(env.type()))
+				.findFirst()
+				.orElseThrow(() -> new MoiraSocketException("Unsupported type: " + env.type()
+						,projectId, (String) env.data().get("requestId")))
+				.handle(env, principal);
 	}
 
 

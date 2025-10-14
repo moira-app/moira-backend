@@ -1,6 +1,7 @@
 package com.org.server.graph;
 
 import com.org.server.exception.MoiraException;
+import com.org.server.exception.MoiraSocketException;
 import com.org.server.graph.dto.NodeDto;
 import com.org.server.graph.dto.PropertyChangeDto;
 import com.org.server.graph.dto.StructureChangeDto;
@@ -29,6 +30,8 @@ public class GraphAop {
     private final static String nodePropertyKey="property-";
     private final static String nodeStructureChange="structure-";
 
+    private final static String etcActionLock="etc-action";
+
     @Around("@annotation(com.org.server.graph.GraphTransaction)")
     public Object mongoRedissonLock(ProceedingJoinPoint point) throws Throwable{
 
@@ -37,11 +40,12 @@ public class GraphAop {
         NodeDto nodeDto =(NodeDto) point.getArgs()[0];
         RLock rLock;
 
-        switch (nodeDto.getChangeType()){
-            case ChangeType.Property -> {
-                rLock=redissonClient.getLock(nodePropertyKey+((PropertyChangeDto)nodeDto).getNodeId());
+        switch (nodeDto.getGraphActionType()){
+            case GraphActionType.Property -> {
+                rLock=redissonClient.getLock(nodePropertyKey+((PropertyChangeDto)nodeDto).getNodeId()
+                +"-"+((PropertyChangeDto)nodeDto).getName());
             }
-            case ChangeType.Structure -> {
+            case GraphActionType.Structure -> {
 
                 StructureChangeDto structureChangeDto=(StructureChangeDto) nodeDto;
 
@@ -54,7 +58,7 @@ public class GraphAop {
                     rLock = redissonClient.getLock(nodeStructureChange +parentId);
                 }
             }
-            default -> rLock=redissonClient.getLock("test");
+            default -> rLock=redissonClient.getLock(etcActionLock);
         }
         try{
             boolean rockState=rLock.tryLock(2000L,2000L, TimeUnit.MILLISECONDS);
@@ -64,8 +68,8 @@ public class GraphAop {
             log.info("redssion 트랜잭션 작동 시작");
             return point.proceed();
         }
-        catch (Exception e){
-            throw new MoiraException(e.getMessage(), HttpStatus.BAD_REQUEST);
+        catch (MoiraSocketException e){
+            throw new MoiraSocketException(e.getMessage(),e.getProjectId(),e.getRequestId());
         }
         finally {
             log.info("redssion lock 반납");
