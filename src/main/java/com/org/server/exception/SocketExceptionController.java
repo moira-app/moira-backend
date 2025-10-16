@@ -18,8 +18,8 @@ public class SocketExceptionController {
     private final SimpMessagingTemplate simpMessagingTemplate;
 
     @MessageExceptionHandler(MoiraSocketException.class)
-    public void playHiveEx(MoiraSocketException moiraSocketException) {
-        String des="/topic/"+moiraSocketException.getRequestId();
+    public void moiraSocketEx(MoiraSocketException moiraSocketException) {
+        String des="/topic/crdt/"+moiraSocketException.getProjectId();
         simpMessagingTemplate.convertAndSend(des,moiraSocketException.getRequestId());
     }
 }

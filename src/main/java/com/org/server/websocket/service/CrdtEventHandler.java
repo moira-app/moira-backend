@@ -29,30 +29,30 @@ public class CrdtEventHandler implements EventHandler{
     @Override
     public void handle(EventEnvelope env, Principal principal) {
 
-        GraphActionType actionType=(GraphActionType) env.data().get("graphActionType");
+        GraphActionType actionType=GraphActionType.valueOf((String)env.data().get("graphActionType"));
 
         if(actionType.equals(GraphActionType.Create)){
             NodeCreateDto nodeCreateDto=
                     (NodeCreateDto) GraphEnvelopService.createFromEvent(env,actionType);
             graphService.createElementNode(nodeCreateDto);
-            messagingTemplate.convertAndSend("/topic/"+nodeCreateDto.getProjectId(),nodeCreateDto);
+            messagingTemplate.convertAndSend("/topic/crdt/"+nodeCreateDto.getProjectId(),nodeCreateDto);
         }
         if(actionType.equals(GraphActionType.Delete)){
             NodeDelDto nodeDelDto=(NodeDelDto) GraphEnvelopService.createFromEvent(env,actionType);
             graphService.delGraphNode(nodeDelDto.getNodeId());
-            messagingTemplate.convertAndSend("/topic/"+nodeDelDto.getProjectId(),nodeDelDto);
+            messagingTemplate.convertAndSend("/topic/crdt/"+nodeDelDto.getProjectId(),nodeDelDto);
         }
         if(actionType.equals(GraphActionType.Property)){
             PropertyChangeDto propertyChangeDto=
                     (PropertyChangeDto) GraphEnvelopService.createFromEvent(env,actionType);
             graphService.updateProperties(propertyChangeDto);
-            messagingTemplate.convertAndSend("/topic/"+propertyChangeDto.getProjectId(),propertyChangeDto);
+            messagingTemplate.convertAndSend("/topic/crdt/"+propertyChangeDto.getProjectId(),propertyChangeDto);
         }
         if(actionType.equals(GraphActionType.Structure)){
             StructureChangeDto structureChangeDto=
                     (StructureChangeDto) GraphEnvelopService.createFromEvent(env,actionType);
            graphService.updateNodeReference(structureChangeDto);
-           messagingTemplate.convertAndSend("/topic/"+structureChangeDto.getProjectId(),structureChangeDto);
+           messagingTemplate.convertAndSend("/topic/crdt/"+structureChangeDto.getProjectId(),structureChangeDto);
         }
     }
 }

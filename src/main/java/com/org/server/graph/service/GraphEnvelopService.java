@@ -18,8 +18,8 @@ public class GraphEnvelopService {
             String rootId = (String) eventEnvelope.data().get("rootId");
             String requestId = (String) eventEnvelope.data().get("requestId");
             String parentId = (String) eventEnvelope.data().get("parentId");
-            NodeType nodeType = (NodeType) eventEnvelope.data().get("nodeType");
-            Long projectId = (Long) eventEnvelope.data().get("projectId");
+            NodeType nodeType = NodeType.valueOf((String) eventEnvelope.data().get("nodeType"));
+            Long projectId = Long.parseLong((String) eventEnvelope.data().get("projectId"));
             Map<String, Properties> propertiesMap =
                     (Map<String, Properties>) eventEnvelope.data().get("properties");
             String rootName = (String) eventEnvelope.data().get("rootName");
@@ -39,7 +39,7 @@ public class GraphEnvelopService {
             String nodeId = (String) eventEnvelope.data().get("nodeId");
             String parentId = (String) eventEnvelope.data().get("parentId");
             String requestId = (String) eventEnvelope.data().get("requestId");
-            Long projectId = (Long) eventEnvelope.data().get("projectId");
+            Long projectId = Long.parseLong((String)eventEnvelope.data().get("projectId"));
             String rootId = (String) eventEnvelope.data().get("rootId");
             return graphActionType.equals(GraphActionType.Delete) ? NodeDelDto.builder()
                     .rootId(rootId)
@@ -63,8 +63,8 @@ public class GraphEnvelopService {
             String rootId = (String) eventEnvelope.data().get("rootId");
             String requestId = (String) eventEnvelope.data().get("requestId");
             String value = (String) eventEnvelope.data().get("value");
-            LocalDateTime modifyDate=(LocalDateTime) eventEnvelope.data().get("modifyDate");
-            Long projectId = (Long) eventEnvelope.data().get("projectId");
+            LocalDateTime modifyDate=LocalDateTime.parse((String)eventEnvelope.data().get("modifyDate"));
+            Long projectId = Long.parseLong((String)eventEnvelope.data().get("projectId"));
             return PropertyChangeDto.builder()
                     .graphActionType(graphActionType)
                     .rootId(rootId)

@@ -71,6 +71,9 @@ public class GraphAop {
         catch (MoiraSocketException e){
             throw new MoiraSocketException(e.getMessage(),e.getProjectId(),e.getRequestId());
         }
+        catch (Exception e){
+            throw new MoiraSocketException(e.getMessage(),nodeDto.getProjectId(),nodeDto.getRequestId());
+        }
         finally {
             log.info("redssion lock 반납");
             if (rLock.isLocked() && rLock.isHeldByCurrentThread()) {

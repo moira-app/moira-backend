@@ -4,8 +4,10 @@ import java.security.Principal;
 import java.util.List;
 
 import com.org.server.exception.MoiraSocketException;
+import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 import org.springframework.stereotype.Controller;
 
@@ -25,6 +27,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 public class EventGatewayController {
 
 	private final List<EventHandler> handlers;
+	private final SimpMessagingTemplate messagingTemplate;
 
 	/**
 	 * 클라이언트에서 /app/event 경로로 전송한 메시지를 처리합니다.
@@ -46,7 +49,7 @@ public class EventGatewayController {
 
 	@MessageMapping("/crdt/{projectId}")
 	public void onCrdtEvent(@Payload EventEnvelope env, Principal principal,
-							@PathVariable(name ="projectId") Long projectId){
+							@DestinationVariable(value ="projectId") Long projectId){
 		log.info("send crdt start");
 		handlers.stream()
 				.filter(h -> h.supports(env.type()))
