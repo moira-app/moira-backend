@@ -36,7 +36,7 @@
     <div>
         RoomId: <input type="number" id="roomId" value="1"><br>
         SenderId: <input type="number" id="senderId" value="7"><br>
-        Content: <input type="text" id="content" placeholder="메시지를 입력하세요" onclick="fn_send_messge(this)"><br>
+        Content: <input type="text" id="content" placeholder="메시지를 입력하세요" onkeypress="fn_send_message(event)"><br>
         <button type="button" id="btnConnect"  onclick="connect()">1) Connect</button>
         <button type="button" id="btnSend"     onclick="send()" disabled>3) Send</button>
     </div>
@@ -59,6 +59,8 @@
         if (body != null) { opt.headers['Content-Type'] = 'application/json'; opt.body = JSON.stringify(body); }
         const res = await fetch(url, opt);
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
+
+        console.log('response', JSON.stringify(res));
         return res.json();
     }
 
@@ -86,8 +88,8 @@
     let stomp = null;
     const seenIds = new Set();       // 중복 방지
 
-    function fn_send_messge(e){
-        if (e.keydown() === 13){
+    function fn_send_message(e){
+        if (e.key === 'Enter') {
             send();
         }
     }
@@ -163,7 +165,9 @@
     function send(){
         const roomId   = +$('roomId').value;
         const senderId = +$('senderId').value;
-        const content  = $('content').value.trim();
+        const content  = $('content').value;
+
+        alert(content);
         if (!content) { log('content is empty', true); return; }
         if (!stomp?.connected) { log('connect first', true); return; }
 
@@ -173,13 +177,6 @@
             data: { roomId, senderId, content },
             meta: { ts: Date.now() }
         };
-
-/*
-        // 낙관적 UI (서버에서 같은 내용이 다시 오면 seenIds로 중복 방지)
-        appendMessage(
-            { senderId, content, createDate: new Date().toISOString() }
-        ) ;
-*/
 
         stomp.send('/app/event', { 'content-type': 'application/json' }, JSON.stringify(env));
         $('content').value = '';

@@ -24,14 +24,15 @@ import org.springframework.data.domain.SliceImpl;
 import com.org.server.chat.domain.ChatMessage;
 import com.org.server.chat.domain.ChatMessageDto;
 import com.org.server.chat.domain.ChatType;
-import com.org.server.chat.repository.ChatMessageAdvanceRepository;
+import com.org.server.chat.repository.impl.ChatMessageRepositoryImpl;
 import com.org.server.chat.repository.ChatMessageRepository;
 
 @ExtendWith(MockitoExtension.class)
 class ChatMessageServiceTest {
 
 	@Mock ChatMessageRepository messageRepository;
-	@Mock ChatMessageAdvanceRepository messageAdvanceRepository;
+	@Mock
+	ChatMessageRepositoryImpl messageAdvanceRepository;
 
 	@InjectMocks ChatMessageService chatMessageService;
 

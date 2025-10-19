@@ -33,7 +33,7 @@ public class RedisConfig {
         RedisStandaloneConfiguration configuration = new RedisStandaloneConfiguration();
         configuration.setHostName(host);
         configuration.setPort(port);
-        configuration.setPassword(password);
+        // configuration.setPassword(password);
         return new LettuceConnectionFactory(configuration);
     }
     @Bean
@@ -50,8 +50,8 @@ public class RedisConfig {
     @Bean
     public RedissonClient redissonClient(){
         Config config = new Config();
-        config.useSingleServer().setAddress(redis_prefix +host+":"+port)
-                .setPassword(password);
+        config.useSingleServer().setAddress(redis_prefix +host+":"+port);
+                // .setPassword(password);
         return Redisson.create(config);
     }
 }

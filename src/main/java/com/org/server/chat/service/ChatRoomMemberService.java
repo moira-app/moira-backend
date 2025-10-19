@@ -4,8 +4,7 @@ import java.util.List;
 
 import org.springframework.stereotype.Service;
 
-import com.org.server.chat.domain.ChatRoomMemberDto;
-import com.org.server.chat.repository.ChatRoomMemberAdvanceRepository;
+import com.org.server.chat.repository.impl.ChatRoomMemberRepositoryImpl;
 import com.org.server.chat.repository.ChatRoomMemberRepository;
 
 import jakarta.transaction.Transactional;
@@ -17,7 +16,7 @@ public class ChatRoomMemberService {
 
 
 	private final ChatRoomMemberRepository roomMemberRepository;
-	private final ChatRoomMemberAdvanceRepository roomMemberAdvanceRepository;
+	private final ChatRoomMemberRepositoryImpl roomMemberAdvanceRepository;
 
 	@Transactional
 	public void addMembersIfMissing(Long roomId, List<Long> memberIds) {

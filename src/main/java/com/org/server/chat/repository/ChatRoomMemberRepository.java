@@ -1,13 +1,8 @@
 package com.org.server.chat.repository;
 
-import java.util.List;
 import java.util.Optional;
 
-import org.springframework.data.jpa.repository.JpaRepository;
-
-import com.org.server.chat.domain.ChatRoomMember;
-
-public interface ChatRoomMemberRepository extends JpaRepository<ChatRoomMember, Long> {
+public interface ChatRoomMemberRepository {
 
 	void deleteByRoomIdAndTicketId(Long roomId, Long memberId);
 

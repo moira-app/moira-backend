@@ -1,7 +1,5 @@
 package com.org.server.chat.service;
 
-import java.util.Objects;
-
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
@@ -9,9 +7,8 @@ import org.springframework.stereotype.Service;
 
 import com.org.server.chat.domain.ChatMessage;
 import com.org.server.chat.domain.ChatMessageDto;
-import com.org.server.chat.domain.ChatRoom;
 import com.org.server.chat.domain.ChatType;
-import com.org.server.chat.repository.ChatMessageAdvanceRepository;
+import com.org.server.chat.repository.impl.ChatMessageRepositoryImpl;
 import com.org.server.chat.repository.ChatMessageRepository;
 
 import jakarta.transaction.Transactional;
@@ -22,7 +19,7 @@ import lombok.RequiredArgsConstructor;
 public class ChatMessageService {
 
 	private final ChatMessageRepository messageRepository;
-	private final ChatMessageAdvanceRepository messageAdvanceRepository;
+	private final ChatMessageRepositoryImpl messageAdvanceRepository;
 
 
 	/** 메시지 전송 — room.chatType과 요청 chatType 일치 여부 가드 포함 */

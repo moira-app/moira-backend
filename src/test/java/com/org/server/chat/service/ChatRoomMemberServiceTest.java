@@ -16,14 +16,15 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.org.server.chat.domain.ChatRoomMember;
-import com.org.server.chat.repository.ChatRoomMemberAdvanceRepository;
+import com.org.server.chat.repository.impl.ChatRoomMemberRepositoryImpl;
 import com.org.server.chat.repository.ChatRoomMemberRepository;
 
 @ExtendWith(MockitoExtension.class)
 class ChatRoomMemberServiceTest {
 
 	@Mock ChatRoomMemberRepository roomMemberRepository;
-	@Mock ChatRoomMemberAdvanceRepository roomMemberAdvanceRepository;
+	@Mock
+	ChatRoomMemberRepositoryImpl roomMemberAdvanceRepository;
 	@InjectMocks
 	ChatRoomMemberService chatRoomMemberService;
 

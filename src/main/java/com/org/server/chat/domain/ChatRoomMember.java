@@ -1,5 +1,7 @@
 package com.org.server.chat.domain;
 
+import org.springframework.data.mongodb.core.mapping.Document;
+
 import jakarta.annotation.Nullable;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -10,18 +12,15 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-@Entity
 @Getter
 @NoArgsConstructor
+@Document(collection = "chat_room_member")
 public class ChatRoomMember {
 
-	@Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+	@Id
 	long id;
 
-	@Column(nullable = false)
 	long roomId;
-
-	@Column(nullable = false)
 	long ticketId;
 
 
