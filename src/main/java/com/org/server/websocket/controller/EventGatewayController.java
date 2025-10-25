@@ -55,7 +55,7 @@ public class EventGatewayController {
 				.filter(h -> h.supports(env.type()))
 				.findFirst()
 				.orElseThrow(() -> new MoiraSocketException("Unsupported type: " + env.type()
-						,projectId, (String) env.data().get("requestId")))
+						,projectId, (String) env.data().get("requestId"),(String) env.data().get("rootId")))
 				.handle(env, principal);
 	}
 

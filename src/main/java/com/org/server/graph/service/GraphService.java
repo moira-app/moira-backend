@@ -97,7 +97,7 @@ public class GraphService {
         if(nodeCreateDto.getNodeType().equals(NodeType.ROOT)){
             Root root = new Root(nodeCreateDto.getNodeId(), LocalDateTime.now().toString()
                     ,nodeCreateDto.getProjectId(),nodeCreateDto.getRootName());
-            root = graphRepository.save(root);
+            graphRepository.save(root);
             return ;
         }
         if(nodeCreateDto.getNodeType().equals(NodeType.ELEMENT)){
@@ -107,11 +107,11 @@ public class GraphService {
                             ,nodeCreateDto.getParentId(),
                             nodeCreateDto.getPropertiesList(),now.toString()
                             ,null);
-            element=graphRepository.save(element);
+            graphRepository.save(element);
             return ;
         }
         throw new MoiraSocketException("노드 생성 실패"
-                ,nodeCreateDto.getProjectId() ,nodeCreateDto.getRequestId());
+                ,nodeCreateDto.getProjectId() ,nodeCreateDto.getRequestId(),nodeCreateDto.getRootId());
     }
     /**
      * moving id는 움직이는애, stayId는 movingId가 그아래로 들어가고자하는 id
@@ -129,15 +129,15 @@ public class GraphService {
         if(movingNode.isEmpty()||stayNode.isEmpty()||movingNode.get().getDeleted()||stayNode
                 .get().getDeleted()){
             throw new MoiraSocketException("없는 노드에 대한 요청입니다"
-                    ,structureChangeDto.getProjectId(),structureChangeDto.getRequestId());
+                    ,structureChangeDto.getProjectId(),structureChangeDto.getRequestId(),structureChangeDto.getRootId());
         }
         if(movingNode.get().getNodeType().equals(NodeType.ROOT)){
             throw new MoiraSocketException("불가능한 요청입니다"
-                    ,structureChangeDto.getProjectId(),structureChangeDto.getRequestId());
+                    ,structureChangeDto.getProjectId(),structureChangeDto.getRequestId(),structureChangeDto.getRootId());
         }
         if(checkCycleExist(movingNode.get().getId(),stayNode.get().getId())){
-            throw new MoiraSocketException("순환고리를 만들수없습니다"
-                    ,structureChangeDto.getProjectId(), structureChangeDto.getRequestId());
+            throw new MoiraSocketException("순환고리는 만들수없습니다"
+                    ,structureChangeDto.getProjectId(), structureChangeDto.getRequestId(),structureChangeDto.getRootId());
         }
         Query query=new Query(where("_id").is(movingNode.get().getId()));
         Update updateData=new Update().set("parentId",stayNode.get().getId());
@@ -155,21 +155,21 @@ public class GraphService {
     @GraphTransaction
     public void updateProperties(PropertyChangeDto propertyChangeDto){
         Optional<Graph> g= graphRepository.findById(propertyChangeDto.getNodeId());
-        if(g.isEmpty()||g.get().getDeleted()){
-            throw new MoiraSocketException("없는 객체입니다", propertyChangeDto.getProjectId(),propertyChangeDto.getRequestId());
+        if(g.isEmpty()||g.get().getDeleted()||g.get().getNodeType().equals(NodeType.ROOT)){
+            throw new MoiraSocketException("없는 객체입니다", propertyChangeDto.getProjectId(),propertyChangeDto.getRequestId(),propertyChangeDto.getRootId());
         }
         Element e=(Element) g.get();
         Properties properties= e.getProperties().getOrDefault(propertyChangeDto.getName(),
                 null);
         if(properties==null){
-            throw new MoiraSocketException("없는 속성입니다" ,propertyChangeDto.getProjectId(),propertyChangeDto.getRequestId());
+            throw new MoiraSocketException("없는 속성입니다" ,propertyChangeDto.getProjectId(),propertyChangeDto.getRequestId(),propertyChangeDto.getRootId());
         }
 
         if(propertyChangeDto.getModifyDate().isBefore(
                 LocalDateTime.parse(properties.getModifyDate()))
         ||propertyChangeDto.getModifyDate().isEqual(
                 LocalDateTime.parse(properties.getModifyDate()))){
-            throw new MoiraSocketException("업데이트를 할수없습니다", propertyChangeDto.getProjectId(),propertyChangeDto.getRequestId());
+            throw new MoiraSocketException("업데이트를 할수없습니다", propertyChangeDto.getProjectId(),propertyChangeDto.getRequestId(),propertyChangeDto.getRootId());
         }
         properties.updateValue(propertyChangeDto.getValue());
         properties.updateModifyDate(propertyChangeDto.getModifyDate().toString());

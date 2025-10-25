@@ -1,6 +1,7 @@
 package com.org.server.ProjectTicketMeetTest;
 
 
+import com.org.server.certification.domain.AliasDto;
 import com.org.server.exception.MoiraException;
 import com.org.server.meet.domain.Meet;
 import com.org.server.meet.domain.MeetConnectDto;
@@ -151,7 +152,9 @@ public class ProjectMeetTicket extends IntegralTestEnv {
     @Test
     @DisplayName("프로젝트,티켓,회의 삭제 테스트")
     void delTest(){
-        projectCertService.delTicket(t.getProjectId(),t.getMemberId());
+        Mockito.when(securityMemberReadService.securityMemberRead())
+                .thenReturn(m);
+        projectCertService.delTicket(t.getProjectId());
 
         List<Meet> meets=meetRepository.findAll();
         projectCertService.delMeet(meets.getFirst().getId());
@@ -174,24 +177,24 @@ public class ProjectMeetTicket extends IntegralTestEnv {
     @Test
     @DisplayName("티켓 발급 테스트")
     void ticketProvideTest(){
-        TicketDto ticketDto=new TicketDto("testing");
+        AliasDto aliasDto =new AliasDto("testing");
         Mockito.when(securityMemberReadService.securityMemberRead())
                         .thenReturn(m);
         assertThatThrownBy(()->{
-            projectCertService.createTicket(p.getProjectUrl(),ticketDto);}
+            projectCertService.createTicket(p.getProjectUrl(),aliasDto);}
         )
                 .isInstanceOf(MoiraException.class)
                 .hasMessage("이미 초대되었거나 혹은 퇴출된 유저입니다");
 
-        projectCertService.delTicket(t.getProjectId(),t.getMemberId());
+        projectCertService.delTicket(t.getProjectId());
 
         assertThatThrownBy(()->{
-            projectCertService.createTicket(p.getProjectUrl(),ticketDto);}
+            projectCertService.createTicket(p.getProjectUrl(),aliasDto);}
         )
                 .isInstanceOf(MoiraException.class)
                 .hasMessage("이미 초대되었거나 혹은 퇴출된 유저입니다");
 
-        projectCertService.createTicket(p2.getProjectUrl(),ticketDto);
+        projectCertService.createTicket(p2.getProjectUrl(),aliasDto);
 
         Optional<Ticket> tNew=ticketRepository.findByMemberIdAndProjectId(m.getId(),p2.getId());
 

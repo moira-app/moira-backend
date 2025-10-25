@@ -69,10 +69,12 @@ public class GraphAop {
             return point.proceed();
         }
         catch (MoiraSocketException e){
-            throw new MoiraSocketException(e.getMessage(),e.getProjectId(),e.getRequestId());
+            log.info("error in here");
+            throw new MoiraSocketException(e.getMessage(),e.getProjectId(),e.getRequestId(),e.getRootId());
         }
         catch (Exception e){
-            throw new MoiraSocketException(e.getMessage(),nodeDto.getProjectId(),nodeDto.getRequestId());
+            log.info("error in here2:{}",e.getMessage());
+            throw new MoiraSocketException(e.getMessage(),nodeDto.getProjectId(),nodeDto.getRequestId(),nodeDto.getRootId());
         }
         finally {
             log.info("redssion lock 반납");

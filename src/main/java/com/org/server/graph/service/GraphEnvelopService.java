@@ -1,6 +1,7 @@
 package com.org.server.graph.service;
 
 import com.org.server.exception.MoiraException;
+import com.org.server.exception.MoiraSocketException;
 import com.org.server.graph.GraphActionType;
 import com.org.server.graph.NodeType;
 import com.org.server.graph.domain.Properties;
@@ -10,16 +11,19 @@ import org.springframework.http.HttpStatus;
 
 import java.time.LocalDateTime;
 import java.util.Map;
+import java.util.UUID;
 
 public class GraphEnvelopService {
     public static NodeDto createFromEvent(EventEnvelope eventEnvelope, GraphActionType graphActionType){
+        String nodeId = UUID.randomUUID().toString();
+        String rootId = (String) eventEnvelope.data().get("rootId");
+        String requestId = (String) eventEnvelope.data().get("requestId");
+        String parentId = (String) eventEnvelope.data().get("parentId");
+        Long projectId = Long.parseLong((String) eventEnvelope.data().get("projectId"));
         if(graphActionType.equals(GraphActionType.Create)) {
-            String nodeId = (String) eventEnvelope.data().get("nodeId");
-            String rootId = (String) eventEnvelope.data().get("rootId");
-            String requestId = (String) eventEnvelope.data().get("requestId");
-            String parentId = (String) eventEnvelope.data().get("parentId");
+
             NodeType nodeType = NodeType.valueOf((String) eventEnvelope.data().get("nodeType"));
-            Long projectId = Long.parseLong((String) eventEnvelope.data().get("projectId"));
+
             Map<String, Properties> propertiesMap =
                     (Map<String, Properties>) eventEnvelope.data().get("properties");
             String rootName = (String) eventEnvelope.data().get("rootName");
@@ -36,19 +40,17 @@ public class GraphEnvelopService {
                     .build();
         }
         if(graphActionType.equals(GraphActionType.Delete)||graphActionType.equals(GraphActionType.Structure)){
-            String nodeId = (String) eventEnvelope.data().get("nodeId");
-            String parentId = (String) eventEnvelope.data().get("parentId");
-            String requestId = (String) eventEnvelope.data().get("requestId");
-            Long projectId = Long.parseLong((String)eventEnvelope.data().get("projectId"));
-            String rootId = (String) eventEnvelope.data().get("rootId");
+
             return graphActionType.equals(GraphActionType.Delete) ? NodeDelDto.builder()
                     .rootId(rootId)
                     .nodeId(nodeId)
                     .requestId(requestId)
                     .parentId(parentId)
                     .graphActionType(graphActionType)
+                    .projectId(projectId)
                     .build()
                 : StructureChangeDto.builder()
+                    .requestId(requestId)
                     .rootId(rootId)
                     .projectId(projectId)
                     .graphActionType(graphActionType)
@@ -58,13 +60,9 @@ public class GraphEnvelopService {
 
         }
         if(graphActionType.equals(GraphActionType.Property)){
-            String nodeId = (String) eventEnvelope.data().get("nodeId");
-            String name = (String) eventEnvelope.data().get("name");
-            String rootId = (String) eventEnvelope.data().get("rootId");
-            String requestId = (String) eventEnvelope.data().get("requestId");
             String value = (String) eventEnvelope.data().get("value");
             LocalDateTime modifyDate=LocalDateTime.parse((String)eventEnvelope.data().get("modifyDate"));
-            Long projectId = Long.parseLong((String)eventEnvelope.data().get("projectId"));
+            String name = (String) eventEnvelope.data().get("name");
             return PropertyChangeDto.builder()
                     .graphActionType(graphActionType)
                     .rootId(rootId)
@@ -77,6 +75,6 @@ public class GraphEnvelopService {
                     .build();
         }
 
-        throw new MoiraException("지원하지 않는 타입입니다", HttpStatus.BAD_REQUEST);
+        throw new MoiraSocketException("지원하지 않는 타입입니다",projectId,requestId,rootId);
     }
 }

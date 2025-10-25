@@ -33,12 +33,12 @@ public class StompAuthChannelInterceptor  implements ChannelInterceptor {
 	public Message<?> preSend(Message<?> message, MessageChannel channel) {
 		StompHeaderAccessor acc = StompHeaderAccessor.wrap(message);
 
-        if(acc.getCommand().equals(StompCommand.DISCONNECT)){
+        if(acc.getCommand().equals(StompCommand.DISCONNECT)||acc.getCommand().equals(StompCommand.SUBSCRIBE)){
             return message;
         }
         String token=jwtUtil.getTokenFromHeader(acc.getFirstNativeHeader("Authorization"));
         if(token==null){
-            throw new MoiraSocketException(noAccessToken,0L,"테스트 에러");
+            throw new MoiraSocketException(noAccessToken,0L,"테스트 에러","");
         }
         Claims claims = jwtUtil.getClaims(token);
 		if (StompCommand.CONNECT.equals(acc.getCommand())) {
@@ -56,11 +56,11 @@ public class StompAuthChannelInterceptor  implements ChannelInterceptor {
         //메시지 전송시마다 권한 검증
         if (acc.getDestination().startsWith("/app/crdt")) {
                 Long projectId = Long.parseLong(acc.getDestination().split("/")[3]);
-                if (!redisUserInfoService.checkTicketKey(String.valueOf(memberId)
+                /*if (!redisUserInfoService.checkTicketKey(String.valueOf(memberId)
                         , String.valueOf(projectId))) {
-                    throw new MoiraSocketException(noTicketError, projectId,"테스트 에러");
-                }
-            throw new MoiraSocketException(noTicketError, projectId,"테스트 에러");
+                    throw new MoiraSocketException(noTicketError, projectId,"테스트 에러","");
+                }*/
+            //throw new MoiraSocketException(noTicketError, projectId,"테스트 에러","");
         }
     }
 

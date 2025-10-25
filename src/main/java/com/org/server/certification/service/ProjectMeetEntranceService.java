@@ -1,5 +1,6 @@
 package com.org.server.certification.service;
 
+import com.org.server.certification.domain.AliasDto;
 import com.org.server.exception.MoiraException;
 import com.org.server.meet.domain.Meet;
 import com.org.server.meet.domain.MeetConnectDto;
@@ -11,7 +12,6 @@ import com.org.server.project.domain.ProjectDto;
 import com.org.server.project.repository.ProjectRepository;
 import com.org.server.redis.service.RedisUserInfoService;
 import com.org.server.ticket.domain.Ticket;
-import com.org.server.ticket.domain.TicketDto;
 import com.org.server.ticket.service.TicketService;
 import com.org.server.util.DateTimeMapUtil;
 import lombok.RequiredArgsConstructor;
@@ -42,7 +42,7 @@ public class ProjectMeetEntranceService {
         Member m=securityMemberReadService.securityMemberRead();
         return projectCertRepo.getProjectList(m);
     }
-    public void createTicket(String projectUrl,TicketDto ticketDto){
+    public void createTicket(String projectUrl, AliasDto ticketDto){
         Optional<Project> project=projectRepository.findByProjectUrl(projectUrl);
         if(project.isEmpty()){
             throw new MoiraException("존재하지 않는 프로젝트입니다", HttpStatus.BAD_REQUEST);
@@ -55,7 +55,6 @@ public class ProjectMeetEntranceService {
         ticketService.saveTicket(ticket);
         redisUserInfoService.setTicketKey(String.valueOf(ticket.getMemberId())
                 ,String.valueOf(ticket.getId()));
-
     }
     public void changeAlias(String alias,Long projectId){
         Member m=securityMemberReadService.securityMemberRead();
@@ -90,8 +89,8 @@ public class ProjectMeetEntranceService {
         meetService.saveMeet(m);
     }
 
-    public void delTicket(Long projectId,Long ticketId){
-        ticketService.delTicket(projectId,ticketId);
+    public void delTicket(Long projectId){
+        ticketService.delTicket(projectId,securityMemberReadService.securityMemberRead().getId());
     }
 
     public void delMeet(Long meetId){
