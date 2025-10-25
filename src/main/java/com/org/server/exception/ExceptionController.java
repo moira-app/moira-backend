@@ -26,7 +26,6 @@ public class ExceptionController {
                 ,null),e.getHttpStatus());
     }
 
-
     private ApiResponseUtil<String> extractMethodValidError(MethodArgumentNotValidException e){
         return e.getBindingResult()
                 .getAllErrors()

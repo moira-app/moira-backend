@@ -2,11 +2,15 @@ package com.org.server.config;
 
 import java.util.List;
 
+import com.org.server.interceptor.StompErrorHandler;
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageChannel;
+import org.springframework.messaging.converter.CompositeMessageConverter;
 import org.springframework.messaging.converter.MappingJackson2MessageConverter;
 import org.springframework.messaging.converter.MessageConverter;
+import org.springframework.messaging.handler.invocation.HandlerMethodArgumentResolver;
 import org.springframework.messaging.simp.config.ChannelRegistration;
 import org.springframework.messaging.simp.config.MessageBrokerRegistry;
 import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
@@ -19,14 +23,18 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Configuration
 @EnableWebSocketMessageBroker
+@RequiredArgsConstructor
 public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
+
+	private final StompErrorHandler stompErrorHandler;
 
 	@Override
 	public void registerStompEndpoints(StompEndpointRegistry registry) {
 		registry.addEndpoint("/ws")
 			.setAllowedOriginPatterns("*")
 			.withSockJS();
+		registry.setErrorHandler(stompErrorHandler);
 	}
 
 	@Override
@@ -67,4 +75,5 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 			}
 		});
 	}
+
 }

@@ -45,11 +45,11 @@ public class RedisUserInfoService {
     public void setTicketKey(String memberId,String ticketId){
         redisTemplate.opsForSet().add(ticket_key+memberId,ticketId);
     }
-    public Boolean checkTicketKey(String email,String checkInId){
-        return redisTemplate.opsForSet().isMember(ticket_key+email,checkInId);
+    public Boolean checkTicketKey(String memberId,String projectId){
+        return redisTemplate.opsForSet().isMember(ticket_key+memberId,projectId);
     }
-    public void delTicketKey(String email,String ticketId){
-        redisTemplate.opsForSet().remove(email,ticketId);
+    public void delTicketKey(String memberId,String ticketId){
+        redisTemplate.opsForSet().remove(ticket_key+memberId,ticketId);
     }
     public void integralDelMemberInfo(Member m){
         delRefreshToken(m.getId());

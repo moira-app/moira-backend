@@ -1,5 +1,5 @@
 package com.org.server.graph;
 
-public enum ChangeType{
+public enum GraphActionType {
     Property,Structure,Create,Delete
 }

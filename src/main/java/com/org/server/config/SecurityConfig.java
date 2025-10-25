@@ -43,7 +43,7 @@ public class SecurityConfig {
 
 
 	private static final String[] freePassUrl = {
-		"/swagger-ui/**", "/swagger-resources/**", "/v3/api-docs/**", "/graph/**",
+		"/swagger-ui/**", "/swagger-resources/**", "/v3/api-docs/**",
 		"/cert/**",
 		"/api/chat/**",          // Thymeleaf 테스트 페이지 라우트가 /api/chat/test인 경우
 		"/api/**",          // Thymeleaf 테스트 페이지 라우트가 /api/chat/test인 경우
