@@ -1,5 +1,5 @@
 # Step 1: 애플리케이션 빌드
-FROM openjdk:21-jdk AS builder
+FROM eclipse-temurin:21-jdk AS builder
 
 # 작업 디렉토리 설정
 WORKDIR /app
@@ -21,7 +21,7 @@ COPY src src
 RUN ./gradlew clean bootJar --no-daemon
 
 # Step 2: 런타임 이미지 생성
-FROM openjdk:21-jdk
+FROM eclipse-temurin:21-jdk
 
 # 실행 디렉토리 설정
 WORKDIR /moira-backend-server
