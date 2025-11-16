@@ -1,6 +1,7 @@
 package com.org.server.member;
 
 import com.org.server.member.domain.Member;
+import com.org.server.member.domain.MemberImgUpdate;
 import com.org.server.member.domain.MemberSignInDto;
 import com.org.server.member.domain.MemberUpdateDto;
 import com.org.server.security.domain.CustomUserDetail;
@@ -16,8 +17,12 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.web.servlet.MockMvc;
+
+import java.util.List;
+
 import static org.assertj.core.api.Assertions.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 @AutoConfigureMockMvc
 public class MemberCreateTest extends IntegralTestEnv {
@@ -34,11 +39,17 @@ public class MemberCreateTest extends IntegralTestEnv {
     @Test
     @DisplayName("회원가입이 성공적으로 진행이되는가")
     void createMemBerTest(){
+
+        assertThat(memberRepository.findById(member.getId()).isPresent()).isTrue();
+
         MemberSignInDto memberSignInDto=
                 new MemberSignInDto("test@naver.com","zczxc","1234");
         memberService.memberSignIn(memberSignInDto);
-        assertThat(memberRepository.existsByEmail(memberSignInDto.getEmail()))
-                .isTrue();
+
+
+        List<Member> memberList=memberRepository.findAll();
+
+        assertThat(memberList.get(1).getEmail()).isEqualTo(memberSignInDto.getEmail());
     }
     @Test
     @DisplayName("중복회원 가입 방지 이벤트")
@@ -54,8 +65,9 @@ public class MemberCreateTest extends IntegralTestEnv {
         }""";
 
         mockMvc.perform(post("/member/signIn")
-                .contentType(MediaType.APPLICATION_JSON)
-                .contentType(requestBody))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(requestBody))
+                .andDo(print())
                 .andExpect(status().isBadRequest());
 
     }
@@ -89,7 +101,6 @@ public class MemberCreateTest extends IntegralTestEnv {
         Member test=memberRepository.findById(member.getId()).get();
         assertThat(test.getNickName()).isEqualTo("testing");
 
-
         String requestBody="""
                 {
                 "mail":"test@1test.com",
@@ -102,15 +113,41 @@ public class MemberCreateTest extends IntegralTestEnv {
                 "password": "12345"
         }""";
 
-        mockMvc.perform(post("/login")
+        mockMvc.perform(post("/member/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestBody))
                 .andExpect(status().isBadRequest());
 
-        mockMvc.perform(post("/login")
+        mockMvc.perform(post("/member/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestBody2))
                 .andExpect(status().isOk());
+    }
+    @Test
+    @DisplayName("회원 이미지 업데이트 테스트")
+    void testGetMemberImgUrlUpdate(){
+
+        Mockito.when(securityMemberReadService.securityMemberRead())
+                .thenReturn(member);
+        String imgUrl= memberService.updateMemberImg(new MemberImgUpdate(member.getId(),"test"),
+                "image/png");
+        assertThat(imgUrl!=null).isTrue();
+        Member m2=memberRepository.findById(member.getId()).get();
+        assertThat(m2.getImgUrl()!=null).isTrue();
+
+    }
+
+    @Test
+    @DisplayName("회원 삭제 테스트")
+    void updateMemberDelTest(){
+        Mockito.when(securityMemberReadService.securityMemberRead())
+                .thenReturn(member);
+        Mockito.doNothing()
+                .when(redisUserInfoService)
+                .integralDelMemberInfo(member);
+        memberService.delMember();
+        Member m=memberRepository.findById(member.getId()).get();
+        assertThat(m.getDeleted()).isTrue();
     }
 
     @Test

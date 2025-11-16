@@ -2,7 +2,6 @@ package com.org.server.ProjectTicketMeetTest;
 
 
 import com.org.server.member.domain.Member;
-import com.org.server.member.domain.MemberSignInDto;
 import com.org.server.project.domain.Project;
 import com.org.server.security.domain.CustomUserDetail;
 import org.junit.jupiter.api.BeforeEach;
@@ -18,7 +17,6 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.web.servlet.MockMvc;
 import org.mockito.Mockito;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @AutoConfigureMockMvc
@@ -35,8 +33,8 @@ public class ProjectMeetMvcTest extends IntegralTestEnv{
     @BeforeEach
     void settingMember(){
         member=createMember(1L);
-        withTicket=createProject("testTicket");
-        withNoTicket=createProject("testNoTicket");
+        withTicket=createProject("testTicket","Dsfdff");
+        withNoTicket=createProject("testNoTicket","zczcxzcxzc");
         createTicket(member,withTicket,"zcx");
     }
 
@@ -64,8 +62,8 @@ public class ProjectMeetMvcTest extends IntegralTestEnv{
                 .thenReturn(member);
 
         Mockito.when(redisUserInfoService.checkTicketKey(String.valueOf(member.getId()),
-                String.valueOf(
-                withNoTicket.getId())))
+                        String.valueOf(
+                                withNoTicket.getId())))
                 .thenReturn(false);
 
         String val=String.valueOf(withNoTicket.getId());
@@ -75,7 +73,7 @@ public class ProjectMeetMvcTest extends IntegralTestEnv{
                 "alias": "1234"
         }""";
 
-        mockMvc.perform(post("/projectCert/"+val+"/create")
+        mockMvc.perform(post("/enter/"+val+"/change/alias")
                         .contentType(MediaType.APPLICATION_JSON)
                         .header("Authorization","Bearer "+accessToken)
                         .contentType(requestBody))

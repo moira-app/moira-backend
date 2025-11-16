@@ -30,6 +30,7 @@ import java.time.LocalDate;
 @Transactional
 public class MeetService {
 
+
     private final MeetRepository meetRepository;
     private final MeetAdvanceRepo meetAdvanceRepo;
     private final SecurityMemberReadService securityMemberReadService;
@@ -45,12 +46,21 @@ public class MeetService {
         });
         return meetList;
     }
-
     public void delMeet(Long meetId){
-        Meet m=meetRepository.findById(meetId).get();
-        if(m.getDeleted()){
-            return ;
+        Optional<Meet> m=meetRepository.findById(meetId);
+        if(m.isEmpty()||m.get().getDeleted()){
+            throw new MoiraException("없는 회의 입니다",HttpStatus.BAD_REQUEST);
         }
-        m.updateDeleted();
+        m.get().updateDeleted();
+    }
+    public Meet findById(Long meetId){
+        Optional<Meet> meet= meetRepository.findById(meetId);
+        if (meet.isEmpty()||meet.get().getDeleted()) {
+            throw new MoiraException("존재하지 않는 회의입니다", HttpStatus.BAD_REQUEST);
+        }
+        return meet.get();
+    }
+    public void saveMeet(Meet meet){
+        meetRepository.save(meet);
     }
 }

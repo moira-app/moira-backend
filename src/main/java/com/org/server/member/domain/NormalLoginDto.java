@@ -3,10 +3,11 @@ package com.org.server.member.domain;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 
 @Getter
-
+@NoArgsConstructor
 public class NormalLoginDto {
 
     @Schema(description = "필수값입니다.")

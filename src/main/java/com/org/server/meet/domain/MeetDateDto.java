@@ -11,9 +11,10 @@ import lombok.NoArgsConstructor;
 public class MeetDateDto {
 
 
+
     private Long meetId;
     private Long projectId;
-    private String title;
+    private String meetName;
     private String date;
 
 
@@ -22,10 +23,10 @@ public class MeetDateDto {
     }
 
     @Builder
-    public MeetDateDto(Long meetId, Long projectId, String title, String date) {
+    public MeetDateDto(Long meetId, Long projectId, String meetName, String date) {
         this.meetId = meetId;
         this.projectId = projectId;
-        this.title = title;
+        this.meetName=meetName;
         this.date = date;
     }
 }

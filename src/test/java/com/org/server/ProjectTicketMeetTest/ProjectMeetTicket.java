@@ -1,6 +1,8 @@
 package com.org.server.ProjectTicketMeetTest;
 
 
+import com.org.server.certification.domain.AliasDto;
+import com.org.server.exception.MoiraException;
 import com.org.server.meet.domain.Meet;
 import com.org.server.meet.domain.MeetConnectDto;
 import com.org.server.meet.domain.MeetDateDto;
@@ -10,6 +12,7 @@ import com.org.server.project.domain.ProjectDto;
 
 import com.org.server.support.IntegralTestEnv;
 import com.org.server.ticket.domain.Ticket;
+import com.org.server.ticket.domain.TicketDto;
 import com.org.server.util.DateTimeMapUtil;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -24,6 +27,8 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.List;
+import java.util.Optional;
+
 import static org.assertj.core.api.Assertions.*;
 
 public class ProjectMeetTicket extends IntegralTestEnv {
@@ -70,8 +75,8 @@ public class ProjectMeetTicket extends IntegralTestEnv {
         Member m2=createMember(2L);
         Mockito.when(securityMemberReadService.securityMemberRead())
                 .thenReturn(m);
-        p=createProject("test");
-        p2=createProject("test2");
+        p=createProject("test","Dfdfd");
+        p2=createProject("test2","fsdfd");
         t=createTicket(m,p,null);
         createTicket(m2,p2,"p2");
 
@@ -83,11 +88,11 @@ public class ProjectMeetTicket extends IntegralTestEnv {
         monthFuture=LocalDate.now().plusMonths(1L).format(DateTimeMapUtil.formatByDot2);
 
         for(int i=0;5>i;i++) {
-            projectCertService.createMeet(new MeetDto(startTime,endTime),p.getId());
-            projectCertService.createMeet(new MeetDto(startTime2,endTime2),p.getId());
+            projectCertService.createMeet(new MeetDto("Test",startTime,endTime),p.getId());
+            projectCertService.createMeet(new MeetDto("test",startTime2,endTime2),p.getId());
         }
         for(int i=0;5>i;i++) {
-            projectCertService.createMeet(new MeetDto(startTime,endTime),p2.getId());
+            projectCertService.createMeet(new MeetDto("test",startTime,endTime),p2.getId());
         }
     }
 
@@ -123,11 +128,13 @@ public class ProjectMeetTicket extends IntegralTestEnv {
 
         Mockito.when(securityMemberReadService.securityMemberRead())
                 .thenReturn(m);
-
-
         projectCertService.changeAlias("change",p.getId());
         Ticket t2=ticketRepository.findById(t.getId()).get();
         assertThat(t2.getAlias()).isEqualTo("change");
+        List<Meet> meets=meetRepository.findAll();
+        MeetConnectDto meetConnectDto=projectCertService.checkInMeet(meets.getFirst().getId(),
+                p.getId());
+        assertThat(meetConnectDto.getAlias()).isEqualTo("change");
     }
 
     @Test
@@ -137,8 +144,61 @@ public class ProjectMeetTicket extends IntegralTestEnv {
         Mockito.when(securityMemberReadService.securityMemberRead())
                 .thenReturn(m);
         List<Meet> meets=meetRepository.findAll();
-        MeetConnectDto meetConnectDto=projectCertService.checkIn(meets.getFirst().getId(),
+        MeetConnectDto meetConnectDto=projectCertService.checkInMeet(meets.getFirst().getId(),
                 p.getId());
         assertThat(meetConnectDto.getAlias()).isEqualTo("test1");
+    }
+
+    @Test
+    @DisplayName("프로젝트,티켓,회의 삭제 테스트")
+    void delTest(){
+        Mockito.when(securityMemberReadService.securityMemberRead())
+                .thenReturn(m);
+        projectCertService.delTicket(t.getProjectId());
+
+        List<Meet> meets=meetRepository.findAll();
+        projectCertService.delMeet(meets.getFirst().getId());
+
+        Ticket tdel=ticketRepository.findByMemberIdAndProjectId(t.getMemberId(),t.getProjectId())
+                .get();
+
+        Mockito.when(securityMemberReadService.securityMemberRead())
+                .thenReturn(m);
+        List<MeetDateDto> meetDateDtos = meetService.getMeetList(monthCurrent);
+        assertThat(meetDateDtos.size()).isEqualTo(4);
+        assertThat(tdel.getDeleted()).isTrue();
+
+        projectService.delProject(p.getId());
+
+        Project project=projectRepository.findById(p.getId()).get();
+        assertThat(project.getDeleted()).isTrue();
+    }
+
+    @Test
+    @DisplayName("티켓 발급 테스트")
+    void ticketProvideTest(){
+        AliasDto aliasDto =new AliasDto("testing");
+        Mockito.when(securityMemberReadService.securityMemberRead())
+                        .thenReturn(m);
+        assertThatThrownBy(()->{
+            projectCertService.createTicket(p.getProjectUrl(),aliasDto);}
+        )
+                .isInstanceOf(MoiraException.class)
+                .hasMessage("이미 초대되었거나 혹은 퇴출된 유저입니다");
+
+        projectCertService.delTicket(t.getProjectId());
+
+        assertThatThrownBy(()->{
+            projectCertService.createTicket(p.getProjectUrl(),aliasDto);}
+        )
+                .isInstanceOf(MoiraException.class)
+                .hasMessage("이미 초대되었거나 혹은 퇴출된 유저입니다");
+
+        projectCertService.createTicket(p2.getProjectUrl(),aliasDto);
+
+        Optional<Ticket> tNew=ticketRepository.findByMemberIdAndProjectId(m.getId(),p2.getId());
+
+        assertThat(tNew.isPresent()).isTrue();
+
     }
 }
