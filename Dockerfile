@@ -21,7 +21,7 @@ COPY src src
 RUN ./gradlew clean bootJar --no-daemon
 
 # Step 2: 런타임 이미지 생성
-FROM openjdk:21-jdk-slim
+FROM openjdk:21-jdk-slim-bookworm
 
 # 실행 디렉토리 설정
 WORKDIR /moira-backend-server
