@@ -24,7 +24,8 @@ public class WebConfig{
          * 브라우저가 쿠키 혹은 AUTHROZATION같은 헤더를 포함할수있게 해주는 설정.
          * */
         config.setAllowCredentials(true);
-        config.setAllowedOrigins(List.of("http://localhost:3000"));
+        config.setAllowedOrigins(List.of("http://localhost:3000","http://localhost:5173"));
+        // for webo socket test https://jiangxy.github.io
         config.addAllowedMethod("*");
         config.addAllowedHeader("*");
 

@@ -15,6 +15,7 @@ import java.time.LocalDateTime;
 
 public class Meet extends BaseTime{
 
+
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
@@ -23,15 +24,15 @@ public class Meet extends BaseTime{
     private Project project;
     private LocalDateTime startTime;
     private LocalDateTime endTime;
-    private String meetUrl;
+    private String meetName;
     private Boolean deleted=false;
 
 
     @Builder
-    public Meet(Project project, LocalDateTime startTime, String meetUrl,LocalDateTime endTime) {
+    public Meet(Project project, LocalDateTime startTime, String meetName,LocalDateTime endTime) {
         this.project = project;
         this.startTime = startTime;
-        this.meetUrl = meetUrl;
+        this.meetName=meetName;
         this.endTime=endTime;
     }
     public void updateDeleted(){

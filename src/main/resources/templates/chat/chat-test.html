@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8" />
+    <title>Chat API 테스트 (Thymeleaf)</title>
+    <style>
+        body { font-family: system-ui, sans-serif; }
+        form { margin-bottom: 1rem; }
+        input { margin: 4px 0; }
+        #chatLog { height: 260px; overflow: auto; background: #111; color: #f8f8f2; padding: 10px; border-radius: 6px; }
+        .dim { opacity: .7 }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
+</head>
+<body>
+<h1>Chat API 테스트 (WebSocket/STOMP + REST)</h1>
+
+<!-- 방 보장 -->
+<section>
+    <h2>UC-1: 방 보장 + 멤버 추가</h2>
+    <form onsubmit="event.preventDefault(); ensureRoom();">
+        ChatType: <input type="text" id="chatType" value="PROJECT"><br>
+        RefId: <input type="number" id="refId" value="1001"><br>
+        MemberIds(JSON): <input type="text" id="memberIds" value="[10,20,30]"><br>
+        <button type="submit">실행</button>
+    </form>
+    <pre id="uc1Result"></pre>
+</section>
+
+<hr>
+
+<!-- 실시간 채팅 -->
+<section>
+    <h2>실시간 채팅</h2>
+    <div>
+        RoomId: <input type="number" id="roomId" value="1"><br>
+        SenderId: <input type="number" id="senderId" value="7"><br>
+        Content: <input type="text" id="content" placeholder="메시지를 입력하세요" onclick="fn_send_messge(this)"><br>
+        <button type="button" id="btnConnect"  onclick="connect()">1) Connect</button>
+        <button type="button" id="btnSend"     onclick="send()" disabled>3) Send</button>
+    </div>
+    <pre id="chatLog"></pre>
+</section>
+
+<script>
+    // ----------------------------
+    // 공용 유틸
+    // ----------------------------
+    const $ = (id) => document.getElementById(id);
+    function log(line, dim=false){
+        const box = $('chatLog');
+        const msg = (typeof line === 'string') ? line : JSON.stringify(line);
+        box.textContent += (dim ? `[${msg}]` : msg) + "\n";
+        box.scrollTop = box.scrollHeight;
+    }
+    async function callJson(url, method='GET', body=null){
+        const opt = { method, headers: {} };
+        if (body != null) { opt.headers['Content-Type'] = 'application/json'; opt.body = JSON.stringify(body); }
+        const res = await fetch(url, opt);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        return res.json();
+    }
+
+    // ----------------------------
+    // REST: 방 보장
+    // ----------------------------
+    async function ensureRoom(){
+        const chatType = $('chatType').value;
+        const refId    = $('refId').value;
+        const memberIds= JSON.parse($('memberIds').value || '[]');
+
+        try{
+            const room = await callJson(`/api/chat/rooms?chatType=${encodeURIComponent(chatType)}&refId=${encodeURIComponent(refId)}`, 'POST', memberIds);
+            $('uc1Result').textContent = `Room -> id: ${room.id}, chatType: ${room.chatType}, refId: ${room.refId}`;
+            // 편의: 입력창에 반영
+            if (room.id) $('roomId').value = String(room.id);
+        }catch(e){
+            $('uc1Result').textContent = '요청 실패: ' + e.message;
+        }
+    }
+
+    // ----------------------------
+    // WebSocket / STOMP
+    // ----------------------------
+    let stomp = null;
+    const seenIds = new Set();       // 중복 방지
+
+    function fn_send_messge(e){
+        if (e.keydown() === 13){
+            send();
+        }
+    }
+
+    function renderLine(m){
+        const sender = m.senderId ?? m.sender ?? '-';
+        const text   = m.content ?? '';
+        const ts     = (m.createDate || m.createdAt || '').toString().replace('T',' ').slice(0,19);
+        return `${sender} : ${text}${ts ? '  ('+ts+')' : ''}`;
+    }
+    function appendMessage(m){
+        if (m && m.id && seenIds.has(m.id)) return;
+        if (m && m.id) seenIds.add(m.id);
+        log(renderLine(m));
+    }
+    function appendMany(list){
+        list.forEach(appendMessage);
+    }
+    async function loadHistory(roomId){
+        try{
+            const arr = await callJson(`/api/chat/rooms/${encodeURIComponent(roomId)}/messages/all`, 'POST');
+            // 오래된→새로운 순으로 정렬(백엔드 정렬과 맞추어 필요 시 수정)
+            arr.sort((a,b)=>(a.id||0)-(b.id||0));
+            appendMany(arr);
+        }catch(e){
+            log(`history load failed: ${e.message}`, true);
+        }
+    }
+
+    function connect(){
+        if (stomp?.connected) { log('already connected', true); return; }
+
+        const sock = new SockJS('/ws');
+        stomp = Stomp.over(sock);
+        stomp.debug = null;
+        stomp.heartbeat.outgoing = 10000;
+        stomp.heartbeat.incoming = 10000;
+
+        const roomId = $('roomId').value;
+
+        stomp.connect({},
+            async () => {
+                log('connected', true);
+
+                // 에러 채널
+                stomp.subscribe('/topic/errors', f => log({serverError: f.body}, true));
+
+                // 1) 히스토리 먼저
+                await loadHistory(roomId);
+
+                // 2) 구독(실시간 append)
+                stomp.subscribe(`/topic/chat/room.${roomId}`, frame => {
+                    try{
+                        const payload = JSON.parse(frame.body);
+
+                        console.log('payload', payload);
+                        if (Array.isArray(payload)) payload.forEach(appendMessage);
+                        else appendMessage(payload);
+                    }catch(e){
+                        log(frame.body);
+                    }
+                });
+
+                $('btnSend').disabled = false;
+            },
+            (err) => {
+                log({connectError: err}, true);
+                $('btnSend').disabled = true;
+            }
+        );
+    }
+
+    function send(){
+        const roomId   = +$('roomId').value;
+        const senderId = +$('senderId').value;
+        const content  = $('content').value.trim();
+        if (!content) { log('content is empty', true); return; }
+        if (!stomp?.connected) { log('connect first', true); return; }
+
+        const env = {
+            type: 'chat.message',
+            version: '1.0',
+            data: { roomId, senderId, content },
+            meta: { ts: Date.now() }
+        };
+
+/*
+        // 낙관적 UI (서버에서 같은 내용이 다시 오면 seenIds로 중복 방지)
+        appendMessage(
+            { senderId, content, createDate: new Date().toISOString() }
+        ) ;
+*/
+
+        stomp.send('/app/event', { 'content-type': 'application/json' }, JSON.stringify(env));
+        $('content').value = '';
+    }
+</script>
+</body>
+</html>

@@ -12,14 +12,17 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/member")
 @RequiredArgsConstructor
+@Slf4j
 @Tag(name = "회원 관련 Api",description = "회원 로그인,회원 가입, 내정보 불러오기, 내정보 업데이트 관련입니다.")
 public class MemberController {
 
@@ -83,7 +86,7 @@ public class MemberController {
                     content = @Content(schema = @Schema(implementation = ApiResponseUtil.class)))
     })
     @PostMapping("/login")
-    public void memberLoginApi(@RequestBody NormalLoginDto normalLoginDto){
+    public void memberLoginApi(@RequestBody NormalLoginDto normalLoginDto, HttpServletRequest request){
     }
 
     @Operation(summary = "소셜 로그인", description = "소셜 로그인 api입니다.")
@@ -110,4 +113,19 @@ public class MemberController {
         memberService.delMember();
         return ResponseEntity.ok(ApiResponseUtil.CreateApiResponse("ok",null));
     }
+
+
+    @Operation(summary = "로그아웃 api입니다.",description = "돌려주는 값은 딱히 신경안써도됩니다.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "로그아웃 성공"),
+            @ApiResponse(responseCode = "400", description = "토큰이 필요합니다.")
+    })
+    @Parameter(name = "Authorization",
+            description = "요청시 토큰값을 넣어주셔야됩니다.",
+            required = true,
+            example = "Bearer [tokenvalue]",
+            in = ParameterIn.HEADER)
+    @GetMapping("/logout")
+    public void logoutMember(){
+    };
 }
