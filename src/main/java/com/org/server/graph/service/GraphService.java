@@ -6,13 +6,11 @@ import com.org.server.graph.GraphTransaction;
 import com.org.server.graph.NodeType;
 import com.org.server.graph.domain.*;
 import com.org.server.graph.domain.Properties;
-import com.org.server.graph.dto.NodeCreateDto;
-import com.org.server.graph.dto.GraphDto;
-import com.org.server.graph.dto.PropertyChangeDto;
-import com.org.server.graph.dto.StructureChangeDto;
+import com.org.server.graph.dto.*;
 import com.org.server.graph.repository.GraphRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.aggregation.*;
 import org.springframework.data.mongodb.core.query.Criteria;
@@ -20,6 +18,7 @@ import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.*;
@@ -42,7 +41,7 @@ public class GraphService {
     }
 
     public Map<String, List<Graph>> getWholeGraph(String rootId){
-
+        log.info("그래프 조회 시작");
         MatchOperation matchStage = match(where("_id").is(rootId));
 
         Criteria filter= where("deleted").is(false);
@@ -59,10 +58,9 @@ public class GraphService {
 
         Aggregation aggregation = newAggregation(matchStage, graphLookupStage,projectStage);
 
-        AggregationResults<GraphDto> results = mongoTemplate.aggregate(
+        AggregationResults<GraphDto> results =mongoTemplate.aggregate(
                 aggregation, "graph", GraphDto.class
         );
-
         Map<String,List<Graph>> domTree=new HashMap<>();
 
         GraphDto graphDto=results.getUniqueMappedResult();
@@ -179,12 +177,13 @@ public class GraphService {
         mongoTemplate.updateFirst(query,updateData,Element.class);
     }
 
-    public void delGraphNode(String graphId){
-        Optional<Graph> g=graphRepository.findById(graphId);
+    @GraphTransaction
+    public void delGraphNode(NodeDelDto nodeDelDto){
+        Optional<Graph> g=graphRepository.findById(nodeDelDto.getNodeId());
         if(g.isEmpty()||g.get().getDeleted()){
             throw new MoiraException("없는 객체입니다", HttpStatus.BAD_REQUEST);
         }
-        deleteBulkUpdate(graphId);
+        deleteBulkUpdate(nodeDelDto.getNodeId());
     }
 
 
@@ -200,8 +199,6 @@ public class GraphService {
                 .connectTo("parentId")
                 .restrict(filter)
                 .as("descendants");
-
-
 
         UnwindOperation unwindStage = unwind("descendants");
 
@@ -237,12 +234,12 @@ public class GraphService {
                 setStage,
                 mergeStage
         );
-
         AggregationResults<GraphDto> results = mongoTemplate.aggregate(
                 aggregation, "graph", GraphDto.class
         );
     }
     private boolean checkCycleExist(String movingId,String stayId){
+        log.info("cycle start");
         MatchOperation matchStage = match(where("_id").is(movingId));
 
         Criteria filter= where("deleted").is(false);
@@ -269,10 +266,12 @@ public class GraphService {
                 aggregation, "graph", GraphDto.class
         );
         GraphDto graphDto=results.getUniqueMappedResult();
+        log.info("cycle end");
         if(graphDto!=null){
             return true;
         }
         return false;
 
     }
+
 }
