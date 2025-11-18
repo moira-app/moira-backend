@@ -27,11 +27,8 @@ public class GraphAop {
 
 
     private final RedissonClient redissonClient;
-    private final static String nodeDeleteKey="delete-";
-    private final static String nodePropertyKey="property-";
     private final static String nodeStructureChange="structure-";
 
-    private final static String etcActionLock="etc-action";
 
     @Around("@annotation(com.org.server.graph.GraphTransaction)")
     public Object mongoRedissonLock(ProceedingJoinPoint point) throws Throwable{
@@ -40,27 +37,11 @@ public class GraphAop {
 
         NodeDto nodeDto =(NodeDto) point.getArgs()[0];
         RLock rLock;
+        StructureChangeDto structureChangeDto=(StructureChangeDto) nodeDto;
 
-        switch (nodeDto.getGraphActionType()){
-            case GraphActionType.Property -> {
-                rLock=redissonClient.getLock(nodePropertyKey+((PropertyChangeDto)nodeDto).getNodeId()
-                +"-"+((PropertyChangeDto)nodeDto).getName());
-            }
-            case GraphActionType.Structure -> {
+        String nodeId=structureChangeDto.getNodeId();
+        rLock = redissonClient.getLock(nodeStructureChange +nodeId);
 
-                StructureChangeDto structureChangeDto=(StructureChangeDto) nodeDto;
-
-                String nodeId=structureChangeDto.getNodeId();
-                String parentId=structureChangeDto.getParentId();
-                if(0>nodeId.compareTo(parentId)) {
-                    rLock = redissonClient.getLock(nodeStructureChange +nodeId);
-                }
-                else{
-                    rLock = redissonClient.getLock(nodeStructureChange +parentId);
-                }
-            }
-            default -> rLock=redissonClient.getLock(nodeDeleteKey+((NodeDelDto)nodeDto).getRootId());
-        }
         try{
             boolean rockState=rLock.tryLock(2000L,2000L, TimeUnit.MILLISECONDS);
             if(!rockState){

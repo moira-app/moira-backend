@@ -1,5 +1,6 @@
 package com.org.server.graph.service;
 
+import com.mongodb.client.result.UpdateResult;
 import com.org.server.exception.MoiraException;
 import com.org.server.exception.MoiraSocketException;
 import com.org.server.graph.GraphTransaction;
@@ -118,28 +119,26 @@ public class GraphService {
      * 단 아래의 속성 수정과는 공유되지 않는 락 즉 속성 수정이 트리구조 수정의 영향을 받지는 않으니까.
      */
     @GraphTransaction
-    public void updateNodeReference(StructureChangeDto structureChangeDto){
+    public Boolean updateNodeReference(StructureChangeDto structureChangeDto){
         if(structureChangeDto.getNodeId().equals(structureChangeDto.getParentId())){
-            throw new MoiraException("불가능한 요청입니다", HttpStatus.BAD_REQUEST);
+            return false;
         }
         Optional<Graph> movingNode= graphRepository.findById(structureChangeDto.getNodeId());
         Optional<Graph> stayNode= graphRepository.findById(structureChangeDto.getParentId());
         if(movingNode.isEmpty()||stayNode.isEmpty()||movingNode.get().getDeleted()||stayNode
-                .get().getDeleted()){
-            throw new MoiraSocketException("없는 노드에 대한 요청입니다"
-                    ,structureChangeDto.getProjectId(),structureChangeDto.getRequestId(),structureChangeDto.getRootId());
-        }
-        if(movingNode.get().getNodeType().equals(NodeType.ROOT)){
-            throw new MoiraSocketException("불가능한 요청입니다"
-                    ,structureChangeDto.getProjectId(),structureChangeDto.getRequestId(),structureChangeDto.getRootId());
+                .get().getDeleted()||movingNode.get().getNodeType().equals(NodeType.ROOT)){
+            return false;
         }
         if(checkCycleExist(movingNode.get().getId(),stayNode.get().getId())){
-            throw new MoiraSocketException("순환고리는 만들수없습니다"
-                    ,structureChangeDto.getProjectId(), structureChangeDto.getRequestId(),structureChangeDto.getRootId());
+            return false;
         }
         Query query=new Query(where("_id").is(movingNode.get().getId()));
         Update updateData=new Update().set("parentId",stayNode.get().getId());
-        mongoTemplate.updateFirst(query,updateData,Element.class);
+        UpdateResult result =mongoTemplate.updateFirst(query,updateData,Element.class);
+        if(result.getModifiedCount()==0){
+            return false;
+        }
+        return true;
     }
 
     /**
@@ -150,40 +149,34 @@ public class GraphService {
      * 충돌없이 수정하게하고 , 같은 속성을 수정하려는 시도는 각각 순서를 지키면서 해당 속성값의 수정시각과
      * 비교해서 수정해야될지 말아야 할지를 따지기 위함이다.
      * */
-    @GraphTransaction
-    public void updateProperties(PropertyChangeDto propertyChangeDto){
-        Optional<Graph> g= graphRepository.findById(propertyChangeDto.getNodeId());
-        if(g.isEmpty()||g.get().getDeleted()||g.get().getNodeType().equals(NodeType.ROOT)){
-            throw new MoiraSocketException("없는 객체입니다", propertyChangeDto.getProjectId(),propertyChangeDto.getRequestId(),propertyChangeDto.getRootId());
-        }
-        Element e=(Element) g.get();
-        Properties properties= e.getProperties().getOrDefault(propertyChangeDto.getName(),
-                null);
-        if(properties==null){
-            throw new MoiraSocketException("없는 속성입니다" ,propertyChangeDto.getProjectId(),propertyChangeDto.getRequestId(),propertyChangeDto.getRootId());
-        }
 
-        if(propertyChangeDto.getModifyDate().isBefore(
-                LocalDateTime.parse(properties.getModifyDate()))
-        ||propertyChangeDto.getModifyDate().isEqual(
-                LocalDateTime.parse(properties.getModifyDate()))){
-            throw new MoiraSocketException("업데이트를 할수없습니다", propertyChangeDto.getProjectId(),propertyChangeDto.getRequestId(),propertyChangeDto.getRootId());
-        }
-        properties.updateValue(propertyChangeDto.getValue());
-        properties.updateModifyDate(propertyChangeDto.getModifyDate().toString());
+    public Boolean updateProperties(PropertyChangeDto propertyChangeDto){
 
-        Query query=new Query(where("_id").is(propertyChangeDto.getNodeId()));
-        Update updateData=new Update().set("properties",e.getProperties());
-        mongoTemplate.updateFirst(query,updateData,Element.class);
+        Query query=new Query(where("_id").is(propertyChangeDto.getNodeId())
+                .and("deleted").is(false)
+                .and("properties."+propertyChangeDto.getName()+".modifyDate")
+                .lt(propertyChangeDto.getModifyDate()));
+        Update update = new Update();
+        update.set("properties."+propertyChangeDto.getName()+".value",propertyChangeDto.getValue());
+        update.set("properties."+propertyChangeDto.getName()+".modifyDate",propertyChangeDto.getModifyDate());
+
+        UpdateResult result= mongoTemplate.updateFirst(query, update, Element.class);
+        if(result.getModifiedCount()==0){
+            return false;
+        }
+        return true;
     }
 
-    @GraphTransaction
-    public void delGraphNode(NodeDelDto nodeDelDto){
-        Optional<Graph> g=graphRepository.findById(nodeDelDto.getNodeId());
-        if(g.isEmpty()||g.get().getDeleted()){
-            throw new MoiraException("없는 객체입니다", HttpStatus.BAD_REQUEST);
+    public Boolean delGraphNode(NodeDelDto nodeDelDto){
+        Query query=new Query(where("_id").is(nodeDelDto.getNodeId())
+                .and("deleted").is(false));
+        Update update = new Update();
+        update.set("deleted",true);
+        UpdateResult result= mongoTemplate.updateFirst(query, update, Element.class);
+        if(result.getModifiedCount()==0){
+            return false;
         }
-        deleteBulkUpdate(nodeDelDto.getNodeId());
+        return true;
     }
 
 

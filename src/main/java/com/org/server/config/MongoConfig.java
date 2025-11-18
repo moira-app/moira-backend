@@ -13,11 +13,14 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
+import org.springframework.data.convert.Jsr310Converters;
 import org.springframework.data.mongodb.MongoDatabaseFactory;
 import org.springframework.data.mongodb.MongoTransactionManager;
 import org.springframework.data.mongodb.config.AbstractMongoClientConfiguration;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.SimpleMongoClientDatabaseFactory;
+import org.springframework.data.mongodb.core.convert.*;
+import org.springframework.data.mongodb.core.mapping.MongoMappingContext;
 
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -45,6 +48,22 @@ public class MongoConfig extends AbstractMongoClientConfiguration {
                 .writeConcern(WriteConcern.W2)
                 .build();
         return MongoClients.create(mongoClientSettings);
+    }
+    @Bean
+    public MappingMongoConverter mappingMongoConverter(MongoDatabaseFactory mongoDatabaseFactory,
+                                                       MongoMappingContext mongoMappingContext,
+                                                       Jsr310Converters.LocalDateTimeToDateConverter
+                                                                   dateKstParser,
+                                                       Jsr310Converters.DateToLocalDateTimeConverter
+                                                                   localDateTimeKstConverter){
+
+        DbRefResolver dbRefResolver=new DefaultDbRefResolver(mongoDatabaseFactory);
+        MappingMongoConverter converter=new MappingMongoConverter(dbRefResolver,mongoMappingContext);
+        converter.setTypeMapper(new DefaultMongoTypeMapper(null));
+        converter.setCustomConversions(new MongoCustomConversions(List.of(dateKstParser,localDateTimeKstConverter)));
+
+        return converter;
+
     }
 
     @Bean

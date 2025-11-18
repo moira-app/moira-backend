@@ -34,7 +34,7 @@ public class GraphTest extends IntegralTestEnv {
 
             Map<String,Properties> propertiesMap=new HashMap<>();
             for(int j=0;3>j;j++){
-                Properties properties=new Properties("Test",LocalDateTime.now().toString());
+                Properties properties=new Properties("Test",LocalDateTime.now());
                 propertiesMap.put(i+"-"+j,properties);
             }
             Element pages = graphs.isEmpty() ? new Element(UUID.randomUUID().toString(),

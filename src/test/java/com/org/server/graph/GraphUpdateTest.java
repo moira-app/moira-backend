@@ -34,7 +34,7 @@ public class GraphUpdateTest extends IntegralTestEnv {
 
             Map<String, Properties> propertiesMap=new HashMap<>();
             for(int j=0;3>j;j++){
-                Properties properties=new Properties("Test",LocalDateTime.now().toString());
+                Properties properties=new Properties("Test",LocalDateTime.now());
                 propertiesMap.put(i+"-"+j,properties);
             }
             Element pages = graphs.isEmpty() ? new Element(UUID.randomUUID().toString(),
@@ -62,7 +62,7 @@ public class GraphUpdateTest extends IntegralTestEnv {
         Properties properties=e.getProperties().get("0-0");
         Assertions.assertThat(properties.getValue()).isEqualTo("testing");
 
-        Assertions.assertThatThrownBy(()->{
+        Assertions.assertThat(
                     graphService.updateNodeReference(
                             StructureChangeDto.builder()
                                     .graphActionType(GraphActionType.Structure)
@@ -70,9 +70,10 @@ public class GraphUpdateTest extends IntegralTestEnv {
                                     .parentId(graphs.getLast().getId())
                                     .rootId("rootId")
                                     .projectId(1L)
-                                    .build());
-                }).isInstanceOf(MoiraSocketException.class);
-        System.out.println("트리구조 바꾸는 업데이트 실행");
+                                    .build())
+        ).isEqualTo(false);
+
+        Assertions.assertThat(
         graphService.updateNodeReference(
                 StructureChangeDto.builder()
                         .graphActionType(GraphActionType.Structure)
@@ -80,7 +81,7 @@ public class GraphUpdateTest extends IntegralTestEnv {
                         .parentId(graphs.getFirst().getId())
                         .rootId("rootId")
                         .projectId(1L)
-                        .build());
+                        .build())).isEqualTo(true);
         e=(Element) graphRepository.findById(graphs.getLast().getId()).get();
         Assertions.assertThat(e.getParentId()).isEqualTo(graphs.getFirst().getId());
 
@@ -111,9 +112,7 @@ public class GraphUpdateTest extends IntegralTestEnv {
                 .rootId("rootId")
                 .projectId(1L)
                 .build();
-        Assertions.assertThatThrownBy(()->{
-            graphService.updateProperties(propertiesUpdateDto);
-        }).isInstanceOf(MoiraSocketException.class);
+        Assertions.assertThat(graphService.updateProperties(propertiesUpdateDto)).isEqualTo(false);
     }
 
     @Test
@@ -131,10 +130,11 @@ public class GraphUpdateTest extends IntegralTestEnv {
         for (int i = 0; 2 > i; i++) {
 
             try{
-                graphService.delGraphNode(nodeDelDto);
+                if(graphService.delGraphNode(nodeDelDto)){
+                    throw new RuntimeException();
+                }
             }
             catch (Exception e){
-                System.out.println(e.getMessage());
                 checkFailLatch.countDown();
             }
             finally {
