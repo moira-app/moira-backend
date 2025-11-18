@@ -2,6 +2,7 @@ package com.org.server.graph;
 
 import com.org.server.exception.MoiraException;
 import com.org.server.exception.MoiraSocketException;
+import com.org.server.graph.dto.NodeDelDto;
 import com.org.server.graph.dto.NodeDto;
 import com.org.server.graph.dto.PropertyChangeDto;
 import com.org.server.graph.dto.StructureChangeDto;
@@ -26,7 +27,7 @@ public class GraphAop {
 
 
     private final RedissonClient redissonClient;
-    private final static String nodeCreateKey="create-";
+    private final static String nodeDeleteKey="delete-";
     private final static String nodePropertyKey="property-";
     private final static String nodeStructureChange="structure-";
 
@@ -58,7 +59,7 @@ public class GraphAop {
                     rLock = redissonClient.getLock(nodeStructureChange +parentId);
                 }
             }
-            default -> rLock=redissonClient.getLock(etcActionLock);
+            default -> rLock=redissonClient.getLock(nodeDeleteKey+((NodeDelDto)nodeDto).getRootId());
         }
         try{
             boolean rockState=rLock.tryLock(2000L,2000L, TimeUnit.MILLISECONDS);

@@ -39,7 +39,7 @@ public class CrdtEventHandler implements EventHandler{
         }
         if(actionType.equals(GraphActionType.Delete)){
             NodeDelDto nodeDelDto=(NodeDelDto) GraphEnvelopService.createFromEvent(env,actionType);
-            graphService.delGraphNode(nodeDelDto.getNodeId());
+            graphService.delGraphNode(nodeDelDto);
             messagingTemplate.convertAndSend("/topic/crdt/"+nodeDelDto.getProjectId(),nodeDelDto);
         }
         if(actionType.equals(GraphActionType.Property)){
