@@ -32,15 +32,12 @@ public class GraphAop {
 
     @Around("@annotation(com.org.server.graph.GraphTransaction)")
     public Object mongoRedissonLock(ProceedingJoinPoint point) throws Throwable{
-
-        MethodSignature methodSignature=(MethodSignature) point.getSignature();
-
         NodeDto nodeDto =(NodeDto) point.getArgs()[0];
         RLock rLock;
         StructureChangeDto structureChangeDto=(StructureChangeDto) nodeDto;
 
-        String nodeId=structureChangeDto.getNodeId();
-        rLock = redissonClient.getLock(nodeStructureChange +nodeId);
+        String parentId=structureChangeDto.getParentId();
+        rLock = redissonClient.getLock(nodeStructureChange +parentId);
 
         try{
             boolean rockState=rLock.tryLock(2000L,2000L, TimeUnit.MILLISECONDS);
@@ -50,13 +47,9 @@ public class GraphAop {
             log.info("redssion 트랜잭션 작동 시작");
             return point.proceed();
         }
-        catch (MoiraSocketException e){
-            log.info("error in here");
-            throw new MoiraSocketException(e.getMessage(),e.getProjectId(),e.getRequestId(),e.getRootId());
-        }
         catch (Exception e){
-            log.info("error in here2:{}",e.getMessage());
-            throw new MoiraSocketException(e.getMessage(),nodeDto.getProjectId(),nodeDto.getRequestId(),nodeDto.getRootId());
+            log.info("트리구조 수정중 에러발생:{}",e.getMessage());
+            return false;
         }
         finally {
             log.info("redssion lock 반납");
