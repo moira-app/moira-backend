@@ -1,12 +1,9 @@
 package com.org.server.graph.service;
 
 import com.mongodb.client.result.UpdateResult;
-import com.org.server.exception.MoiraException;
-import com.org.server.exception.MoiraSocketException;
 import com.org.server.graph.GraphTransaction;
 import com.org.server.graph.NodeType;
 import com.org.server.graph.domain.*;
-import com.org.server.graph.domain.Properties;
 import com.org.server.graph.dto.*;
 import com.org.server.graph.repository.GraphRepository;
 import lombok.RequiredArgsConstructor;
@@ -17,16 +14,16 @@ import org.springframework.data.mongodb.core.aggregation.*;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executor;
+import java.util.concurrent.RejectedExecutionException;
+
 
 import static org.springframework.data.mongodb.core.aggregation.Aggregation.*;
 import static org.springframework.data.mongodb.core.aggregation.Aggregation.newAggregation;
-import static org.springframework.data.mongodb.core.aggregation.SetOperation.set;
 import static org.springframework.data.mongodb.core.query.Criteria.where;
 
 @RequiredArgsConstructor
@@ -34,8 +31,11 @@ import static org.springframework.data.mongodb.core.query.Criteria.where;
 @Slf4j
 public class GraphService {
 
+
+    private final AsyncMethod asyncMethod;
     private final GraphRepository graphRepository;
     private final MongoTemplate mongoTemplate;
+
 
     public List<Graph> getRootNodes(Long projectId){
         return graphRepository.findByProjectIdAndDeletedAndNodeType(projectId,false, NodeType.ROOT);
@@ -92,12 +92,12 @@ public class GraphService {
                 });
         return domTree;
     }
-    public  void createElementNode(NodeCreateDto nodeCreateDto){
+    public Boolean createElementNode(NodeCreateDto nodeCreateDto){
         if(nodeCreateDto.getNodeType().equals(NodeType.ROOT)){
             Root root = new Root(nodeCreateDto.getNodeId(), LocalDateTime.now().toString()
                     ,nodeCreateDto.getProjectId(),nodeCreateDto.getRootName());
             graphRepository.save(root);
-            return ;
+            return true;
         }
         if(nodeCreateDto.getNodeType().equals(NodeType.ELEMENT)){
             LocalDateTime now=LocalDateTime.now();
@@ -107,10 +107,9 @@ public class GraphService {
                             nodeCreateDto.getPropertiesList(),now.toString()
                             ,null);
             graphRepository.save(element);
-            return ;
+            return true;
         }
-        throw new MoiraSocketException("노드 생성 실패"
-                ,nodeCreateDto.getProjectId() ,nodeCreateDto.getRequestId(),nodeCreateDto.getRootId());
+        return false;
     }
     /**
      * moving id는 움직이는애, stayId는 movingId가 그아래로 들어가고자하는 id
@@ -176,61 +175,30 @@ public class GraphService {
         if(result.getModifiedCount()==0){
             return false;
         }
+        CompletableFuture<Void> future=bulkDelete(nodeDelDto.getNodeId());
+        future.thenAccept(x->{
+            log.info("트리구조 bulkdel 성공:{}\n",nodeDelDto.getNodeId());
+        }).exceptionally(ex->{
+            log.info("트리구조 bulkdel 중 에러발생:{}-{}\n",nodeDelDto.getNodeId(),ex.getCause().getClass());
+            //나중에 메시지큐로 넘겨서 에러코드를 다시 실행하게 만드는게 들어갈곳.
+            return null;
+        });
+        log.info("삭제 완료\n");
         return true;
     }
 
-
-    private void deleteBulkUpdate(String graphId){
-
-        MatchOperation matchStage = match(where("_id").is(graphId));
-
-        Criteria filter= where("deleted").is(false);
-
-        GraphLookupOperation graphLookupStage = graphLookup("graph")
-                .startWith("$_id")
-                .connectFrom("_id")
-                .connectTo("parentId")
-                .restrict(filter)
-                .as("descendants");
-
-        UnwindOperation unwindStage = unwind("descendants");
-
-        ProjectionOperation projectDescendantsStage = project()
-                .and("descendants._id").as("_id");
-
-        Aggregation unionPipeline = newAggregation(
-                match(where("_id").is(graphId)),
-                project("_id")
-        );
-
-
-        UnionWithOperation unionWithStage = UnionWithOperation.unionWith("graph")
-                .pipeline(unionPipeline.getPipeline());
-
-
-
-        SetOperation setStage = set("deleted").toValue(true);
-
-
-        MergeOperation mergeStage = merge()
-                .into(MergeOperation.MergeOperationTarget.collection("graph"))
-                .on("_id")
-                .whenMatched(MergeOperation.WhenDocumentsMatch.mergeDocuments())
-                .build();
-
-        Aggregation aggregation = newAggregation(
-                matchStage,
-                graphLookupStage,
-                unwindStage,
-                projectDescendantsStage,
-                unionWithStage,
-                setStage,
-                mergeStage
-        );
-        AggregationResults<GraphDto> results = mongoTemplate.aggregate(
-                aggregation, "graph", GraphDto.class
-        );
+    public CompletableFuture<Void> bulkDelete(String nodeId){
+        try {
+            return asyncMethod.bulkDelete(nodeId, mongoTemplate);
+        }
+        //RejectedExecutionException에러는 runasync에서 fail하는 future로 주지않고 그냥 에러로 호출한 함수로 던져버림
+        //그래서 future로 넘기고싶으면 아래와같이 catch문으로 에러를 잡야아한다.
+        //즉 애초에 future자체를 실행할수없는 환경이라서 fail상태로도 못만든다고 보면된다.
+        catch (RejectedExecutionException e){
+            return CompletableFuture.failedFuture(e);
+        }
     }
+
     private boolean checkCycleExist(String movingId,String stayId){
         log.info("cycle start");
         MatchOperation matchStage = match(where("_id").is(movingId));

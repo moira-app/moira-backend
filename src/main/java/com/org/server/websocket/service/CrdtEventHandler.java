@@ -34,25 +34,53 @@ public class CrdtEventHandler implements EventHandler{
         if(actionType.equals(GraphActionType.Create)){
             NodeCreateDto nodeCreateDto=
                     (NodeCreateDto) GraphEnvelopService.createFromEvent(env,actionType);
-            graphService.createElementNode(nodeCreateDto);
-            messagingTemplate.convertAndSend("/topic/crdt/"+nodeCreateDto.getProjectId(),nodeCreateDto);
+            if(graphService.createElementNode(nodeCreateDto)) {
+                messagingTemplate.convertAndSend("/topic/crdt/" +
+                        nodeCreateDto.getProjectId(), nodeCreateDto);
+            }
+            else{
+                nodeCreateDto.updateCheckPass();
+                messagingTemplate.convertAndSend("/topic/crdt/" +
+                        nodeCreateDto.getProjectId(),nodeCreateDto);
+            }
         }
         if(actionType.equals(GraphActionType.Delete)){
             NodeDelDto nodeDelDto=(NodeDelDto) GraphEnvelopService.createFromEvent(env,actionType);
-            graphService.delGraphNode(nodeDelDto);
-            messagingTemplate.convertAndSend("/topic/crdt/"+nodeDelDto.getProjectId(),nodeDelDto);
+            if(graphService.delGraphNode(nodeDelDto)) {
+                messagingTemplate.convertAndSend("/topic/crdt/" +
+                        nodeDelDto.getProjectId(), nodeDelDto);
+            }
+            else{
+                nodeDelDto.updateCheckPass();
+                messagingTemplate.convertAndSend("/topic/crdt/" +
+                        nodeDelDto.getProjectId(),nodeDelDto);
+            }
         }
         if(actionType.equals(GraphActionType.Property)){
             PropertyChangeDto propertyChangeDto=
                     (PropertyChangeDto) GraphEnvelopService.createFromEvent(env,actionType);
-            graphService.updateProperties(propertyChangeDto);
-            messagingTemplate.convertAndSend("/topic/crdt/"+propertyChangeDto.getProjectId(),propertyChangeDto);
+            if(graphService.updateProperties(propertyChangeDto)){
+                messagingTemplate.convertAndSend("/topic/crdt/"+
+                        propertyChangeDto.getProjectId(),propertyChangeDto);
+            }
+            else{
+                propertyChangeDto.updateCheckPass();
+                messagingTemplate.convertAndSend("/topic/crdt/" +
+                        propertyChangeDto.getProjectId(),propertyChangeDto);
+            }
         }
         if(actionType.equals(GraphActionType.Structure)){
             StructureChangeDto structureChangeDto=
                     (StructureChangeDto) GraphEnvelopService.createFromEvent(env,actionType);
-           graphService.updateNodeReference(structureChangeDto);
-           messagingTemplate.convertAndSend("/topic/crdt/"+structureChangeDto.getProjectId(),structureChangeDto);
+           if(graphService.updateNodeReference(structureChangeDto)) {
+               messagingTemplate.convertAndSend("/topic/crdt/" +
+                       structureChangeDto.getProjectId(), structureChangeDto);
+           }
+           else{
+               structureChangeDto.updateCheckPass();
+               messagingTemplate.convertAndSend("/topic/crdt/" +
+                       structureChangeDto.getProjectId(),structureChangeDto);
+           }
         }
     }
 }

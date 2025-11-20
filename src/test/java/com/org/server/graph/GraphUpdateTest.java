@@ -1,6 +1,5 @@
 package com.org.server.graph;
 
-import com.org.server.exception.MoiraSocketException;
 import com.org.server.graph.domain.*;
 import com.org.server.graph.domain.Properties;
 import com.org.server.graph.dto.NodeDelDto;
@@ -8,20 +7,18 @@ import com.org.server.graph.dto.PropertyChangeDto;
 import com.org.server.graph.dto.StructureChangeDto;
 import com.org.server.support.IntegralTestEnv;
 import org.assertj.core.api.Assertions;
-import org.hibernate.event.spi.SaveOrUpdateEvent;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.mongodb.core.MongoTemplate;
 
 
 import java.time.LocalDateTime;
 import java.util.*;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.concurrent.*;
 
 public class GraphUpdateTest extends IntegralTestEnv {
-
 
     Root root;
     List<Graph> graphs=new ArrayList<>();
@@ -116,21 +113,21 @@ public class GraphUpdateTest extends IntegralTestEnv {
     }
 
     @Test
-    @DisplayName("삭제 진행시 같은 노드에 대한 삭제를 순차적으로 진행, 이미삭제된 노드는 삭제를 불가하게만듬")
+    @DisplayName("삭제 진행시 같은 노드에 대한 삭제를진행, 이미삭제된 노드는 삭제를 불가하게만듬")
     void deletetest() throws InterruptedException {
-
+        System.out.printf("테스트 코드 시작\n");
         NodeDelDto nodeDelDto = NodeDelDto.builder()
                 .rootId(rootID)
                 .nodeId(graphs.getFirst().getId())
                 .graphActionType(GraphActionType.Delete)
                 .build();
-        ExecutorService executorService = Executors.newFixedThreadPool(2);
-        CountDownLatch countDownLatch = new CountDownLatch(2);
-        CountDownLatch checkFailLatch = new CountDownLatch(2);
-        for (int i = 0; 2 > i; i++) {
-
+        ExecutorService executorService = Executors.newFixedThreadPool(3);
+        CountDownLatch countDownLatch = new CountDownLatch(3);
+        CountDownLatch checkFailLatch = new CountDownLatch(3);
+        for (int i = 0; 3 > i; i++) {
+            executorService.submit(()->{
             try{
-                if(graphService.delGraphNode(nodeDelDto)){
+                if(!graphService.delGraphNode(nodeDelDto)){
                     throw new RuntimeException();
                 }
             }
@@ -140,6 +137,7 @@ public class GraphUpdateTest extends IntegralTestEnv {
             finally {
                 countDownLatch.countDown();
             }
+        });
         }
         countDownLatch.await();
         executorService.shutdown();
