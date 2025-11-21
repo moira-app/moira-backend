@@ -75,6 +75,12 @@ public class GraphEnvelopService {
                     .build();
         }
 
-        throw new MoiraSocketException("지원하지 않는 타입입니다",projectId,requestId,rootId);
+        throw new MoiraSocketException("지원하지 않는 타입입니다",projectId,NodeCreateDto.builder()
+                .nodeId(nodeId)
+                .rootId(rootId)
+                .requestId(requestId)
+                .projectId(projectId)
+                .build()
+        );
     }
 }

@@ -14,6 +14,7 @@ public abstract class NodeDto {
     private String rootId;
     private Long projectId;
     private GraphActionType graphActionType;
+    private Boolean checkPass=true;
 
     public NodeDto(String nodeId,Long projectId
             ,GraphActionType graphActionType,String rootId,String requestId) {
@@ -22,5 +23,9 @@ public abstract class NodeDto {
         this.graphActionType=graphActionType;
         this.rootId=rootId;
         this.requestId=requestId;
+    }
+
+    public void updateCheckPass(){
+        this.checkPass=!this.checkPass;
     }
 }

@@ -4,6 +4,7 @@ import java.security.Principal;
 import java.util.List;
 
 import com.org.server.exception.MoiraSocketException;
+import com.org.server.graph.dto.NodeCreateDto;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
@@ -55,7 +56,10 @@ public class EventGatewayController {
 				.filter(h -> h.supports(env.type()))
 				.findFirst()
 				.orElseThrow(() -> new MoiraSocketException("Unsupported type: " + env.type()
-						,projectId, (String) env.data().get("requestId"),(String) env.data().get("rootId")))
+						,projectId, NodeCreateDto.builder()
+						.requestId((String)env.data().get("requestId"))
+						.rootId((String) env.data().get("rootId"))
+						.build()))
 				.handle(env, principal);
 	}
 

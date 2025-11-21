@@ -4,6 +4,7 @@ package com.org.server.graph;
 import com.org.server.graph.domain.*;
 import com.org.server.graph.domain.Properties;
 import com.org.server.graph.dto.NodeCreateDto;
+import com.org.server.graph.dto.NodeDelDto;
 import com.org.server.support.IntegralTestEnv;
 
 import org.assertj.core.api.Assertions;
@@ -33,7 +34,7 @@ public class GraphTest extends IntegralTestEnv {
 
             Map<String,Properties> propertiesMap=new HashMap<>();
             for(int j=0;3>j;j++){
-                Properties properties=new Properties("Test",LocalDateTime.now().toString());
+                Properties properties=new Properties("Test",LocalDateTime.now());
                 propertiesMap.put(i+"-"+j,properties);
             }
             Element pages = graphs.isEmpty() ? new Element(UUID.randomUUID().toString(),
@@ -73,14 +74,23 @@ public class GraphTest extends IntegralTestEnv {
                 }).sum();
         Assertions.assertThat(size).isEqualTo(301);
 
-
-        graphService.delGraphNode(graphs.get(0).getId());
+        NodeDelDto nodeDelDto=NodeDelDto.builder()
+                .rootId(rootID)
+                .nodeId(graphs.get(0).getId())
+                .graphActionType(GraphActionType.Delete)
+                .build();
+        graphService.delGraphNode(nodeDelDto);
 
         graphData=graphService.getWholeGraph(rootID);
         Assertions.assertThat(graphData.keySet().size()).isEqualTo(1);
 
 
-        graphService.delGraphNode(rootID);
+        nodeDelDto=NodeDelDto.builder()
+                .rootId(rootID)
+                .nodeId(rootID)
+                .graphActionType(GraphActionType.Delete)
+                .build();
+        graphService.delGraphNode(nodeDelDto);
         List<Graph> g=graphService.getRootNodes(1L);
         Assertions.assertThat(g.size()).isEqualTo(1);
     }
