@@ -25,6 +25,7 @@ public class SocketExceptionController {
     public void moiraSocketEx(MoiraSocketException moiraSocketException) {
         log.info("소켓 에러전송 발생");
         String des="/topic/crdt/"+moiraSocketException.getProjectId();
+        moiraSocketException.getNodeDto().updateCheckPass();
         simpMessagingTemplate.convertAndSend(des,moiraSocketException.getNodeDto());
     }
 }

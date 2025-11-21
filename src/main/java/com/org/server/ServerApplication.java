@@ -20,7 +20,6 @@ import org.springframework.scheduling.annotation.EnableAsync;
 		)
 )
 @EnableMongoRepositories(basePackages = "com.org.server.graph")
-@EnableAsync
 public class ServerApplication {
 
 	public static void main(String[] args) {
