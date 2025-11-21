@@ -1,5 +1,6 @@
 package com.org.server.exception;
 
+import com.org.server.graph.dto.NodeDto;
 import lombok.Getter;
 import org.springframework.http.HttpStatus;
 
@@ -7,14 +8,13 @@ import org.springframework.http.HttpStatus;
 @Getter
 public class MoiraSocketException extends RuntimeException{
 
+    private String message;
     private Long projectId;
-    private String rootId;
-    private String requestId;
+    private NodeDto nodeDto;
 
-    public MoiraSocketException(String message,Long projectId,String requestId,String rootId) {
+    public MoiraSocketException(String message,Long projectId,NodeDto nodeDto) {
         super(message);
         this.projectId=projectId;
-        this.requestId=requestId;
-        this.rootId=rootId;
+        this.nodeDto=nodeDto;
     }
 }

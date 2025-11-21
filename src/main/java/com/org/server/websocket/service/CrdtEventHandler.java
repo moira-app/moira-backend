@@ -2,8 +2,6 @@ package com.org.server.websocket.service;
 
 
 import com.org.server.graph.GraphActionType;
-import com.org.server.graph.NodeType;
-import com.org.server.graph.domain.Graph;
 import com.org.server.graph.dto.*;
 import com.org.server.graph.service.GraphEnvelopService;
 import com.org.server.graph.service.GraphService;

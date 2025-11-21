@@ -1,5 +1,6 @@
 package com.org.server.graph;
 
+
 import com.org.server.graph.domain.*;
 import com.org.server.graph.domain.Properties;
 import com.org.server.graph.dto.NodeDelDto;
@@ -10,15 +11,18 @@ import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.mongodb.core.MongoTemplate;
 
 
+import java.net.SocketException;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.*;
+import java.util.function.Predicate;
+
+import static org.springframework.data.mongodb.core.query.Criteria.where;
 
 public class GraphUpdateTest extends IntegralTestEnv {
+
 
     Root root;
     List<Graph> graphs=new ArrayList<>();
@@ -59,6 +63,7 @@ public class GraphUpdateTest extends IntegralTestEnv {
         Properties properties=e.getProperties().get("0-0");
         Assertions.assertThat(properties.getValue()).isEqualTo("testing");
 
+        //순환고리 탐지
         Assertions.assertThat(
                     graphService.updateNodeReference(
                             StructureChangeDto.builder()
@@ -70,6 +75,8 @@ public class GraphUpdateTest extends IntegralTestEnv {
                                     .build())
         ).isEqualTo(false);
 
+
+        //순환고리 통과, 정상수정.
         Assertions.assertThat(
         graphService.updateNodeReference(
                 StructureChangeDto.builder()
@@ -82,19 +89,19 @@ public class GraphUpdateTest extends IntegralTestEnv {
         e=(Element) graphRepository.findById(graphs.getLast().getId()).get();
         Assertions.assertThat(e.getParentId()).isEqualTo(graphs.getFirst().getId());
 
-
+        //삭제시 불려오는게 없는기 검증 즉 root node 아래에 딸려오는게없는지 검증.
         NodeDelDto nodeDelDto= NodeDelDto.builder()
                 .rootId(rootID)
                 .nodeId(graphs.getFirst().getId())
                 .graphActionType(GraphActionType.Delete)
                 .build();
         graphService.delGraphNode(nodeDelDto);
-
         Map<String, List<Graph>> maps=graphService.getWholeGraph(rootID);
         Assertions.assertThat(maps.keySet().size()).isEqualTo(0);
 
 
     }
+
     @Test
     @DisplayName("속성 수정시에 이미 수정된 시간보다 이전의 수정 내역이 들어오면 거부함.")
     void lateUpdateTest(){
@@ -124,7 +131,7 @@ public class GraphUpdateTest extends IntegralTestEnv {
         ExecutorService executorService = Executors.newFixedThreadPool(3);
         CountDownLatch countDownLatch = new CountDownLatch(3);
         CountDownLatch checkFailLatch = new CountDownLatch(3);
-        for (int i = 0; 3 > i; i++) {
+        for (int i = 0; 3> i; i++) {
             executorService.submit(()->{
             try{
                 if(!graphService.delGraphNode(nodeDelDto)){

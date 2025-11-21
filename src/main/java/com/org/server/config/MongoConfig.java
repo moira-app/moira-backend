@@ -45,7 +45,7 @@ public class MongoConfig extends AbstractMongoClientConfiguration {
         MongoClientSettings mongoClientSettings = MongoClientSettings.builder()
                 .applyConnectionString(connectionString)
                 .readPreference(ReadPreference.secondaryPreferred())
-                .writeConcern(WriteConcern.W2)
+                .writeConcern(WriteConcern.MAJORITY)
                 .build();
         return MongoClients.create(mongoClientSettings);
     }
@@ -57,19 +57,30 @@ public class MongoConfig extends AbstractMongoClientConfiguration {
                                                        Jsr310Converters.DateToLocalDateTimeConverter
                                                                    localDateTimeKstConverter){
 
-        DbRefResolver dbRefResolver=new DefaultDbRefResolver(mongoDatabaseFactory);
+        DbRefResolver dbRefResolver=new DefaultDbRefResolver(mongoDatabaseFactory());
         MappingMongoConverter converter=new MappingMongoConverter(dbRefResolver,mongoMappingContext);
         converter.setTypeMapper(new DefaultMongoTypeMapper(null));
         converter.setCustomConversions(new MongoCustomConversions(List.of(dateKstParser,localDateTimeKstConverter)));
-
         return converter;
 
     }
-
+    @Bean
+    @Primary
+    public MongoDatabaseFactory mongoDatabaseFactory(){
+        return new SimpleMongoClientDatabaseFactory(mongoClient(),
+                databaseName);
+    }
+    //@transaction 하에서 mongotemplate는 read시 primary노드로부터 데이터를 읽어오게된다.aggregate도 primary노드로부터 읽게만든다.
+    @Bean(name="mongoTransactionManager")
+    public MongoTransactionManager mongoTransactionManager() {
+        TransactionOptions transactionOptions = TransactionOptions.builder()
+                .readPreference(ReadPreference.primary())
+                .build();
+        return new MongoTransactionManager(mongoDatabaseFactory(), transactionOptions);
+    }
     @Bean
     public MongoTemplate mongoTemplate() {
-        return new MongoTemplate(new SimpleMongoClientDatabaseFactory(mongoClient(),
-                databaseName));
+        return new MongoTemplate(mongoDatabaseFactory());
     }
 
 }

@@ -4,6 +4,7 @@ package com.org.server.interceptor;
 import java.util.List;
 
 import com.org.server.exception.MoiraSocketException;
+import com.org.server.exception.SocketAuthError;
 import com.org.server.redis.service.RedisUserInfoService;
 import com.org.server.util.jwt.JwtUtil;
 import io.jsonwebtoken.Claims;
@@ -38,7 +39,7 @@ public class StompAuthChannelInterceptor  implements ChannelInterceptor {
         }
         String token=jwtUtil.getTokenFromHeader(acc.getFirstNativeHeader("Authorization"));
         if(token==null){
-            throw new MoiraSocketException(noAccessToken,0L,"테스트 에러","");
+            throw new SocketAuthError(noAccessToken);
         }
         Claims claims = jwtUtil.getClaims(token);
 		if (StompCommand.CONNECT.equals(acc.getCommand())) {

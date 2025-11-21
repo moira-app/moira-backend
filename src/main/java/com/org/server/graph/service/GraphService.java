@@ -1,6 +1,8 @@
 package com.org.server.graph.service;
 
+import com.mongodb.MongoCommandException;
 import com.mongodb.client.result.UpdateResult;
+import com.org.server.exception.MoiraSocketException;
 import com.org.server.graph.GraphTransaction;
 import com.org.server.graph.NodeType;
 import com.org.server.graph.domain.*;
@@ -8,19 +10,18 @@ import com.org.server.graph.dto.*;
 import com.org.server.graph.repository.GraphRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.aggregation.*;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.Executor;
-import java.util.concurrent.RejectedExecutionException;
-
+import java.util.stream.Collectors;
 
 import static org.springframework.data.mongodb.core.aggregation.Aggregation.*;
 import static org.springframework.data.mongodb.core.aggregation.Aggregation.newAggregation;
@@ -31,8 +32,6 @@ import static org.springframework.data.mongodb.core.query.Criteria.where;
 @Slf4j
 public class GraphService {
 
-
-    private final AsyncMethod asyncMethod;
     private final GraphRepository graphRepository;
     private final MongoTemplate mongoTemplate;
 
@@ -119,24 +118,21 @@ public class GraphService {
      */
     @GraphTransaction
     public Boolean updateNodeReference(StructureChangeDto structureChangeDto){
-        if(structureChangeDto.getNodeId().equals(structureChangeDto.getParentId())){
+        Optional<Graph> movingNode=graphRepository.findById(structureChangeDto.getNodeId());
+        Optional<Graph> stayNode=graphRepository.findById(structureChangeDto.getParentId());
+        if (structureChangeDto.getNodeId().equals(structureChangeDto.getParentId())
+        ||movingNode.isEmpty()||stayNode.isEmpty()
+                ||movingNode.get().getDeleted() ||stayNode.get().getDeleted()
+                ||structureChangeDto.getNodeId().equals(structureChangeDto.getRootId())) {
+                return false;
+        }
+        if (checkCycleExist(structureChangeDto.getNodeId(), structureChangeDto.getParentId())) {
             return false;
         }
-        Optional<Graph> movingNode= graphRepository.findById(structureChangeDto.getNodeId());
-        Optional<Graph> stayNode= graphRepository.findById(structureChangeDto.getParentId());
-        if(movingNode.isEmpty()||stayNode.isEmpty()||movingNode.get().getDeleted()||stayNode
-                .get().getDeleted()||movingNode.get().getNodeType().equals(NodeType.ROOT)){
-            return false;
-        }
-        if(checkCycleExist(movingNode.get().getId(),stayNode.get().getId())){
-            return false;
-        }
-        Query query=new Query(where("_id").is(movingNode.get().getId()));
-        Update updateData=new Update().set("parentId",stayNode.get().getId());
-        UpdateResult result =mongoTemplate.updateFirst(query,updateData,Element.class);
-        if(result.getModifiedCount()==0){
-            return false;
-        }
+        Query query = new Query(where("_id").is(structureChangeDto.getNodeId())
+                    .and("deleted").is(false));
+        Update updateData = new Update().set("parentId", structureChangeDto.getParentId());
+        UpdateResult result = mongoTemplate.updateFirst(query, updateData, Element.class);
         return true;
     }
 
@@ -166,6 +162,8 @@ public class GraphService {
         return true;
     }
 
+    @GraphTransaction
+    @Transactional(value ="mongoTransactionManager")
     public Boolean delGraphNode(NodeDelDto nodeDelDto){
         Query query=new Query(where("_id").is(nodeDelDto.getNodeId())
                 .and("deleted").is(false));
@@ -175,33 +173,45 @@ public class GraphService {
         if(result.getModifiedCount()==0){
             return false;
         }
-        CompletableFuture<Void> future=bulkDelete(nodeDelDto.getNodeId());
-        future.thenAccept(x->{
-            log.info("트리구조 bulkdel 성공:{}\n",nodeDelDto.getNodeId());
-        }).exceptionally(ex->{
-            log.info("트리구조 bulkdel 중 에러발생:{}-{}\n",nodeDelDto.getNodeId(),ex.getCause().getClass());
-            //나중에 메시지큐로 넘겨서 에러코드를 다시 실행하게 만드는게 들어갈곳.
-            return null;
-        });
+        bulkDelete(nodeDelDto.getNodeId());
         log.info("삭제 완료\n");
         return true;
     }
+    private void bulkDelete(String graphId){
+        MatchOperation matchStage = match(where("_id").is(graphId));
+        Criteria filter = where("deleted").is(false);
+        GraphLookupOperation graphLookupStage = graphLookup("graph")
+                .startWith("$_id")
+                .connectFrom("_id")
+                .connectTo("parentId")
+                .restrict(filter)
+                .as("descendants");
+        UnwindOperation unwindStage = unwind("descendants");
 
-    public CompletableFuture<Void> bulkDelete(String nodeId){
-        try {
-            return asyncMethod.bulkDelete(nodeId, mongoTemplate);
-        }
-        //RejectedExecutionException에러는 runasync에서 fail하는 future로 주지않고 그냥 에러로 호출한 함수로 던져버림
-        //그래서 future로 넘기고싶으면 아래와같이 catch문으로 에러를 잡야아한다.
-        //즉 애초에 future자체를 실행할수없는 환경이라서 fail상태로도 못만든다고 보면된다.
-        catch (RejectedExecutionException e){
-            return CompletableFuture.failedFuture(e);
-        }
+        ProjectionOperation projectDescendantsStage = project()
+                .and("descendants._id").as("_id");
+
+        Aggregation aggregation = newAggregation(
+                matchStage,
+                graphLookupStage,
+                unwindStage,
+                projectDescendantsStage);
+        //merge,set,unionwithstage같은 복잡한애는 multi tdoc transaction에서 사용할수없어서 이렇게 바꿈.
+        //이렇게 쓰면 트랜잭션 내에서 전부다 다뤄진다.
+        List<String> results = mongoTemplate.aggregate(
+                        aggregation, "graph", SimpleDto.class
+                ).getMappedResults()
+                .stream().map(x->{
+                    return x.getId();
+                }).collect(Collectors.toList());
+        Query query =new Query(where("_id").in(results));
+        Update update = new Update().set("deleted", true);
+        mongoTemplate.updateMulti(query ,update, "graph");
     }
 
     private boolean checkCycleExist(String movingId,String stayId){
         log.info("cycle start");
-        MatchOperation matchStage = match(where("_id").is(movingId));
+        MatchOperation matchStage = match(where("_id").is(movingId).and("deleted").is(false));
 
         Criteria filter= where("deleted").is(false);
 

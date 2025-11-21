@@ -27,18 +27,23 @@ public class GraphAop {
 
 
     private final RedissonClient redissonClient;
-    private final static String nodeStructureChange="structure-";
+    private final static String delStructureKey="del-structure-";
 
 
     @Around("@annotation(com.org.server.graph.GraphTransaction)")
     public Object mongoRedissonLock(ProceedingJoinPoint point) throws Throwable{
         NodeDto nodeDto =(NodeDto) point.getArgs()[0];
         RLock rLock;
-        StructureChangeDto structureChangeDto=(StructureChangeDto) nodeDto;
-
-        String parentId=structureChangeDto.getParentId();
-        rLock = redissonClient.getLock(nodeStructureChange +parentId);
-
+        switch (nodeDto.getGraphActionType()){
+            case GraphActionType.Delete ->{
+                NodeDelDto nodeDelDto=(NodeDelDto) nodeDto;
+                rLock=redissonClient.getLock(delStructureKey+nodeDelDto.getRootId());
+            }
+            default -> {
+                StructureChangeDto structureChangeDto=(StructureChangeDto) nodeDto;
+                rLock = redissonClient.getLock(delStructureKey +structureChangeDto.getRootId());
+            }
+        }
         try{
             boolean rockState=rLock.tryLock(2000L,2000L, TimeUnit.MILLISECONDS);
             if(!rockState){
@@ -49,7 +54,7 @@ public class GraphAop {
         }
         catch (Exception e){
             log.info("트리구조 수정중 에러발생:{}",e.getMessage());
-            return false;
+            throw new MoiraSocketException(e.getMessage(),nodeDto.getProjectId(),nodeDto);
         }
         finally {
             log.info("redssion lock 반납");

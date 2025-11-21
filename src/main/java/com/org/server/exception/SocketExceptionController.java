@@ -17,12 +17,14 @@ public class SocketExceptionController {
 
 
     private final SimpMessagingTemplate simpMessagingTemplate;
-
+    @MessageExceptionHandler(Exception.class)
+    public void controlEx(Exception e){
+        log.info("소켓 연결 알수없는 서버에러 발생:{}",e.getMessage());
+    }
     @MessageExceptionHandler(MoiraSocketException.class)
     public void moiraSocketEx(MoiraSocketException moiraSocketException) {
+        log.info("소켓 에러전송 발생");
         String des="/topic/crdt/"+moiraSocketException.getProjectId();
-        simpMessagingTemplate.convertAndSend(des,new GraphErrorDto(moiraSocketException.getRequestId(),
-                moiraSocketException.getRootId(),
-                moiraSocketException.getProjectId()));
+        simpMessagingTemplate.convertAndSend(des,moiraSocketException.getNodeDto());
     }
 }
