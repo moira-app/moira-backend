@@ -14,6 +14,7 @@ import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.reflect.MethodSignature;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
+import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 
@@ -45,7 +46,7 @@ public class GraphAop {
             }
         }
         try{
-            boolean rockState=rLock.tryLock(2000L,2000L, TimeUnit.MILLISECONDS);
+            boolean rockState=rLock.tryLock(10000L,10000L, TimeUnit.MILLISECONDS);
             if(!rockState){
                 throw new RuntimeException("대시시간 초과 발생, 재시도 해주세요");
             }

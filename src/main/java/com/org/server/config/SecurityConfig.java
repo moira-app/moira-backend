@@ -96,7 +96,7 @@ public class SecurityConfig {
 		// CSRF: API/Swagger/WS 경로는 무시 (완전 disable 대신 부분 무시 권장)
 		http.csrf(csrf -> csrf
 			.ignoringRequestMatchers("/api/**", "/ws/**", "/swagger-ui/**", "/v3/api-docs/**","/member/**",
-                    "/enter/**")
+                    "/enter/**","/project/**","/cert/**","/meet/**")
 		);
 
         http.cors(c->c.configurationSource(webConfig.corsConfigurationSource()));
