@@ -8,6 +8,8 @@ import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.data.mongodb.repository.config.EnableMongoRepositories;
+import org.springframework.scheduling.annotation.EnableAsync;
+import org.springframework.scheduling.annotation.EnableScheduling;
 
 @SpringBootApplication
 @EnableJpaAuditing
@@ -19,6 +21,8 @@ import org.springframework.data.mongodb.repository.config.EnableMongoRepositorie
 		)
 )
 @EnableMongoRepositories(basePackages = "com.org.server.graph")
+@EnableAsync
+@EnableScheduling
 public class ServerApplication {
 
 	public static void main(String[] args) {
