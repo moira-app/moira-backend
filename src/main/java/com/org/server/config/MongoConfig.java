@@ -45,6 +45,7 @@ public class MongoConfig extends AbstractMongoClientConfiguration {
         MongoClientSettings mongoClientSettings = MongoClientSettings.builder()
                 .applyConnectionString(connectionString)
                 .readPreference(ReadPreference.secondaryPreferred())
+                .readConcern(ReadConcern.MAJORITY)
                 .writeConcern(WriteConcern.MAJORITY)
                 .build();
         return MongoClients.create(mongoClientSettings);
@@ -71,13 +72,15 @@ public class MongoConfig extends AbstractMongoClientConfiguration {
                 databaseName);
     }
     //@transaction 하에서 mongotemplate는 read시 primary노드로부터 데이터를 읽어오게된다.aggregate도 primary노드로부터 읽게만든다.
-    @Bean(name="mongoTransactionManager")
+    /*@Bean(name="mongoTransactionManager")
     public MongoTransactionManager mongoTransactionManager() {
         TransactionOptions transactionOptions = TransactionOptions.builder()
                 .readPreference(ReadPreference.primary())
+                .readConcern(ReadConcern.MAJORITY)
+                .writeConcern(WriteConcern.ACKNOWLEDGED)
                 .build();
         return new MongoTransactionManager(mongoDatabaseFactory(), transactionOptions);
-    }
+    }*/
     @Bean
     public MongoTemplate mongoTemplate() {
         return new MongoTemplate(mongoDatabaseFactory());

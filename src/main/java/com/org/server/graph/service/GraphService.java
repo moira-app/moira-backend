@@ -1,6 +1,9 @@
 package com.org.server.graph.service;
 
+import com.mongodb.MongoBulkWriteException;
 import com.mongodb.MongoCommandException;
+import com.mongodb.bulk.BulkWriteError;
+import com.mongodb.client.model.BulkWriteOptions;
 import com.mongodb.client.result.UpdateResult;
 import com.org.server.exception.MoiraSocketException;
 import com.org.server.graph.GraphTransaction;
@@ -10,6 +13,8 @@ import com.org.server.graph.dto.*;
 import com.org.server.graph.repository.GraphRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DataAccessException;
+import org.springframework.data.mongodb.core.BulkOperations;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.aggregation.*;
 import org.springframework.data.mongodb.core.query.Criteria;
@@ -163,19 +168,30 @@ public class GraphService {
     }
 
     @GraphTransaction
-    @Transactional(value ="mongoTransactionManager")
+    //@Transactional(value ="mongoTransactionManager")
+    /*
+    * 몽고 디비 트랜잭션의 경우 기본적으로 단일문서에 대한 트랜잭션은 지원이된다.
+    * 단일문서 트랜잭션은 트랜잭션 어노테이션없이 적용되며 snapshot 단계가 아닌 한문서에 대한 update요청을 순차적으로 처리하는
+    * read commited 단계이다.
+    * 그러나 트랜잭션 어노테이션을 적용할경우 강제로 snaphost 단계의 isolation lv가 적용이된다.
+    * 즉 repeatable read라고 생각하면되는대 이는 해당 트랜잭션동안 외부의 트랜잭션이 특정 문서를 수정하고
+    * 해당 트랜잭션이 그 문서를수정하고자 할경우 snap shot과 달라서 write conflict 문제가 발생한다.
+    * 본 프로젝트에선 한개의 그래프에 대한 property 수정과 삭제-트리구조 수정과정이 충돌하지않기 위해서 트랜잭션을 걸지 않도록 하고자한다.
+    * 또한 삭제-트리구조 수정과정이 제어가 되지않을 경우 문제가 발생할수잇으므로 해당 과정은 redisson 분산락을 통해서 비관적락을 비슷하게
+    * 구현하였다.
+    * */
     public Boolean delGraphNode(NodeDelDto nodeDelDto){
-        Query query=new Query(where("_id").is(nodeDelDto.getNodeId())
-                .and("deleted").is(false));
-        Update update = new Update();
-        update.set("deleted",true);
-        UpdateResult result= mongoTemplate.updateFirst(query, update, Element.class);
-        if(result.getModifiedCount()==0){
-            return false;
-        }
-        bulkDelete(nodeDelDto.getNodeId());
-        log.info("삭제 완료\n");
-        return true;
+            Query query = new Query(where("_id").is(nodeDelDto.getNodeId())
+                    .and("deleted").is(false));
+            Update update = new Update();
+            update.set("deleted", true);
+            UpdateResult result = mongoTemplate.updateFirst(query, update, Element.class);
+            if (result.getModifiedCount() == 0) {
+                return false;
+            }
+            bulkDelete(nodeDelDto.getNodeId());
+            log.info("삭제 완료\n");
+            return true;
     }
     private void bulkDelete(String graphId){
         MatchOperation matchStage = match(where("_id").is(graphId));
@@ -196,17 +212,42 @@ public class GraphService {
                 graphLookupStage,
                 unwindStage,
                 projectDescendantsStage);
-        //merge,set,unionwithstage같은 복잡한애는 multi tdoc transaction에서 사용할수없어서 이렇게 바꿈.
-        //이렇게 쓰면 트랜잭션 내에서 전부다 다뤄진다.
+        //merge,set,unionwithstage같은 복잡한애는 multi doc transaction에서 사용할수없어서 이렇게 바꿈.
+        //이렇게 쓰면 트랜잭션 내에서 전부다 다뤄진다.-->수정 트랜잭션을 없앴으므로 bulkopertions으로 실패한건 따로 추적을시도.
         List<String> results = mongoTemplate.aggregate(
                         aggregation, "graph", SimpleDto.class
                 ).getMappedResults()
                 .stream().map(x->{
                     return x.getId();
                 }).collect(Collectors.toList());
-        Query query =new Query(where("_id").in(results));
-        Update update = new Update().set("deleted", true);
-        mongoTemplate.updateMulti(query ,update, "graph");
+
+        BulkOperations bulkOperations=mongoTemplate.bulkOps(BulkOperations.BulkMode.UNORDERED, Graph.class);
+        results.stream().forEach(x->{
+            Query query =new Query(where("_id").in(x));
+            Update update = new Update().set("deleted", true);
+            bulkOperations.updateOne(query,update);
+        });
+        try {
+            if(!results.isEmpty()){
+                bulkOperations.execute();
+            }
+        }
+        catch (DataAccessException e) {
+            if (e.getCause() instanceof MongoBulkWriteException) {
+                MongoBulkWriteException bulkEx = (MongoBulkWriteException) e.getCause();
+                List<BulkWriteError> errors = bulkEx.getWriteErrors();
+                for (BulkWriteError err : errors) {
+                    System.out.println("실패한 인덱스: " + err.getIndex() + ", 메시지: " + err.getMessage());
+                    //메시징 큐에 재시도 로그 남기는 영역.
+                    //err.getindex는 bulkopertion에넣은 순서 즉 일반적인 list 인덱스를 의미하며 stream으로 차례대로넣었으므로
+                    //results에서 꺼내와서 쓰면된다.
+                }
+            } else {
+                System.err.println("에러 메시지: " + e.getMessage());
+            }
+        } catch (Exception e) {
+            System.err.println("예상치 못한 오류: " + e.getMessage());
+        }
     }
 
     private boolean checkCycleExist(String movingId,String stayId){
