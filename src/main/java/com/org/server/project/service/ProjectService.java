@@ -10,6 +10,7 @@ import com.org.server.project.repository.ProjectRepository;
 import com.org.server.ticket.domain.Ticket;
 import com.org.server.ticket.service.TicketService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,6 +26,7 @@ public class ProjectService {
 
     private final ProjectRepository projectRepository;
     private final SecurityMemberReadService securityMemberReadService;
+    @Lazy
     private final TicketService ticketService;
 
     public Boolean checkProject(Long id){
