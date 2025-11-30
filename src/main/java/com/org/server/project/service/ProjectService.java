@@ -26,7 +26,6 @@ public class ProjectService {
 
     private final ProjectRepository projectRepository;
     private final SecurityMemberReadService securityMemberReadService;
-    @Lazy
     private final TicketService ticketService;
 
     public Boolean checkProject(Long id){
