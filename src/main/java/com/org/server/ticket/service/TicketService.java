@@ -24,17 +24,15 @@ public class TicketService {
 
     private final TicketRepository ticketRepository;
     private final RedisUserInfoService redisUserInfoService;
-    private final ProjectService projectService;
-
     public Boolean checkIn(Long projectId,Long memberId){
         Optional<Ticket> ticket=
                 ticketRepository.findByMemberIdAndProjectId(memberId,projectId);
         if(ticket.isEmpty()||ticket.get().getDeleted()){
             return false;
         }
-        if(projectService.checkProject(ticket.get().getId())){
+        /*if(projectService.checkProject(ticket.get().getId())){
             return false;
-        }
+        }*/
         return true;
     }
     public void delTicket(Long projectId,Long memberId){
