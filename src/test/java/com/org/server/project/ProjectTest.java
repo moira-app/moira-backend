@@ -1,10 +1,12 @@
 package com.org.server.project;
 
+import com.org.server.member.domain.Member;
 import com.org.server.project.domain.Project;
 import com.org.server.support.IntegralTestEnv;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
 import java.util.List;
 
@@ -24,6 +26,10 @@ public class ProjectTest extends IntegralTestEnv {
     @Test
     @DisplayName("project 생성 테스트")
     void testGenProjectAndWhiteBoard() {
+
+        Member member=createMember(1L);
+        Mockito.when(securityMemberReadService.securityMemberRead())
+                .thenReturn(member);
         projectService.createProject("sdfddf");
         List<Project> projectList = projectRepository.findAll();
         assertThat(projectList.size()).isEqualTo(2L);
