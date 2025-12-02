@@ -55,12 +55,14 @@ public class StompAuthChannelInterceptor  implements ChannelInterceptor {
 
     private void handleCrdtSendMessage(Long memberId,StompHeaderAccessor acc){
         //메시지 전송시마다 권한 검증
-        if (acc.getDestination().startsWith("/app/crdt")) {
-                Long projectId = Long.parseLong(acc.getDestination().split("/")[3]);
-                /*if (!redisUserInfoService.checkTicketKey(String.valueOf(memberId)
+        if (acc.getDestination().startsWith("/app/crdt")||acc.getDestination().startsWith("/app/signaling")) {
+                /*Long projectId = Long.parseLong(acc.getDestination().split("/")[3]);
+                if (!redisUserInfoService.checkTicketKey(String.valueOf(memberId)
                         , String.valueOf(projectId))) {
                     throw new MoiraSocketException(noTicketError, projectId,"테스트 에러","");
-                }*/
+                }
+                acc.getSessionAttributes().put("memberId",memberId);*/
+
             //throw new MoiraSocketException(noTicketError, projectId,"테스트 에러","");
         }
     }

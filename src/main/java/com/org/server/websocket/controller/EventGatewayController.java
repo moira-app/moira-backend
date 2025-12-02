@@ -63,5 +63,19 @@ public class EventGatewayController {
 				.handle(env, principal);
 	}
 
-
+	@MessageMapping("/signaling/{meetId}")
+	public void onSignalingEvent(@Payload EventEnvelope env, Principal principal,
+							@DestinationVariable(value ="meetId") Long meetId){
+		log.info("singaling start");
+		env.meta().put("meetId",meetId);
+		handlers.stream()
+				.filter(h -> h.supports(env.type()))
+				.findFirst()
+				.orElseThrow(() -> new MoiraSocketException("Unsupported type: " + env.type()
+						,meetId, NodeCreateDto.builder()
+						.requestId((String)env.data().get("requestId"))
+						.rootId((String) env.data().get("rootId"))
+						.build()))
+				.handle(env, principal);
+	}
 }
