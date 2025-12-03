@@ -22,6 +22,6 @@ public class StompErrorHandler extends StompSubProtocolErrorHandler {
         headerAccessor.setLeaveMutable(true);
         return MessageBuilder.createMessage("".getBytes(StandardCharsets.UTF_8)
                 ,headerAccessor.getMessageHeaders());
-        //stomp command가 error면 연결을 해제해버림(disconnect면 왜 해제가안되냐? 쨋든 여기서 create한 header를 넣을경우)
+        //d여기서 나가는 메시지의 stomp command가 error면 연결을 해제해버림(disconnect면 왜 해제가안되냐?)
     }
 }
