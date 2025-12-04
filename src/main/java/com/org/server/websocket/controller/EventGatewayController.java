@@ -63,7 +63,7 @@ public class EventGatewayController {
 				.handle(env, principal);
 	}
 
-	@MessageMapping("/signaling/{meetId}")
+	@MessageMapping("/signaling/{projectId}/{meetId}")
 	public void onSignalingEvent(@Payload EventEnvelope env, Principal principal,
 							@DestinationVariable(value ="meetId") Long meetId){
 		log.info("singaling start");

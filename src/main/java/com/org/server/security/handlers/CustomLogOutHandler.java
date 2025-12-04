@@ -35,7 +35,7 @@ public class CustomLogOutHandler implements LogoutSuccessHandler {
           return;
         }
         Claims claims=jwtUtil.getClaims(token);
-        redisUserInfoService.delRefreshToken(claims.get("id",Long.class));
+        redisUserInfoService.logoutDelMemberInfo(claims.get("id",Long.class));
         SecurityContextHolder.clearContext();;
         log.info("로그아웃이 성공적으로 처리되었습니다");
     }

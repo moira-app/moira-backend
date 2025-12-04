@@ -2,9 +2,15 @@ package com.org.server.interceptor;
 
 
 import java.util.List;
+import java.util.Optional;
 
 import com.org.server.exception.MoiraSocketException;
 import com.org.server.exception.SocketAuthError;
+import com.org.server.graph.dto.NodeDto;
+import com.org.server.member.domain.Member;
+import com.org.server.member.repository.MemberRepository;
+import com.org.server.member.service.MemberService;
+import com.org.server.member.service.MemberServiceImpl;
 import com.org.server.redis.service.RedisUserInfoService;
 import com.org.server.util.jwt.JwtUtil;
 import io.jsonwebtoken.Claims;
@@ -18,6 +24,8 @@ import org.springframework.messaging.support.ChannelInterceptor;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.stereotype.Component;
 
+import javax.swing.text.html.Option;
+
 import static com.org.server.util.jwt.TokenEnum.TOKEN_PREFIX;
 
 @Component
@@ -28,43 +36,56 @@ public class StompAuthChannelInterceptor  implements ChannelInterceptor {
 
 	private final JwtUtil jwtUtil;
 	private final RedisUserInfoService redisUserInfoService;
+    private final MemberRepository memberRepository;
     private final static String noTicketError="NoTicket";
+
+    private final static String noMemberError="NoMember";
     private final static String noAccessToken="NoToken";
 	@Override
 	public Message<?> preSend(Message<?> message, MessageChannel channel) {
 		StompHeaderAccessor acc = StompHeaderAccessor.wrap(message);
 
-        if(acc.getCommand().equals(StompCommand.DISCONNECT)||acc.getCommand().equals(StompCommand.SUBSCRIBE)){
+        if(acc.getCommand().equals(StompCommand.DISCONNECT)){
             return message;
         }
-        String token=jwtUtil.getTokenFromHeader(acc.getFirstNativeHeader("Authorization"));
-        if(token==null){
-            throw new SocketAuthError(noAccessToken);
-        }
-        Claims claims = jwtUtil.getClaims(token);
-		if (StompCommand.CONNECT.equals(acc.getCommand())) {
-			// TODO: token 검증하고 userId 추출
-			acc.setUser(new UsernamePasswordAuthenticationToken("user-7", null, List.of()));
-		    return message;
-        }
-        if(StompCommand.SEND.equals(acc.getCommand())) {
-            handleCrdtSendMessage(claims.get("memberId",Long.class), acc);
+        if(acc.getCommand().equals(StompCommand.SUBSCRIBE)||acc.getCommand().equals(StompCommand.SEND)
+        ||acc.getCommand().equals(StompCommand.CONNECT)){
+            //이하 subscribe,connect,send의 경우 모두 메시지 검증.
+            String token = jwtUtil.getTokenFromHeader(acc.getFirstNativeHeader("Authorization"));
+            if (token == null) {
+                throw new SocketAuthError(noAccessToken);
+            }
+            Claims claims = jwtUtil.getClaims(token);
+            Long memberId = claims.get("id", Long.class);
+            checkMemberExist(memberId);
+            if (StompCommand.SEND.equals(acc.getCommand())){
+                handleSendMessage(memberId, acc);
+            }
         }
 	    return message;
 	}
-
-    private void handleCrdtSendMessage(Long memberId,StompHeaderAccessor acc){
-        //메시지 전송시마다 권한 검증
-        if (acc.getDestination().startsWith("/app/crdt")||acc.getDestination().startsWith("/app/signaling")) {
-                /*Long projectId = Long.parseLong(acc.getDestination().split("/")[3]);
-                if (!redisUserInfoService.checkTicketKey(String.valueOf(memberId)
-                        , String.valueOf(projectId))) {
-                    throw new MoiraSocketException(noTicketError, projectId,"테스트 에러","");
-                }
-                acc.getSessionAttributes().put("memberId",memberId);*/
-
-            //throw new MoiraSocketException(noTicketError, projectId,"테스트 에러","");
+    private void checkMemberExist(Long memberId){
+        if(!redisUserInfoService.CheckMemberExist(memberId)){
+            Optional<Member> m=memberRepository.findById(memberId);
+            if(m.isEmpty()||m.get().getDeleted()){
+                throw new SocketAuthError(noMemberError);
+            }
         }
     }
-
+    private Long getProjectIdFromDest(String dest){
+        if(dest.startsWith("/app/crdt")||dest.startsWith("/app/signaling")){
+            Long projectId = Long.parseLong(dest.split("/")[3]);
+            return projectId;
+        }
+        return -1L;
+    }
+    private void handleSendMessage(Long memberId,StompHeaderAccessor acc){
+        //메시지 전송시마다 권한 검증
+        Long projectId=getProjectIdFromDest(acc.getDestination());
+        if (projectId>-1&&!redisUserInfoService.checkTicketKey(String.valueOf(memberId)
+                , String.valueOf(projectId))) {
+            throw new MoiraSocketException(noTicketError, projectId,null);
+        }
+    }
 }
+

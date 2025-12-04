@@ -1,7 +1,9 @@
 package com.org.server.security.filters;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.org.server.exception.MoiraException;
+import com.org.server.member.domain.Member;
 import com.org.server.redis.service.RedisUserInfoService;
 import com.org.server.security.domain.CustomUserDetail;
 import com.org.server.util.jwt.JwtUtil;
@@ -33,11 +35,14 @@ public class JwtAuthFilter extends UsernamePasswordAuthenticationFilter {
     private  JwtUtil jwtUtils;
     private  AuthenticationManager authenticationManager;
 
+    private ObjectMapper objectMapper;
+
     public JwtAuthFilter(RedisUserInfoService redisUserInfoService, JwtUtil jwtUtils
-    ,AuthenticationManager authenticationManager) {
+    ,AuthenticationManager authenticationManager,ObjectMapper objectMapper) {
         this.redisUserInfoService = redisUserInfoService;
         this.jwtUtils = jwtUtils;
         this.authenticationManager=authenticationManager;
+        this.objectMapper=objectMapper;
         setFilterProcessesUrl("/member/login");
     }
     @Override
@@ -65,10 +70,9 @@ public class JwtAuthFilter extends UsernamePasswordAuthenticationFilter {
     @Override
     protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain, Authentication authResult) throws IOException, ServletException {
         CustomUserDetail userDetail=(CustomUserDetail) authResult.getPrincipal();
-
         String accessToken=jwtUtils.genAccessToken(userDetail.getMemberId());
         String refreshToken=jwtUtils.genRefreshToken(userDetail.getMemberId());
-        redisUserInfoService.saveRefreshToken(userDetail.getMemberId(),refreshToken);
+        settingUserInfo(userDetail.getMember(),refreshToken);
         response.setHeader(AUTHORIZATION,TOKEN_PREFIX.getValue()+accessToken);
         response.setStatus(200);
         return;
@@ -89,5 +93,12 @@ public class JwtAuthFilter extends UsernamePasswordAuthenticationFilter {
         response.setContentType("application/json");
         response.setCharacterEncoding("UTF-8");
         response.getWriter().write(String.format("{\"message\":\"%s\",\"status\":\"%s\"}", message, httpStatus.name()));
+    }
+
+    private void settingUserInfo(Member m, String refreshToken)throws JsonProcessingException {
+        String member=objectMapper.writeValueAsString(m);
+        redisUserInfoService.settingRefreshTokenMemberInfo(m.getId(),member,refreshToken);
+        /*redisUserInfoService.setUserInfo(m.getId(),member);
+        redisUserInfoService.saveRefreshToken(m.getId(),refreshToken);*/
     }
 }
