@@ -1,6 +1,7 @@
 package com.org.server.config;
 
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.org.server.member.repository.MemberRepository;
 import com.org.server.member.service.SecurityMemberReadService;
 import com.org.server.redis.service.RedisUserInfoService;
@@ -40,6 +41,7 @@ public class SecurityConfig {
     private final WebConfig webConfig;
     private final JwtUtil jwtUtil;
     private final TicketService ticketService;
+    private final ObjectMapper objectMapper;
 
 
 	private static final String[] freePassUrl = {
@@ -76,9 +78,9 @@ public class SecurityConfig {
         //         .httpBasic(AbstractHttpConfigurer::disable)
         //         .cors(AbstractHttpConfigurer::disable);
 
-        http.addFilterBefore(new JwtAuthFilter(redisUserInfoService,jwtUtil,authenticationManager()
+        http.addFilterBefore(new JwtAuthFilter(redisUserInfoService,jwtUtil,authenticationManager(),objectMapper
         ), UsernamePasswordAuthenticationFilter.class);
-        http.addFilterAfter(new TokenAuthfilter(jwtUtil,redisUserInfoService,memberRepository)
+        http.addFilterAfter(new TokenAuthfilter(jwtUtil,redisUserInfoService,memberRepository,objectMapper)
                 , JwtAuthFilter.class);
         http.addFilterAfter(new ProjectTicketFilter(redisUserInfoService,ticketService),TokenAuthfilter.class);
 

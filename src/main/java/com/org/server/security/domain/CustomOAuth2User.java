@@ -1,6 +1,7 @@
 package com.org.server.security.domain;
 
 import com.org.server.member.MemberType;
+import com.org.server.member.domain.Member;
 import lombok.Builder;
 import lombok.Getter;
 import org.springframework.security.core.GrantedAuthority;
@@ -17,14 +18,16 @@ public class CustomOAuth2User implements OAuth2User{
     private String memberRole;
     private MemberType memberType;
     private String email;
+    private Member member;
 
     @Builder
     public CustomOAuth2User(Long id, String memberRole,
-                            MemberType memberType, String email) {
+                            MemberType memberType, String email,Member member) {
         this.id = id;
         this.memberRole = memberRole;
         this.memberType = memberType;
         this.email = email;
+        this.member=member;
     }
 
     @Override

@@ -54,7 +54,7 @@ public class ProjectMeetEntranceService {
         Ticket ticket= new Ticket(project.get().getId(),m.getId(),ticketDto.getAlias());
         ticketService.saveTicket(ticket);
         redisUserInfoService.setTicketKey(String.valueOf(ticket.getMemberId())
-                ,String.valueOf(ticket.getId()));
+                ,String.valueOf(project.get().getId()));
     }
     public void changeAlias(String alias,Long projectId){
         Member m=securityMemberReadService.securityMemberRead();

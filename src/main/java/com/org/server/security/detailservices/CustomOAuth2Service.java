@@ -58,6 +58,7 @@ public class CustomOAuth2Service extends DefaultOAuth2UserService {
         return CustomOAuth2User
                 .builder()
                 .id(member.getId())
+                .member(member)
                 .email(member.getEmail())
                 .memberType(member.getMemberType())
                 .build();
@@ -71,10 +72,11 @@ public class CustomOAuth2Service extends DefaultOAuth2UserService {
                 .nickName(RandomCharSet.createRandomName())
                 .build();
 
-        memberRepository.save(newMember);
+        newMember=memberRepository.save(newMember);
         return CustomOAuth2User
                 .builder()
                 .id(newMember.getId())
+                .member(newMember)
                 .email(newMember.getEmail())
                 .memberType(newMember.getMemberType())
                 .build();
