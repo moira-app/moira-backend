@@ -2,6 +2,7 @@ package com.org.server.redis.service;
 
 import com.org.server.member.domain.Member;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.script.DefaultRedisScript;
@@ -13,6 +14,7 @@ import java.util.concurrent.TimeUnit;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class RedisUserInfoService {
 
     private final RedisTemplate<String,String> redisTemplate;
@@ -50,8 +52,8 @@ public class RedisUserInfoService {
         redisTemplate.opsForValue().set(mail_cert_key+email,code,5L,TimeUnit.MINUTES);
     }
     public boolean checkCertCode(String email,String code){
-        Long result=Long.parseLong(stringRedisTemplate.execute(new DefaultRedisScript<>(LuaScriptSet.checkCertKeyScript)
-        ,List.of(mail_cert_key+email),code));
+        Long result=stringRedisTemplate.execute(new DefaultRedisScript<>(LuaScriptSet.checkCertKeyScript,Long.class)
+        ,List.of(mail_cert_key+email),code);
         if(result==1){
             return true;
         }
