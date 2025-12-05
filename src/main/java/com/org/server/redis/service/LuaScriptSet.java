@@ -18,9 +18,9 @@ public class LuaScriptSet {
 
     public final static String checkCertKeyScript="local certCode=redis.call(\"get\",KEYS[1])\n" +
             "if certCode==nil or certCode~=ARGV[1] then\n" +
-            "    return 0\n" +
+            "    return 0 \n" +
             "else\n" +
             "    redis.call(\"del\",KEYS[1])\n" +
-            "    return 1\n" +
+            "    return 1 \n" +
             "end";
 }
