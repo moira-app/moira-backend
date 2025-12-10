@@ -76,6 +76,6 @@ public class EventGatewayController {
 						.requestId((String)env.data().get("requestId"))
 						.rootId((String) env.data().get("rootId"))
 						.build()))
-				.handle(env, principal);
+				.handle(env, principal1);
 	}
 }
