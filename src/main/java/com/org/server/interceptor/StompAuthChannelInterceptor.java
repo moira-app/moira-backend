@@ -2,6 +2,7 @@ package com.org.server.interceptor;
 
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import com.org.server.exception.MoiraSocketException;
@@ -13,6 +14,7 @@ import com.org.server.member.service.MemberService;
 import com.org.server.member.service.MemberServiceImpl;
 import com.org.server.redis.service.RedisUserInfoService;
 import com.org.server.util.jwt.JwtUtil;
+import com.org.server.websocket.domain.StompPrincipal;
 import io.jsonwebtoken.Claims;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -44,12 +46,12 @@ public class StompAuthChannelInterceptor  implements ChannelInterceptor {
 	@Override
 	public Message<?> preSend(Message<?> message, MessageChannel channel) {
 		StompHeaderAccessor acc = StompHeaderAccessor.wrap(message);
-
+        log.info("command:{}",acc.getCommand());;
         if(acc.getCommand().equals(StompCommand.DISCONNECT)){
             return message;
         }
         if(acc.getCommand().equals(StompCommand.SUBSCRIBE)||acc.getCommand().equals(StompCommand.SEND)
-        ||acc.getCommand().equals(StompCommand.CONNECT)){
+                ||acc.getCommand().equals(StompCommand.CONNECT)){
             //이하 subscribe,connect,send의 경우 모두 메시지 검증.
             String token = jwtUtil.getTokenFromHeader(acc.getFirstNativeHeader("Authorization"));
             if (token == null) {
@@ -59,8 +61,9 @@ public class StompAuthChannelInterceptor  implements ChannelInterceptor {
             Long memberId = claims.get("id", Long.class);
             checkMemberExist(memberId);
             if (StompCommand.SEND.equals(acc.getCommand())){
-                handleSendMessage(memberId, acc);
+               handleSendMessage(memberId, acc);
             }
+            acc.getSessionAttributes().put("principal",new StompPrincipal(memberId.toString()));
         }
 	    return message;
 	}
