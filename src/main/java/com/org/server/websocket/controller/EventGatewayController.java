@@ -64,9 +64,9 @@ public class EventGatewayController {
 	}
 
 	@MessageMapping("/signaling/{projectId}/{meetId}")
-	public void onSignalingEvent(@Payload EventEnvelope env, Principal principal,
+	public void onSignalingEvent(@Payload EventEnvelope env, Principal principal,StompHeaderAccessor stompHeaderAccessor,
 							@DestinationVariable(value ="meetId") Long meetId){
-		log.info("singaling start");
+		Principal principal1=(Principal)stompHeaderAccessor.getSessionAttributes().get("principal");
 		env.meta().put("meetId",meetId);
 		handlers.stream()
 				.filter(h -> h.supports(env.type()))
@@ -76,6 +76,6 @@ public class EventGatewayController {
 						.requestId((String)env.data().get("requestId"))
 						.rootId((String) env.data().get("rootId"))
 						.build()))
-				.handle(env, principal);
+				.handle(env, principal1);
 	}
 }

@@ -3,6 +3,8 @@ package com.org.server.interceptor;
 
 import com.org.server.util.jwt.JwtUtil;
 import io.jsonwebtoken.Claims;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
@@ -16,7 +18,7 @@ import org.springframework.web.socket.server.HandshakeInterceptor;
 import java.util.List;
 import java.util.Map;
 
-@Component
+//@Component
 @RequiredArgsConstructor
 @Slf4j
 public class CustomHandShakeInterceptor implements HandshakeInterceptor {
@@ -34,7 +36,6 @@ public class CustomHandShakeInterceptor implements HandshakeInterceptor {
         }
         return true;
     }
-
 @Override
     public void afterHandshake(ServerHttpRequest request, ServerHttpResponse response, WebSocketHandler wsHandler, Exception exception) {
 

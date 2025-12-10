@@ -28,20 +28,22 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
 
 	private final StompErrorHandler stompErrorHandler;
-	private final CustomHandShakeHandler customShakeHandler;
-	private final CustomHandShakeInterceptor customHandShakeInterceptor;
+	//private final CustomHandShakeHandler customShakeHandler;
+	//private final CustomHandShakeInterceptor customHandShakeInterceptor;
 	@Override
 	public void registerStompEndpoints(StompEndpointRegistry registry) {
 		registry.addEndpoint("/ws")
 				.setAllowedOriginPatterns("*")
-				.addInterceptors(customHandShakeInterceptor)
-				.setHandshakeHandler(customShakeHandler)
+				//.addInterceptors(customHandShakeInterceptor)
+				//.setHandshakeHandler(customShakeHandler)
 				.withSockJS()
 				.setHeartbeatTime(30000);
 		registry.setErrorHandler(stompErrorHandler);
 	}
 
 	@Override
+	// JSON 직렬화(메시지 컨버터) 확실히
+
 	public void configureMessageBroker(MessageBrokerRegistry registry) {
 		registry.enableSimpleBroker("/topic", "/queue", "/user");
 		registry.setUserDestinationPrefix("/user");
@@ -49,8 +51,6 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 	}
 
 
-	// JSON 직렬화(메시지 컨버터) 확실히
-	@Override
 	public boolean configureMessageConverters(List<MessageConverter> converters) {
 		MappingJackson2MessageConverter jackson = new MappingJackson2MessageConverter();
 		jackson.setObjectMapper(new ObjectMapper());
