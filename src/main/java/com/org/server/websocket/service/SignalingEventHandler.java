@@ -18,6 +18,8 @@ public class SignalingEventHandler implements EventHandler{
 
     private final static String eventType="crdt.webrtc";
     private final SimpMessagingTemplate simpMessagingTemplate;
+    private final static String broadCastPath="/topic/meet.";
+    private final static String uniCastPath="/queue/";
     @Override
     public boolean supports(String type) {
         if(type.equals(eventType)){
@@ -32,12 +34,12 @@ public class SignalingEventHandler implements EventHandler{
         if(metaData.get("webRtcDataType").equals(WebRtcDataType.SDPOFFER)||
                 metaData.get("webRtcDataType").equals(WebRtcDataType.CANDIDATEOFFER)){
             //프로젝트 주소
-            simpMessagingTemplate.convertAndSend("/topic/meet/"+metaData.get("meetId"),env);
+            simpMessagingTemplate.convertAndSend(broadCastPath+metaData.get("meetId"),env);
         }
         if(metaData.get("webRtcDataType").equals(WebRtcDataType.SDPANSWER)||
                 metaData.get("webRtcDataType").equals(WebRtcDataType.CANDIATEANSWER)){
             //개인 주소
-            simpMessagingTemplate.convertAndSend("/user/"+metaData.get("targetId"),env);
+            simpMessagingTemplate.convertAndSend(uniCastPath+metaData.get("targetId"),env);
         }
     }
     /*

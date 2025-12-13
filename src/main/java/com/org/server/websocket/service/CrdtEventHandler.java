@@ -20,6 +20,7 @@ public class CrdtEventHandler implements EventHandler{
 
     private final GraphService graphService;
     private final SimpMessagingTemplate messagingTemplate;
+    private final static String dataSendPrefix="/topic/crdt.";
     @Override
     public boolean supports(String type) {
         return "crdt.action".equals(type);
@@ -33,24 +34,24 @@ public class CrdtEventHandler implements EventHandler{
             NodeCreateDto nodeCreateDto=
                     (NodeCreateDto) GraphEnvelopService.createFromEvent(env,actionType);
             if(graphService.createElementNode(nodeCreateDto)) {
-                messagingTemplate.convertAndSend("/topic/crdt/" +
+                messagingTemplate.convertAndSend(dataSendPrefix +
                         nodeCreateDto.getProjectId(), nodeCreateDto);
             }
             else{
                 nodeCreateDto.updateCheckPass();
-                messagingTemplate.convertAndSend("/topic/crdt/" +
+                messagingTemplate.convertAndSend(dataSendPrefix +
                         nodeCreateDto.getProjectId(),nodeCreateDto);
             }
         }
         if(actionType.equals(GraphActionType.Delete)){
             NodeDelDto nodeDelDto=(NodeDelDto) GraphEnvelopService.createFromEvent(env,actionType);
             if(graphService.delGraphNode(nodeDelDto)) {
-                messagingTemplate.convertAndSend("/topic/crdt/" +
+                messagingTemplate.convertAndSend(dataSendPrefix +
                         nodeDelDto.getProjectId(), nodeDelDto);
             }
             else{
                 nodeDelDto.updateCheckPass();
-                messagingTemplate.convertAndSend("/topic/crdt/" +
+                messagingTemplate.convertAndSend(dataSendPrefix +
                         nodeDelDto.getProjectId(),nodeDelDto);
             }
         }
@@ -58,12 +59,12 @@ public class CrdtEventHandler implements EventHandler{
             PropertyChangeDto propertyChangeDto=
                     (PropertyChangeDto) GraphEnvelopService.createFromEvent(env,actionType);
             if(graphService.updateProperties(propertyChangeDto)){
-                messagingTemplate.convertAndSend("/topic/crdt/"+
+                messagingTemplate.convertAndSend(dataSendPrefix+
                         propertyChangeDto.getProjectId(),propertyChangeDto);
             }
             else{
                 propertyChangeDto.updateCheckPass();
-                messagingTemplate.convertAndSend("/topic/crdt/" +
+                messagingTemplate.convertAndSend(dataSendPrefix+
                         propertyChangeDto.getProjectId(),propertyChangeDto);
             }
         }
@@ -71,12 +72,12 @@ public class CrdtEventHandler implements EventHandler{
             StructureChangeDto structureChangeDto=
                     (StructureChangeDto) GraphEnvelopService.createFromEvent(env,actionType);
            if(graphService.updateNodeReference(structureChangeDto)) {
-               messagingTemplate.convertAndSend("/topic/crdt/" +
+               messagingTemplate.convertAndSend(dataSendPrefix +
                        structureChangeDto.getProjectId(), structureChangeDto);
            }
            else{
                structureChangeDto.updateCheckPass();
-               messagingTemplate.convertAndSend("/topic/crdt/" +
+               messagingTemplate.convertAndSend(dataSendPrefix +
                        structureChangeDto.getProjectId(),structureChangeDto);
            }
         }

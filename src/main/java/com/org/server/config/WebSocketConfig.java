@@ -6,6 +6,8 @@ import com.org.server.interceptor.CustomHandShakeHandler;
 import com.org.server.interceptor.CustomHandShakeInterceptor;
 import com.org.server.interceptor.StompErrorHandler;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageChannel;
@@ -15,6 +17,8 @@ import org.springframework.messaging.simp.config.ChannelRegistration;
 import org.springframework.messaging.simp.config.MessageBrokerRegistry;
 import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 import org.springframework.messaging.support.ChannelInterceptor;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBroker;
 import org.springframework.web.socket.config.annotation.StompEndpointRegistry;
 import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerConfigurer;
@@ -27,6 +31,20 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
 
+	@Value("${spring.rabbitmq.host}")
+	private String HOSTNAME;
+
+	@Value("${spring.rabbitmq.port}")
+	private int PORT;
+
+	@Value("${spring.rabbitmq.username}")
+	private String USERNAME;
+
+	@Value("${spring.rabbitmq.password}")
+	private String PASSWORD;
+
+
+
 	private final StompErrorHandler stompErrorHandler;
 	//private final CustomHandShakeHandler customShakeHandler;
 	//private final CustomHandShakeInterceptor customHandShakeInterceptor;
@@ -36,17 +54,34 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 				.setAllowedOriginPatterns("*")
 				//.addInterceptors(customHandShakeInterceptor)
 				//.setHandshakeHandler(customShakeHandler)
-				.withSockJS()
-				.setHeartbeatTime(30000);
+				.withSockJS();
+				//.setHeartbeatTime(30000);
 		registry.setErrorHandler(stompErrorHandler);
 	}
+
+	@Bean
+	public ThreadPoolTaskScheduler systemHeartBeatThread() {
+		ThreadPoolTaskScheduler scheduler = new ThreadPoolTaskScheduler();
+		scheduler.setThreadNamePrefix("spring-rabbitmq-heartbeat-");
+		scheduler.setPoolSize(1);
+		scheduler.initialize();
+		return scheduler;
+	}
+
 
 	@Override
 	// JSON 직렬화(메시지 컨버터) 확실히
 
 	public void configureMessageBroker(MessageBrokerRegistry registry) {
-		registry.enableSimpleBroker("/topic", "/queue", "/user");
-		registry.setUserDestinationPrefix("/user");
+
+		registry.enableStompBrokerRelay("/queue","/topic")
+				.setRelayHost(HOSTNAME)
+				.setRelayPort(61613)
+				.setSystemHeartbeatSendInterval(20000)
+				.setSystemHeartbeatReceiveInterval(20000)
+				.setTaskScheduler(systemHeartBeatThread())
+				.setClientLogin(USERNAME)
+				.setClientPasscode(PASSWORD);
 		registry.setApplicationDestinationPrefixes("/app");
 	}
 

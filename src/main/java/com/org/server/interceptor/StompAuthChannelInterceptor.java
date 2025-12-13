@@ -23,6 +23,7 @@ import org.springframework.messaging.MessageChannel;
 import org.springframework.messaging.simp.stomp.StompCommand;
 import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 import org.springframework.messaging.support.ChannelInterceptor;
+import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.stereotype.Component;
 
@@ -60,6 +61,12 @@ public class StompAuthChannelInterceptor  implements ChannelInterceptor {
             Claims claims = jwtUtil.getClaims(token);
             Long memberId = claims.get("id", Long.class);
             checkMemberExist(memberId);
+            //connect단계에서는 하트비트 협상을 거쳐서 설정하게 만들고
+            //조기에 메시지 상환을 시킴.
+            if(StompCommand.CONNECT.equals(acc.getCommand())){
+                settingHeartBeatBetweenClientAndRabbitMq(acc);
+                return MessageBuilder.createMessage(message.getPayload(),acc.getMessageHeaders());
+            }
             if (StompCommand.SEND.equals(acc.getCommand())){
                handleSendMessage(memberId, acc);
             }
@@ -82,6 +89,11 @@ public class StompAuthChannelInterceptor  implements ChannelInterceptor {
         }
         return -1L;
     }
+
+    private void settingHeartBeatBetweenClientAndRabbitMq(StompHeaderAccessor acc){
+        acc.setNativeHeader("heart-beat",30000+","+0);
+    }
+
     private void handleSendMessage(Long memberId,StompHeaderAccessor acc){
         //메시지 전송시마다 권한 검증
         Long projectId=getProjectIdFromDest(acc.getDestination());
