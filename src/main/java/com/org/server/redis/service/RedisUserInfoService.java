@@ -23,6 +23,7 @@ public class RedisUserInfoService {
     private static final String member_exist_check="MEMBER-EXIST-";
     private static final String ticket_key="TICKET-KEY-";
 
+
     private final StringRedisTemplate stringRedisTemplate;
 
     public void settingRefreshTokenMemberInfo(Long memberId,String member,String refreshToken){
@@ -78,4 +79,7 @@ public class RedisUserInfoService {
                 List.of(member_exist_check+memberId,refresh_token_key+memberId)
         );
     }
+
+
+
 }
