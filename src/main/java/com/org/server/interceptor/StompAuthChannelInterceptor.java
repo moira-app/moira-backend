@@ -15,6 +15,7 @@ import com.org.server.member.service.MemberServiceImpl;
 import com.org.server.redis.service.RedisUserInfoService;
 import com.org.server.util.jwt.JwtUtil;
 import com.org.server.websocket.domain.StompPrincipal;
+import com.org.server.websocket.service.RedisStompService;
 import io.jsonwebtoken.Claims;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -23,6 +24,8 @@ import org.springframework.messaging.MessageChannel;
 import org.springframework.messaging.simp.stomp.StompCommand;
 import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 import org.springframework.messaging.support.ChannelInterceptor;
+import org.springframework.messaging.support.MessageBuilder;
+import org.springframework.messaging.support.MessageHeaderAccessor;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.stereotype.Component;
 
@@ -39,14 +42,15 @@ public class StompAuthChannelInterceptor  implements ChannelInterceptor {
 	private final JwtUtil jwtUtil;
 	private final RedisUserInfoService redisUserInfoService;
     private final MemberRepository memberRepository;
+    private final RedisStompService redisStompService;
     private final static String noTicketError="NoTicket";
-
     private final static String noMemberError="NoMember";
     private final static String noAccessToken="NoToken";
+
+    private final static String existSession="SessionAlreadyExist";
 	@Override
 	public Message<?> preSend(Message<?> message, MessageChannel channel) {
-		StompHeaderAccessor acc = StompHeaderAccessor.wrap(message);
-        log.info("command:{}",acc.getCommand());;
+		StompHeaderAccessor acc = MessageHeaderAccessor.getAccessor(message,StompHeaderAccessor.class);
         if(acc.getCommand().equals(StompCommand.DISCONNECT)){
             return message;
         }
@@ -64,9 +68,13 @@ public class StompAuthChannelInterceptor  implements ChannelInterceptor {
                handleSendMessage(memberId, acc);
             }
             if(StompCommand.CONNECT.equals(acc.getCommand())){
-                setPrincipal(acc,memberId);
+                if(checkStompSessionExist(memberId.toString())){
+                    throw new SocketAuthError(existSession);
+                }
+                StompPrincipal stompPrincipal=new StompPrincipal(memberId.toString());
+                acc.setUser(stompPrincipal);
+                return MessageBuilder.createMessage(message.getPayload(),acc.getMessageHeaders());
             }
-            acc.getSessionAttributes().put("principal",new StompPrincipal(memberId.toString()));
         }
 	    return message;
 	}
@@ -93,8 +101,8 @@ public class StompAuthChannelInterceptor  implements ChannelInterceptor {
             throw new MoiraSocketException(noTicketError, projectId,null);
         }
     }
-    private void setPrincipal(StompHeaderAccessor acc,Long memberId){
-        acc.setUser(new StompPrincipal(memberId.toString()));
+    private boolean checkStompSessionExist(String memberId){
+        return redisStompService.checkSessionKeyExist(memberId);
     }
 }
 

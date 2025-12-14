@@ -29,7 +29,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 public class EventGatewayController {
 
 	private final List<EventHandler> handlers;
-	private final SimpMessagingTemplate messagingTemplate;
+
 
 	/**
 	 * 클라이언트에서 /app/event 경로로 전송한 메시지를 처리합니다.
@@ -65,9 +65,9 @@ public class EventGatewayController {
 	}
 
 	@MessageMapping("/signaling/{projectId}/{meetId}")
-	public void onSignalingEvent(@Payload EventEnvelope env,StompHeaderAccessor stompHeaderAccessor,
+
+	public void onSignalingEvent(@Payload EventEnvelope env, Principal principal,
 							@DestinationVariable(value ="meetId") Long meetId){
-		Principal principal1=(Principal)stompHeaderAccessor.getSessionAttributes().get("principal");
 		env.meta().put("meetId",meetId);
 		handlers.stream()
 				.filter(h -> h.supports(env.type()))
@@ -77,6 +77,6 @@ public class EventGatewayController {
 						.requestId((String)env.data().get("requestId"))
 						.rootId((String) env.data().get("rootId"))
 						.build()))
-				.handle(env, principal1);
+				.handle(env, principal);
 	}
 }

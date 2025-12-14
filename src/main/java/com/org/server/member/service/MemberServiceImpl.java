@@ -9,6 +9,7 @@ import com.org.server.member.domain.*;
 import com.org.server.member.repository.MemberRepository;
 import com.org.server.redis.service.RedisUserInfoService;
 import com.org.server.s3.S3Service;
+import com.org.server.websocket.service.RedisStompService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -30,6 +31,7 @@ public class MemberServiceImpl implements MemberService{
     private final S3Service s3Service;
     private final RedisUserInfoService redisUserInfoService;
     private final ObjectMapper objectMapper;
+    private final RedisStompService redisStompService;
     public void memberSignIn(MemberSignInDto memberDto){
         if(!memberRepository.existsByEmail(memberDto.getEmail())&&
                 !memberRepository.existsByNickName(memberDto.getNickName())){
@@ -95,6 +97,7 @@ public class MemberServiceImpl implements MemberService{
         m.updateDeleted();
         memberRepository.save(m);
         redisUserInfoService.integralDelMemberInfo(m);
+        redisStompService.delIntegralSubDest(m.getId().toString());
     }
 
 
