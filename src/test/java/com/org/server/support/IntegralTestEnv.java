@@ -22,6 +22,7 @@ import com.org.server.ticket.domain.Ticket;
 import com.org.server.ticket.repository.TicketRepository;
 import com.org.server.ticket.service.TicketService;
 import com.org.server.util.jwt.JwtUtil;
+import com.org.server.websocket.service.RedisStompService;
 import org.junit.jupiter.api.AfterEach;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -72,6 +73,9 @@ public class IntegralTestEnv {
     protected CertificationService certificationService;
     @MockitoBean
     protected RedisUserInfoService redisUserInfoService;
+
+    @MockitoBean
+    protected RedisStompService redisStompService;
     @Autowired
     protected MeetService meetService;
     @Autowired
