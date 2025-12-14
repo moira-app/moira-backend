@@ -1,69 +1,88 @@
 package com.org.server.chat.repository;
 
-import com.org.server.chat.domain.ChatMessage;
-import com.org.server.chat.domain.QChatMessage;
-import com.querydsl.jpa.impl.JPAQueryFactory;
-import jakarta.persistence.EntityManager;
-import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.*;
-import org.springframework.stereotype.Repository;
-import org.springframework.data.support.PageableExecutionUtils;
 
+import com.mongodb.client.result.UpdateResult;
+import com.org.server.chat.domain.ChatType;
+import com.org.server.chat.domain.ChatMessage;
+import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.data.mongodb.core.query.Update;
+import org.springframework.stereotype.Repository;
+
+import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
+
+import static org.springframework.data.mongodb.core.query.Criteria.where;
 
 @Repository
 @RequiredArgsConstructor
 public class ChatMessageAdvanceRepository {
+    private final MongoTemplate mongoTemplate;
+    private final ChatMessageRepository messageRepository;
 
-	private final JPAQueryFactory queryFactory;
-	private final EntityManager em;
 
-	private static final QChatMessage m = QChatMessage.chatMessage;
+    public ChatMessage createMessage(Long roomId, Long senderId, String content, ChatType chatType){
+        ChatMessage chatMessageDoc= ChatMessage.builder()
+                .roomId(roomId)
+                .senderId(senderId)
+                .content(content)
+                .chatType(chatType)
+                .createDate(LocalDateTime.now().toString())
+                .build();
+        chatMessageDoc=messageRepository.save(chatMessageDoc);
+        return chatMessageDoc;
+    }
+    public List<ChatMessage> findMessages(String id, Long roomId){
+        //커서 오프셋 방식으로 찾기.
+        if(id!=null) {
+            Query query = new Query(where("_roomId").is(roomId)
+                    .and("deleted").is(false)
+                    .and("_id").lt(id));
+            query.limit(10);
+            query.with(Sort.by(Sort.Direction.DESC, "_id"));
+            List<ChatMessage> data = mongoTemplate.find(query, ChatMessage.class);
+            return data;
+        }
+        //latest 메시지
+        else{
+            Query query = new Query(where("_roomId").is(roomId)
+                    .and("deleted").is(false));
+            query.limit(10);
+            query.with(Sort.by(Sort.Direction.DESC, "_id"));
+            List<ChatMessage> data = mongoTemplate.find(query, ChatMessage.class);
+            return data;
+        }
+    }
+    //메시지 삭제
+    public boolean delMessage(String id,Long senderId){
+        Query query = new Query(where("_id").is(id)
+                .and("deleted").is(false)
+                .and("senderId").is(senderId));
+        Update updateData = new Update().set("deleted",true);
+        UpdateResult result = mongoTemplate.updateFirst(query, updateData,ChatMessage.class);
+        if(result.getModifiedCount()>0){
+            return true;
+        }
+        return false;
+    }
 
-	/** (Page) roomId 기준 최신순 페이지 조회 — total count 포함 */
-	public Page<ChatMessage> findPageByRoomId(Long roomId, Pageable pageable) {
-		List<ChatMessage> content = queryFactory
-			.selectFrom(m)
-			.where(m.roomId.eq(roomId))
-			.orderBy(m.id.desc())
-			.offset(pageable.getOffset())
-			.limit(pageable.getPageSize())
-			.fetch();
+    //내용업데이트
+    public boolean updateMessage(String id,String content,Long senderId,LocalDateTime updateDate){
+        Query query = new Query(where("_id").is(id)
+                .and("deleted").is(false)
+                .and("senderId").is(senderId));
+        Update update = new Update();
+        update.set("content",content);
+        update.set("updateDate",updateDate.toString());
+        UpdateResult result = mongoTemplate.updateFirst(query,update,ChatMessage.class);
+        if(result.getModifiedCount()>0){
+            return true;
+        }
+        return false;
+    }
 
-		// total count (필요 없으면 Slice 버전 사용 권장)
-		var countQuery = queryFactory
-			.select(m.id.count())
-			.from(m)
-			.where(m.roomId.eq(roomId));
 
-		return PageableExecutionUtils.getPage(content, pageable, countQuery::fetchOne);
-	}
 
-	/** (Slice) roomId 기준 최신순 슬라이스 — count 없이 다음 페이지 여부만 판단 */
-	public Slice<ChatMessage> findSliceByRoomId(Long roomId, Pageable pageable) {
-		List<ChatMessage> content = queryFactory
-			.selectFrom(m)
-			.where(m.roomId.eq(roomId))
-			.orderBy(m.id.desc())
-			.offset(pageable.getOffset())
-			.limit(pageable.getPageSize() + 1) // hasNext 판단용
-			.fetch();
-
-		boolean hasNext = content.size() > pageable.getPageSize();
-		if (hasNext) content.remove(pageable.getPageSize());
-
-		return new SliceImpl<>(content, pageable, hasNext);
-	}
-
-	/** 최신 메시지 1개 (id desc) */
-	public Optional<ChatMessage> findLatestByRoomId(Long roomId) {
-		ChatMessage one = queryFactory
-			.selectFrom(m)
-			.where(m.roomId.eq(roomId))
-			.orderBy(m.id.desc())
-			.limit(1)
-			.fetchOne();
-		return Optional.ofNullable(one);
-	}
 }

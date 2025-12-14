@@ -5,6 +5,7 @@ import java.util.List;
 
 import com.org.server.exception.MoiraSocketException;
 import com.org.server.graph.dto.NodeCreateDto;
+import com.org.server.websocket.domain.StompPrincipal;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
@@ -34,13 +35,13 @@ public class EventGatewayController {
 	 * 클라이언트에서 /app/event 경로로 전송한 메시지를 처리합니다.
 	 *
 	 * @param env 이벤트 Envelope (type, data, meta)
-	 * @param principal 인증 사용자 (JWT 연동 예정)
+	 * @param acc 인증 사용자 (JWT 연동 예정)
 	 */
-	@MessageMapping("/event")
+	@MessageMapping("/Event")
 	@Operation(summary = "이벤트 수신 (WebSocket)", description = "STOMP /app/event 로 수신된 메시지를 처리합니다. (Swagger 참고용 문서)")
-	public void onEvent(@Payload EventEnvelope env, Principal principal) {
+	public void onEvent(@Payload EventEnvelope env,StompHeaderAccessor acc) {
 		log.info("send Message start");
-
+		Principal principal=(Principal)acc.getSessionAttributes().get("principal");
 		handlers.stream()
 			.filter(h -> h.supports(env.type()))
 			.findFirst()
@@ -64,7 +65,7 @@ public class EventGatewayController {
 	}
 
 	@MessageMapping("/signaling/{projectId}/{meetId}")
-	public void onSignalingEvent(@Payload EventEnvelope env, Principal principal,StompHeaderAccessor stompHeaderAccessor,
+	public void onSignalingEvent(@Payload EventEnvelope env,StompHeaderAccessor stompHeaderAccessor,
 							@DestinationVariable(value ="meetId") Long meetId){
 		Principal principal1=(Principal)stompHeaderAccessor.getSessionAttributes().get("principal");
 		env.meta().put("meetId",meetId);

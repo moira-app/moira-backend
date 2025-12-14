@@ -35,24 +35,22 @@ public class ChatUseCase {
 	}
 
 	/** UC-2: roomId 기준 멤버 추가(멱등) → 메시지 전송 → 메시지 반환 */
-	@Transactional
-	public Page<ChatMessageDto> addMembersAndSend(Long roomId, List<Long> memberIds, Long senderId, String content) {
+	public List<ChatMessageDto> addMembersAndSend(Long roomId, List<Long> memberIds, Long senderId, String content) {
 		ChatRoom room = roomService.getRoom(roomId);
 		roomMemberService.addMembersIfMissing(room.getId(), memberIds);
 		messageService.sendMessage(room.getId(), senderId, content, room.getChatType());
-		return messageService.listMessagesPage(room.getId(), Pageable.ofSize(20));
+		return messageService.getMsgList(null,roomId);
 	}
 
-	@Transactional
 	public ChatMessageDto sendMessage(Long roomId, Long senderId, String content) {
 		ChatRoom room = roomService.getRoom(roomId);
 		return messageService.sendMessage(room.getId(), senderId, content, room.getChatType());
 	}
 
 
-	@Transactional
-	public List<ChatMessageDto> listMessages(Long roomId) {
-		return messageService.listMessagesPage(roomId, Pageable.ofSize(100)).toList();
+
+	public List<ChatMessageDto> listMessages(String offset,Long roomId) {
+		return messageService.getMsgList(offset,roomId);
 	}
 
 

@@ -136,7 +136,7 @@ public class ChatController {
 		@ApiResponse(responseCode = "404", description = "방 없음", content = @Content)
 	})
 	@PostMapping(value = "/rooms/{roomId}/messages", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<Page<ChatMessageDto>> addMembersAndSend(
+	public ResponseEntity<List<ChatMessageDto>> addMembersAndSend(
 		@Parameter(description = "방 ID", required = true)
 		@PathVariable Long roomId,
 		@Parameter(description = "보낸 사람 ID", required = true)
@@ -151,9 +151,10 @@ public class ChatController {
 		@RequestBody(required = false) List<Long> memberIds
 	) {
 		List<Long> safeMemberIds = (memberIds == null) ? List.of() : memberIds;
-		Page<ChatMessageDto> msg = chatUseCase.addMembersAndSend(roomId, safeMemberIds, senderId, content);
+		List<ChatMessageDto> msg = chatUseCase.addMembersAndSend(roomId, safeMemberIds, senderId, content);
 		return ResponseEntity.ok(msg);
 	}
+
 
 
 	@Operation(
@@ -166,15 +167,16 @@ public class ChatController {
 		@ApiResponse(responseCode = "401", description = "인증 필요", content = @Content),
 		@ApiResponse(responseCode = "404", description = "방 또는 메시지 없음", content = @Content)
 	})
-	@PostMapping(value = "/rooms/{roomId}/messages/all", produces = MediaType.APPLICATION_JSON_VALUE)
+	@PostMapping(value = {"/rooms/{roomId}/messages/all","/rooms/{roomId}/{offset}/messages/all"}, produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<List<ChatMessageDto>> listMessages(
 		@Parameter(description = "방 ID", required = true)
-		@PathVariable Long roomId
+		@PathVariable Long roomId,
+		@Parameter(description ="offset 기준점",required=false)
+		@PathVariable(required = false) String offset
 	) {
-		List<ChatMessageDto> msgs = chatUseCase.listMessages(roomId);
+		List<ChatMessageDto> msgs = chatUseCase.listMessages(offset,roomId);
 		return ResponseEntity.ok(msgs);
 	}
-
 
 
 	/**

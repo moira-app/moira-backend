@@ -1,6 +1,8 @@
 package com.org.server.meet.service;
 
 
+import com.org.server.chat.domain.ChatType;
+import com.org.server.chat.service.ChatRoomService;
 import com.org.server.exception.MoiraException;
 import com.org.server.meet.domain.Meet;
 import com.org.server.meet.domain.MeetConnectDto;
@@ -34,6 +36,7 @@ public class MeetService {
     private final MeetRepository meetRepository;
     private final MeetAdvanceRepo meetAdvanceRepo;
     private final SecurityMemberReadService securityMemberReadService;
+    private final ChatRoomService chatRoomService;
 
     public List<MeetDateDto> getMeetList(String date){
         LocalDateTime startTime=LocalDate.parse(date,DateTimeMapUtil.formatByDot2).atStartOfDay();
@@ -61,6 +64,7 @@ public class MeetService {
         return meet.get();
     }
     public void saveMeet(Meet meet){
-        meetRepository.save(meet);
+        meet=meetRepository.save(meet);
+        chatRoomService.ensureRoom(ChatType.MEET,meet.getId());
     }
 }

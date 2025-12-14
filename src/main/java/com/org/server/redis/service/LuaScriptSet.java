@@ -23,4 +23,5 @@ public class LuaScriptSet {
             "    redis.call(\"del\",KEYS[1])\n" +
             "    return 1 \n" +
             "end";
+
 }

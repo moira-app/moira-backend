@@ -2,6 +2,8 @@ package com.org.server.project.service;
 
 
 
+import com.org.server.chat.domain.ChatType;
+import com.org.server.chat.service.ChatRoomService;
 import com.org.server.exception.MoiraException;
 import com.org.server.member.domain.Member;
 import com.org.server.member.service.SecurityMemberReadService;
@@ -24,17 +26,12 @@ import java.util.UUID;
 @Transactional
 public class ProjectService {
 
+    private final ChatRoomService chatRoomService;
     private final ProjectRepository projectRepository;
     private final SecurityMemberReadService securityMemberReadService;
     private final TicketService ticketService;
 
-    public Boolean checkProject(Long id){
-        Optional<Project> p=projectRepository.findById(id);
-        if(p.isEmpty()||p.get().getDeleted()){
-            return false;
-        }
-        return true;
-    }
+
     public String createProject(String title){
         UUID url=UUID.randomUUID();
         Project project=new Project(title,url.toString());
@@ -46,6 +43,7 @@ public class ProjectService {
                 .alias(member.getNickName())
                 .build();
         ticketService.saveTicket(ticket);
+        chatRoomService.ensureRoom(ChatType.PROJECT,project.getId());
         return url.toString();
     }
     public void delProject(Long id){

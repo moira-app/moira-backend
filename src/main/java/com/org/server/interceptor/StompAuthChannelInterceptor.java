@@ -63,6 +63,9 @@ public class StompAuthChannelInterceptor  implements ChannelInterceptor {
             if (StompCommand.SEND.equals(acc.getCommand())){
                handleSendMessage(memberId, acc);
             }
+            if(StompCommand.CONNECT.equals(acc.getCommand())){
+                setPrincipal(acc,memberId);
+            }
             acc.getSessionAttributes().put("principal",new StompPrincipal(memberId.toString()));
         }
 	    return message;
@@ -89,6 +92,9 @@ public class StompAuthChannelInterceptor  implements ChannelInterceptor {
                 , String.valueOf(projectId))) {
             throw new MoiraSocketException(noTicketError, projectId,null);
         }
+    }
+    private void setPrincipal(StompHeaderAccessor acc,Long memberId){
+        acc.setUser(new StompPrincipal(memberId.toString()));
     }
 }
 
