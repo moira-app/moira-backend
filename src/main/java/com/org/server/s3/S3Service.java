@@ -47,14 +47,19 @@ public class S3Service {
         return List.of(fileLocation,
                 presigner.presignPutObject(putObjectPresignRequest).url().toString());
     }
-
-    public void delPreSignUrl(String fileLocation){
-        DeleteObjectRequest deleteObjectRequest=DeleteObjectRequest.builder()
+    public String getPreSignUrl(String fileName){
+        GetObjectRequest getObjectRequest=GetObjectRequest.builder()
                 .bucket(bucket)
-                .key(fileLocation)
+                .key(fileName)
                 .build();
-        s3Client.deleteObject(deleteObjectRequest);
+        GetObjectPresignRequest getObjectPresignRequest=GetObjectPresignRequest.builder()
+                .getObjectRequest(getObjectRequest)
+                .signatureDuration(Duration.ofMinutes(30L))
+                .build();
+        return presigner.presignGetObject(getObjectPresignRequest).url().toString();
     }
+
+
     private boolean verifyContentType(String contentType){
         for(MediaType mediaType: MediaType.values()){
             String type=mediaType.getValue();

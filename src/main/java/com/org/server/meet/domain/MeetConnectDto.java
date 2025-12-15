@@ -9,9 +9,11 @@ import lombok.NoArgsConstructor;
 public class MeetConnectDto {
     private String alias;
     private String meetName;
+    private Long roomId;
 
-    public MeetConnectDto(String meetName,String alias) {
+    public MeetConnectDto(String meetName,String alias,Long roomId) {
         this.alias = alias;
         this.meetName=meetName;
+        this.roomId=roomId;
     }
 }

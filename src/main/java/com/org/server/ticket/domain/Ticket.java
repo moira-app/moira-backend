@@ -30,11 +30,14 @@ public class Ticket extends BaseTime{
 
     private Boolean deleted=false;
 
+    private Master master;
+
     @Builder
-    public Ticket(Long projectId,Long memberId, String alias) {
+    public Ticket(Long projectId,Long memberId, String alias,Master master) {
         this.projectId=projectId;
         this.memberId=memberId;
         this.alias = alias;
+        this.master=master;
     }
 
     public void updateAlias(String alias){
@@ -44,4 +47,6 @@ public class Ticket extends BaseTime{
     public void updateDeleted(){
         this.deleted=!this.deleted;
     }
+
+    public void updateMaster(Master master){this.master=master;}
 }

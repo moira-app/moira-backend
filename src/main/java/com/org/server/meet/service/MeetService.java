@@ -63,8 +63,9 @@ public class MeetService {
         }
         return meet.get();
     }
-    public void saveMeet(Meet meet){
+    public Long saveMeet(Meet meet){
         meet=meetRepository.save(meet);
         chatRoomService.ensureRoom(ChatType.MEET,meet.getId());
+        return meet.getId();
     }
 }

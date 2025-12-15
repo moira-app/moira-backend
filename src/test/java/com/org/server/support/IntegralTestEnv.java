@@ -4,6 +4,8 @@ package com.org.server.support;
 import com.org.server.certification.repository.ProjectCertRepo;
 import com.org.server.certification.service.CertificationService;
 import com.org.server.certification.service.ProjectMeetEntranceService;
+import com.org.server.chat.repository.ChatRoomRepository;
+import com.org.server.chat.service.ChatRoomService;
 import com.org.server.graph.repository.GraphRepository;
 import com.org.server.graph.service.GraphService;
 import com.org.server.meet.repository.MeetRepository;
@@ -18,6 +20,7 @@ import com.org.server.project.repository.ProjectRepository;
 import com.org.server.project.service.ProjectService;
 import com.org.server.redis.service.RedisUserInfoService;
 import com.org.server.s3.S3Service;
+import com.org.server.ticket.domain.Master;
 import com.org.server.ticket.domain.Ticket;
 import com.org.server.ticket.repository.TicketRepository;
 import com.org.server.ticket.service.TicketService;
@@ -31,6 +34,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.thymeleaf.spring6.SpringTemplateEngine;
+
+import java.time.LocalDateTime;
 
 @ActiveProfiles("test")
 @SpringBootTest
@@ -85,6 +90,12 @@ public class IntegralTestEnv {
     @Autowired
     protected ProjectMeetEntranceService projectCertService;
 
+
+    @Autowired
+    protected ChatRoomRepository chatRoomRepository;
+    @Autowired
+    protected ChatRoomService chatRoomService;
+
     //else
     @Autowired
     protected JwtUtil jwtUtil;
@@ -104,6 +115,7 @@ public class IntegralTestEnv {
         ticketRepository.deleteAllInBatch();
         meetRepository.deleteAllInBatch();
         projectRepository.deleteAllInBatch();
+        chatRoomRepository.deleteAllInBatch();
 
     }
 
@@ -122,11 +134,12 @@ public class IntegralTestEnv {
     }
 
 
-    protected Ticket createTicket(Member m, Project p, String alias){
+    protected Ticket createTicket(Member m, Project p, String alias, Master master){
         Ticket t=Ticket.builder()
                 .memberId(m.getId())
                 .projectId(p.getId())
                 .alias(alias)
+                .master(master)
                 .build();
         t=ticketRepository.save(t);
         return t;
@@ -134,7 +147,7 @@ public class IntegralTestEnv {
 
 
     protected Project createProject(String title,String projectUrl){
-        Project p=new Project(title,projectUrl);
+        Project p=new Project(title,projectUrl, LocalDateTime.now());
         return projectRepository.save(p);
     }
 

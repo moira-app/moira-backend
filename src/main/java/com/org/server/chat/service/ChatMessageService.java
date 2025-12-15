@@ -2,7 +2,6 @@ package com.org.server.chat.service;
 
 
 import com.org.server.chat.domain.ChatEvent;
-import com.org.server.chat.domain.ChatType;
 import com.org.server.chat.domain.ChatMessage;
 import com.org.server.chat.domain.ChatMessageDto;
 import com.org.server.chat.repository.ChatMessageAdvanceRepository;
@@ -20,9 +19,8 @@ public class ChatMessageService {
     private final ChatMessageAdvanceRepository chatMsgRepository;
 
 
-    public ChatMessageDto sendMessage(Long roomId, Long senderId, String content, ChatType chatType){
-       ChatMessage messsage=chatMsgRepository.createMessage(roomId,senderId,content,chatType);
-
+    public ChatMessageDto sendMessage(Long roomId, Long senderId, String content){
+       ChatMessage messsage=chatMsgRepository.createMessage(roomId,senderId,content);
        return toDto(messsage,ChatEvent.READ);
     }
 
@@ -52,7 +50,6 @@ public class ChatMessageService {
         return new ChatMessageDto(
                 m.getId(),
                 event,
-                m.getChatType() ,
                 m.getRoomId(),
                 m.getSenderId(),
                 m.getContent(),

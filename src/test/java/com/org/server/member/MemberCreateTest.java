@@ -147,7 +147,7 @@ public class MemberCreateTest extends IntegralTestEnv {
                 .integralDelMemberInfo(member);
         Mockito.doNothing()
                 .when(redisStompService)
-                .delIntegralSubDest(member.getId().toString());
+                .removeSubScribeDest(member.getId().toString());
         memberService.delMember();
         Member m=memberRepository.findById(member.getId()).get();
         assertThat(m.getDeleted()).isTrue();

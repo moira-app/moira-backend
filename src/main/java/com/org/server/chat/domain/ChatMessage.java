@@ -17,8 +17,6 @@ public class ChatMessage {
 
     @Id
     private String id;
-    @Enumerated(EnumType.STRING)
-    private ChatType chatType;
     private Long roomId;
     private Long senderId;
     private String content;
@@ -27,9 +25,8 @@ public class ChatMessage {
     private String updateDate;
 
     @Builder
-    private ChatMessage(ChatType chatType, Long roomId, Long senderId,
+    private ChatMessage(Long roomId, Long senderId,
                         String content,String id,String createDate,String updateDate) {
-        this.chatType = chatType;
         this.roomId = roomId;
         this.senderId = senderId;
         this.content = content;

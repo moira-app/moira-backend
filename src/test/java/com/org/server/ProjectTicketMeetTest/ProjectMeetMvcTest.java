@@ -4,6 +4,7 @@ package com.org.server.ProjectTicketMeetTest;
 import com.org.server.member.domain.Member;
 import com.org.server.project.domain.Project;
 import com.org.server.security.domain.CustomUserDetail;
+import com.org.server.ticket.domain.Master;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -35,7 +36,7 @@ public class ProjectMeetMvcTest extends IntegralTestEnv{
         member=createMember(1L);
         withTicket=createProject("testTicket","Dsfdff");
         withNoTicket=createProject("testNoTicket","zczcxzcxzc");
-        createTicket(member,withTicket,"zcx");
+        createTicket(member,withTicket,"zcx", Master.MASTER);
     }
 
 

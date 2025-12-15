@@ -2,9 +2,12 @@ package com.org.server.project.domain;
 
 
 import jakarta.persistence.*;
+import lombok.Builder;
 import lombok.Getter;
 import com.org.server.util.BaseTime;
 import lombok.NoArgsConstructor;
+
+import java.time.LocalDateTime;
 
 @Entity
 @Getter
@@ -19,9 +22,13 @@ public class Project extends BaseTime{
     private String title;
     private Boolean deleted=false;
     private String projectUrl;
-    public Project(String title,String projectUrl) {
+    private LocalDateTime createDate;
+
+
+    public Project(String title,String projectUrl,LocalDateTime createDate) {
         this.title = title;
         this.projectUrl=projectUrl;
+        this.createDate=createDate;
     }
     public void updateDeleted(){
         this.deleted=!this.deleted;

@@ -23,12 +23,11 @@ public class ChatMessageAdvanceRepository {
     private final ChatMessageRepository messageRepository;
 
 
-    public ChatMessage createMessage(Long roomId, Long senderId, String content, ChatType chatType){
+    public ChatMessage createMessage(Long roomId, Long senderId, String content){
         ChatMessage chatMessageDoc= ChatMessage.builder()
                 .roomId(roomId)
                 .senderId(senderId)
                 .content(content)
-                .chatType(chatType)
                 .createDate(LocalDateTime.now().toString())
                 .build();
         chatMessageDoc=messageRepository.save(chatMessageDoc);

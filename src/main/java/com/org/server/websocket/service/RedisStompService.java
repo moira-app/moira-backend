@@ -25,18 +25,7 @@ public class RedisStompService {
         }
         return true;
     }
-    public List<String> getSubScribeAndDelKey(String memberId){
-        List<String> result=stringRedisTemplate.execute(new DefaultRedisScript<>(LuaScriptSet.getSubScribeListAndDelScript,List.class)
-                ,List.of(stompSessionKey+memberId));
-        return result;
-    }
-    public void addSubScribeDest(String memberId,String dest){
-        redisTemplate.opsForSet().add(stompSessionKey+memberId,dest);
-    }
-    public void removeSubScribeDest(String memberId,String dest){
-        redisTemplate.opsForSet().remove(stompSessionKey+memberId,dest);
-    }
-    public void delIntegralSubDest(String memberId){
+    public void removeSubScribeDest(String memberId){
         redisTemplate.opsForSet().remove(stompSessionKey+memberId);
     }
 }

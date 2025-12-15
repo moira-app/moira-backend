@@ -35,13 +35,13 @@ public class EventGatewayController {
 	 * 클라이언트에서 /app/event 경로로 전송한 메시지를 처리합니다.
 	 *
 	 * @param env 이벤트 Envelope (type, data, meta)
-	 * @param acc 인증 사용자 (JWT 연동 예정)
+	 * @param principal 인증 사용자 (JWT 연동 예정)
 	 */
-	@MessageMapping("/Event")
+	@MessageMapping("/event")
 	@Operation(summary = "이벤트 수신 (WebSocket)", description = "STOMP /app/event 로 수신된 메시지를 처리합니다. (Swagger 참고용 문서)")
-	public void onEvent(@Payload EventEnvelope env,StompHeaderAccessor acc) {
+	public void onEvent(@Payload EventEnvelope env,Principal principal,
+						@DestinationVariable(value ="projectId") Long projectId) {
 		log.info("send Message start");
-		Principal principal=(Principal)acc.getSessionAttributes().get("principal");
 		handlers.stream()
 			.filter(h -> h.supports(env.type()))
 			.findFirst()
@@ -49,34 +49,4 @@ public class EventGatewayController {
 			.handle(env, principal);
 	}
 
-	@MessageMapping("/crdt/{projectId}")
-	public void onCrdtEvent(@Payload EventEnvelope env, Principal principal,
-							@DestinationVariable(value ="projectId") Long projectId){
-		log.info("send crdt start");
-		handlers.stream()
-				.filter(h -> h.supports(env.type()))
-				.findFirst()
-				.orElseThrow(() -> new MoiraSocketException("Unsupported type: " + env.type()
-						,projectId, NodeCreateDto.builder()
-						.requestId((String)env.data().get("requestId"))
-						.rootId((String) env.data().get("rootId"))
-						.build()))
-				.handle(env, principal);
-	}
-
-	@MessageMapping("/signaling/{projectId}/{meetId}")
-
-	public void onSignalingEvent(@Payload EventEnvelope env, Principal principal,
-							@DestinationVariable(value ="meetId") Long meetId){
-		env.meta().put("meetId",meetId);
-		handlers.stream()
-				.filter(h -> h.supports(env.type()))
-				.findFirst()
-				.orElseThrow(() -> new MoiraSocketException("Unsupported type: " + env.type()
-						,meetId, NodeCreateDto.builder()
-						.requestId((String)env.data().get("requestId"))
-						.rootId((String) env.data().get("rootId"))
-						.build()))
-				.handle(env, principal);
-	}
 }

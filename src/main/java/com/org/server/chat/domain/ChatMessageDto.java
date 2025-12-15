@@ -1,13 +1,12 @@
 package com.org.server.chat.domain;
 
-import com.org.server.chat.domain.ChatType;
+import lombok.Builder;
 
-import java.time.LocalDateTime;
 
+@Builder
 public record ChatMessageDto(
         String id,
         ChatEvent chatEvent,
-        ChatType scope,
         Long roomId,
         Long senderId,
         String content,

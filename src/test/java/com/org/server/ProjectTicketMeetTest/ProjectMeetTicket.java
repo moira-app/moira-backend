@@ -11,8 +11,8 @@ import com.org.server.project.domain.Project;
 import com.org.server.project.domain.ProjectDto;
 
 import com.org.server.support.IntegralTestEnv;
+import com.org.server.ticket.domain.Master;
 import com.org.server.ticket.domain.Ticket;
-import com.org.server.ticket.domain.TicketDto;
 import com.org.server.util.DateTimeMapUtil;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -30,6 +30,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class ProjectMeetTicket extends IntegralTestEnv {
 
@@ -42,12 +43,12 @@ public class ProjectMeetTicket extends IntegralTestEnv {
 
     Member m;
 
+    Member m2;
+
     String monthCurrent;
     String monthFuture;
 
     private static DataSource testDataSource;
-
-
 
     @BeforeAll
     static void setupH2CustomFunctions(@Autowired DataSource dataSource) {
@@ -72,13 +73,13 @@ public class ProjectMeetTicket extends IntegralTestEnv {
     void settings(){
 
         m=createMember(1L);
-        Member m2=createMember(2L);
+        m2=createMember(2L);
         Mockito.when(securityMemberReadService.securityMemberRead())
                 .thenReturn(m);
         p=createProject("test","Dfdfd");
         p2=createProject("test2","fsdfd");
-        t=createTicket(m,p,null);
-        createTicket(m2,p2,"p2");
+        t=createTicket(m,p,null, Master.MASTER);
+        createTicket(m2,p2,"p2",Master.MASTER);
 
         String startTime=LocalDate.now().atStartOfDay().format(DateTimeMapUtil.formatByDot);
         String endTime=LocalDate.now().atStartOfDay().plusDays(1L).format(DateTimeMapUtil.formatByDot);
@@ -96,22 +97,19 @@ public class ProjectMeetTicket extends IntegralTestEnv {
         }
     }
 
+
+
     @Test
-    @DisplayName("해당되는 project를 잘가져오는가.")
+    @DisplayName("회원별 해당되는 project를 잘가져오는가.")
     void callProjectsTest(){
-
-
         Mockito.when(securityMemberReadService.securityMemberRead())
                 .thenReturn(m);
-
         List<ProjectDto> projectDtoList=projectCertService.getProejctList();
         assertThat(projectDtoList.size()).isEqualTo(1);
     }
     @Test
-    @DisplayName("해당되는 meeting 내역을 잘가져오는가.")
+    @DisplayName("회원별 해당되는 meeting 내역을 잘가져오는가.")
     void callMeetTest() {
-
-
         Mockito.when(securityMemberReadService.securityMemberRead())
                 .thenReturn(m);
 
@@ -154,10 +152,10 @@ public class ProjectMeetTicket extends IntegralTestEnv {
     void delTest(){
         Mockito.when(securityMemberReadService.securityMemberRead())
                 .thenReturn(m);
-        projectCertService.delTicket(t.getProjectId());
+        projectCertService.delTicket(t.getProjectId(),null);
 
         List<Meet> meets=meetRepository.findAll();
-        projectCertService.delMeet(meets.getFirst().getId());
+        projectCertService.delMeet(meets.getFirst().getId(),meets.getFirst().getProject().getId());
 
         Ticket tdel=ticketRepository.findByMemberIdAndProjectId(t.getMemberId(),t.getProjectId())
                 .get();
@@ -168,12 +166,25 @@ public class ProjectMeetTicket extends IntegralTestEnv {
         assertThat(meetDateDtos.size()).isEqualTo(4);
         assertThat(tdel.getDeleted()).isTrue();
 
-        projectService.delProject(p.getId());
+        projectCertService.delProject(p.getId());
+
 
         Project project=projectRepository.findById(p.getId()).get();
         assertThat(project.getDeleted()).isTrue();
     }
 
+    @Test
+    @DisplayName("마스터 권한 테스트")
+    void testingMaster(){
+        Mockito.when(securityMemberReadService.securityMemberRead())
+                .thenReturn(m);
+        assertThrows(MoiraException.class,()->projectCertService.delTicket(p.getId(),m2.getId()));
+        assertThrows(MoiraException.class,()->projectCertService.delProject(p2.getId()));
+        ticketRepository.save(createTicket(m2,p,null, Master.ELSE));
+        projectCertService.delTicket(p.getId(),m2.getId());
+        assertThat(ticketRepository.findByMemberIdAndProjectId(m2.getId(),p.getId()).get().getMaster())
+                .isEqualTo(Master.MASTER);
+    }
     @Test
     @DisplayName("티켓 발급 테스트")
     void ticketProvideTest(){
@@ -186,7 +197,7 @@ public class ProjectMeetTicket extends IntegralTestEnv {
                 .isInstanceOf(MoiraException.class)
                 .hasMessage("이미 초대되었거나 혹은 퇴출된 유저입니다");
 
-        projectCertService.delTicket(t.getProjectId());
+        projectCertService.delTicket(t.getProjectId(),null);
 
         assertThatThrownBy(()->{
             projectCertService.createTicket(p.getProjectUrl(),aliasDto);}

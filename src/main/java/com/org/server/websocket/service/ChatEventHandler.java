@@ -5,21 +5,16 @@ import com.org.server.chat.domain.ChatType;
 import com.org.server.chat.service.ChatMessageService;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Component;
-
-import com.org.server.chat.application.ChatUseCase;
-import com.org.server.chat.domain.ChatMessage;
 import com.org.server.chat.domain.ChatMessageDto;
 import com.org.server.websocket.domain.EventEnvelope;
-
 import lombok.RequiredArgsConstructor;
-
 import java.time.LocalDateTime;
 
 @Component
 @RequiredArgsConstructor
 public class ChatEventHandler implements EventHandler{
 	private static final org.apache.logging.log4j.Logger log = org.apache.logging.log4j.LogManager.getLogger(ChatEventHandler.class);
-	private final ChatUseCase chatUseCase;
+	private final static String chatRoomPreFix="/topic/chatroom-";
 	private final SimpMessagingTemplate messagingTemplate;
 	private final ChatMessageService chatMessageService;
 
@@ -36,19 +31,19 @@ public class ChatEventHandler implements EventHandler{
 		ChatEvent chatEvent=ChatEvent.valueOf((String) env.data().get("chatEvent"));
 		Long senderId = Long.parseLong(principal.getName());
 		String content = (String) env.data().get("content");
-		String id=(String) env.data().getOrDefault("id","");
+		String chatId=(String) env.data().getOrDefault("chatId","");
+		Long projectId=(Long)env.data().get("projectId");
 
 		switch (chatEvent){
 			case CREATE ->{
-				ChatMessageDto chatMessageDto=chatMessageService.sendMessage(roomId,senderId,content,chatType);
-				// 브로드캐스트: /topic/chat/room.{roomId}
-				messagingTemplate.convertAndSend("/topic/chatroom." + roomId, chatMessageDto);
+				ChatMessageDto chatMessageDto=chatMessageService.sendMessage(roomId,senderId,content);
+				messagingTemplate.convertAndSend(chatRoomPreFix+projectId+"-"+chatType+"-"+roomId, chatMessageDto);
 			}
 			case DELETE ->{
-				messagingTemplate.convertAndSend("/topic/chatroom."+roomId,chatMessageService.delMsg(id,senderId));
+				messagingTemplate.convertAndSend(chatRoomPreFix+projectId+"-"+chatType+"-"+ roomId,chatMessageService.delMsg(chatId,senderId));
 			}
 			case UPDATE ->{
-				messagingTemplate.convertAndSend("/topic/chatroom."+roomId,chatMessageService.updateMsg(id,content,senderId, LocalDateTime.now()));
+				messagingTemplate.convertAndSend(chatRoomPreFix+projectId+"-"+chatType+"-"+ roomId,chatMessageService.updateMsg(chatId,content,senderId, LocalDateTime.now()));
 			}
 			default -> {
 				throw new RuntimeException();
