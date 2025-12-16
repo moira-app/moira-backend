@@ -69,7 +69,7 @@ public class TicketService {
     }
 
     public void nextMaster(Long projectId,Long memberId){
-        Optional<Ticket> t=ticketRepository.findByMemberIdAndProjectId(projectId,memberId);
+        Optional<Ticket> t=ticketRepository.findByMemberIdAndProjectId(memberId,projectId);
         if(t.isEmpty()||t.get().getDeleted()){
             throw new MoiraException("적법하지 않은 적임자입니다",HttpStatus.BAD_REQUEST);
         }
@@ -78,10 +78,12 @@ public class TicketService {
 
     public boolean checkIsMaster(Long projectId,Long memberId){
 
-        Ticket t=ticketRepository
-                .findByMemberIdAndProjectId(memberId,projectId).get();
-
-        return t.getMaster().equals(Master.MASTER);
+        Optional<Ticket> t=ticketRepository
+                .findByMemberIdAndProjectId(memberId,projectId);
+        if(t.isEmpty()){
+            throw new MoiraException("없는 티켓입니다",HttpStatus.BAD_REQUEST);
+        }
+        return t.get().getMaster().equals(Master.MASTER);
     }
 
 

@@ -2,6 +2,7 @@ package com.org.server.ProjectTicketMeetTest;
 
 
 import com.org.server.certification.domain.AliasDto;
+import com.org.server.chat.domain.ChatRoom;
 import com.org.server.exception.MoiraException;
 import com.org.server.meet.domain.Meet;
 import com.org.server.meet.domain.MeetConnectDto;
@@ -38,6 +39,9 @@ public class ProjectMeetTicket extends IntegralTestEnv {
     Project p;
 
     Project p2;
+
+    ChatRoom c1;
+    ChatRoom c2;
 
     Ticket t;
 
@@ -78,6 +82,8 @@ public class ProjectMeetTicket extends IntegralTestEnv {
                 .thenReturn(m);
         p=createProject("test","Dfdfd");
         p2=createProject("test2","fsdfd");
+        c1=createChatRoom(p);
+        c2=createChatRoom(p2);
         t=createTicket(m,p,null, Master.MASTER);
         createTicket(m2,p2,"p2",Master.MASTER);
 
