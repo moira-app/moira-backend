@@ -29,8 +29,6 @@ public class AlertEventListener {
 
     private final SimpMessagingTemplate simpMessagingTemplate;
     private final ChatRoomService chatRoomService;
-    private final RedisStompService redisStompService;
-    private final RedisUserInfoService redisUserInfoService;
     private final AdvanceTicketRepository advanceTicketRepository;
     private final static String chatRoomPreFix="/topic/chatroom-";
 

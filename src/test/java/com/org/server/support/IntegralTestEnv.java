@@ -30,6 +30,7 @@ import com.org.server.ticket.repository.AdvanceTicketRepository;
 import com.org.server.ticket.repository.TicketRepository;
 import com.org.server.ticket.service.TicketService;
 import com.org.server.util.jwt.JwtUtil;
+import com.org.server.websocket.eventListener.AlertEventListener;
 import com.org.server.websocket.service.RedisStompService;
 import org.junit.jupiter.api.AfterEach;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -84,6 +85,8 @@ public class IntegralTestEnv {
     protected SecurityMemberReadService securityMemberReadService;
 
 
+    @MockitoBean
+    protected AlertEventListener alertEventListener;
 
     @Autowired
     protected CertificationService certificationService;
