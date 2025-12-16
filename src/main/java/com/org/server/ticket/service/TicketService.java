@@ -15,6 +15,7 @@ import com.org.server.ticket.repository.TicketRepository;
 import com.querydsl.core.QueryFactory;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 
 import java.util.List;
@@ -26,6 +27,7 @@ import com.org.server.member.repository.MemberRepository;
 @Service
 @RequiredArgsConstructor
 @Transactional
+@Slf4j
 public class TicketService {
 
     private final TicketRepository ticketRepository;
@@ -75,9 +77,11 @@ public class TicketService {
     }
 
     public boolean checkIsMaster(Long projectId,Long memberId){
-        return ticketRepository
-                .findByMemberIdAndProjectId(projectId,memberId).get()
-                .getMaster().equals(Master.MASTER);
+
+        Ticket t=ticketRepository
+                .findByMemberIdAndProjectId(memberId,projectId).get();
+
+        return t.getMaster().equals(Master.MASTER);
     }
 
 

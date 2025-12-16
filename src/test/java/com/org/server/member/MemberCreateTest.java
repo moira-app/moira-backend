@@ -93,7 +93,6 @@ public class MemberCreateTest extends IntegralTestEnv {
                 .thenReturn(member);
 
         MemberUpdateDto memberUpdateDto=new MemberUpdateDto(
-                member.getId(),
                 "testing",
                 "12345"
         );
@@ -129,7 +128,7 @@ public class MemberCreateTest extends IntegralTestEnv {
 
         Mockito.when(securityMemberReadService.securityMemberRead())
                 .thenReturn(member);
-        String imgUrl= memberService.updateMemberImg(new MemberImgUpdate(member.getId(),"test"),
+        String imgUrl= memberService.updateMemberImg(new MemberImgUpdate("test"),
                 "image/png");
         assertThat(imgUrl!=null).isTrue();
         Member m2=memberRepository.findById(member.getId()).get();
@@ -144,7 +143,7 @@ public class MemberCreateTest extends IntegralTestEnv {
                 .thenReturn(member);
         Mockito.doNothing()
                 .when(redisUserInfoService)
-                .integralDelMemberInfo(member);
+                .integralDelMemberInfo(member.getId().toString());
         Mockito.doNothing()
                 .when(redisStompService)
                 .removeSubScribeDest(member.getId().toString());

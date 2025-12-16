@@ -13,7 +13,6 @@ import com.org.server.member.service.SecurityMemberReadService;
 import com.org.server.project.domain.Project;
 import com.org.server.project.domain.ProjectDto;
 import com.org.server.project.repository.ProjectRepository;
-import com.org.server.project.service.ProjectService;
 import com.org.server.redis.service.RedisUserInfoService;
 import com.org.server.ticket.domain.Master;
 import com.org.server.ticket.domain.Ticket;
@@ -118,16 +117,19 @@ public class ProjectMeetEntranceService {
             ticketService.delTicket(projectId, m.getId());
         }
     }
-    public void delProject(Long id){
-        if(ticketService.checkIsMaster(id,securityMemberReadService.securityMemberRead().getId())){
-            Optional<Project> p=projectRepository.findById(id);
+    public void delProject(Long projectId){
+        Member m=securityMemberReadService.securityMemberRead();;
+        if(ticketService.checkIsMaster(projectId,m.getId())){
+            Optional<Project> p=projectRepository.findById(projectId);
             if(p.isEmpty()||p.get().getDeleted()){
                 throw new MoiraException("없는 프로젝트입니다", HttpStatus.BAD_REQUEST);
             }
             p.get().updateDeleted();
-            publishEvent(id,AlertKey.PROJECTDEL,Map.of("projectId",id));
+            publishEvent(projectId,AlertKey.PROJECTDEL,Map.of("projectId",projectId));
         }
-        throw new MoiraException("프로젝트에 대한 권한이 부족합니다.", HttpStatus.BAD_REQUEST);
+        else {
+            throw new MoiraException("프로젝트에 대한 권한이 부족합니다.", HttpStatus.BAD_REQUEST);
+        }
     }
 
     public void delMeet(Long meetId,Long projectId){

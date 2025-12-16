@@ -30,6 +30,7 @@ public class Ticket extends BaseTime{
 
     private Boolean deleted=false;
 
+    @Enumerated(EnumType.STRING)
     private Master master;
 
     @Builder

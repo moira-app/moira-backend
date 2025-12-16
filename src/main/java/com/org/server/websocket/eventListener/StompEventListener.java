@@ -16,6 +16,7 @@ import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.messaging.SessionDisconnectEvent;
 import org.springframework.web.socket.messaging.SessionSubscribeEvent;
+import org.springframework.web.socket.messaging.SessionUnsubscribeEvent;
 
 import java.util.Map;
 
@@ -36,18 +37,17 @@ public class StompEventListener {
             String [] data=acc.getDestination().split("-");
             Long projectId=Long.parseLong(data[1]);
             ChatType chatType=ChatType.valueOf(data[2]);
-            Long roomId=Long.parseLong(data[3]);
             if(chatType.equals(ChatType.PROJECT)) {
-                AlertMessageDto.builder()
+                AlertMessageDto alertMessageDto=AlertMessageDto.builder()
                         .alertKey(AlertKey.MEMBERLIST)
                         .projectId(projectId)
                         .data(Map.of("memberList",ticketService.getMemberListOfProject(projectId)))
                         .build();
-                simpMessagingTemplate.convertAndSend(chatRoomPreFix+projectId+"-"+
-                        ChatType.PROJECT+"-"+roomId);
+                simpMessagingTemplate.convertAndSend("/queue/"+acc.getUser().getName(),alertMessageDto);
             }
         }
     }
+
     @EventListener
     public void catchDisConnectEvent(SessionDisconnectEvent event) {
         if(event.getUser()!=null) {

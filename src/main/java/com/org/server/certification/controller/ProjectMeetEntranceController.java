@@ -211,7 +211,7 @@ public class ProjectMeetEntranceController {
             description = "현재 작업을 하고있는 프로젝트의 id값",
             required = true,
             in = ParameterIn.PATH)
-    @DeleteMapping({"/{projectId}/del/ticket/{nextMaster}","/{projectId}/del/ticket}"})
+    @DeleteMapping({"/{projectId}/del/ticket/{nextMaster}","/{projectId}/del/ticket"})
     public ResponseEntity<ApiResponseUtil<String>> delTicket(
             @PathVariable(name = "projectId") Long projectId,
             @PathVariable(name="nextMaster",required = false) Long nextMaster){

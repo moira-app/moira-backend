@@ -9,17 +9,18 @@ import org.springframework.data.redis.core.script.DefaultRedisScript;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
 public class RedisStompService {
-    private static final String stompSessionBaseKey="BASEKEY";
+    private static final String stompSessionBaseKey="/queue/";
     private static final String stompSessionKey="stomp-session-";
     private final RedisTemplate<String,String> redisTemplate;
     private final StringRedisTemplate stringRedisTemplate;
     public boolean checkSessionKeyExist(String memberId){
         Long result=stringRedisTemplate.execute(new DefaultRedisScript<>(LuaScriptSet.checkStompSessionExistScript,Long.class)
-                , List.of(stompSessionKey+memberId),stompSessionBaseKey);
+                , List.of(stompSessionKey+memberId),stompSessionBaseKey+memberId);
         if(result==1){
             return false;
         }
@@ -28,4 +29,5 @@ public class RedisStompService {
     public void removeSubScribeDest(String memberId){
         redisTemplate.opsForSet().remove(stompSessionKey+memberId);
     }
+
 }

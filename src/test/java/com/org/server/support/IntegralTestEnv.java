@@ -4,6 +4,9 @@ package com.org.server.support;
 import com.org.server.certification.repository.ProjectCertRepo;
 import com.org.server.certification.service.CertificationService;
 import com.org.server.certification.service.ProjectMeetEntranceService;
+import com.org.server.chat.domain.ChatRoom;
+import com.org.server.chat.domain.ChatType;
+import com.org.server.chat.repository.ChatMessageRepository;
 import com.org.server.chat.repository.ChatRoomRepository;
 import com.org.server.chat.service.ChatRoomService;
 import com.org.server.graph.repository.GraphRepository;
@@ -20,8 +23,10 @@ import com.org.server.project.repository.ProjectRepository;
 import com.org.server.project.service.ProjectService;
 import com.org.server.redis.service.RedisUserInfoService;
 import com.org.server.s3.S3Service;
+import com.org.server.scheduler.repository.SchedulerRepository;
 import com.org.server.ticket.domain.Master;
 import com.org.server.ticket.domain.Ticket;
+import com.org.server.ticket.repository.AdvanceTicketRepository;
 import com.org.server.ticket.repository.TicketRepository;
 import com.org.server.ticket.service.TicketService;
 import com.org.server.util.jwt.JwtUtil;
@@ -46,6 +51,9 @@ public class IntegralTestEnv {
     @Autowired
     protected MemberRepository memberRepository;
 
+
+    @Autowired
+    protected ChatMessageRepository chatMessageRepository;
     @Autowired
     protected TicketRepository ticketRepository;
 
@@ -58,6 +66,9 @@ public class IntegralTestEnv {
     @Autowired
     protected GraphRepository graphRepository;
 
+
+    @Autowired
+    protected SchedulerRepository schedulerRepository;
 
     @Autowired
     protected ProjectCertRepo projectCertRepo;
@@ -90,6 +101,8 @@ public class IntegralTestEnv {
     @Autowired
     protected ProjectMeetEntranceService projectCertService;
 
+    @Autowired
+    protected AdvanceTicketRepository advanceTicketRepository;
 
     @Autowired
     protected ChatRoomRepository chatRoomRepository;
@@ -145,6 +158,14 @@ public class IntegralTestEnv {
         return t;
     }
 
+    protected ChatRoom createChatRoom(Project p){
+        ChatRoom c=ChatRoom.builder()
+                .chatType(ChatType.PROJECT)
+                .refId(p.getId())
+                .build();
+
+        return chatRoomRepository.save(c);
+    }
 
     protected Project createProject(String title,String projectUrl){
         Project p=new Project(title,projectUrl, LocalDateTime.now());

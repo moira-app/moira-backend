@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
+@RequestMapping("/s3")
 @Tag(name = "이미지 업로드시 s3 Api",description = "이미지 업로드 및 get에대한 url을받아오는 api입니다.")
 public class S3Controller {
 
