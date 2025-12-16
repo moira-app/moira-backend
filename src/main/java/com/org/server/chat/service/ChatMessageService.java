@@ -20,12 +20,12 @@ public class ChatMessageService {
 
 
     public ChatMessageDto sendMessage(Long roomId, Long senderId, String content){
-       ChatMessage messsage=chatMsgRepository.createMessage(roomId,senderId,content);
-       return toDto(messsage,ChatEvent.READ);
+       ChatMessage message=chatMsgRepository.createMessage(roomId,senderId,content);
+       return toDto(message,ChatEvent.READ);
     }
 
-    public List<ChatMessageDto> getMsgList(String id,Long roomId){
-        return chatMsgRepository.findMessages(id,roomId)
+    public List<ChatMessageDto> getMsgList(String id,Long roomId,LocalDateTime createDate){
+        return chatMsgRepository.findMessages(id,roomId,createDate)
                 .stream().map(x->{
                     return toDto(x,ChatEvent.READ);
                 }).collect(Collectors.toList());
@@ -40,7 +40,7 @@ public class ChatMessageService {
 
     public ChatMessageDto updateMsg(String id, String content, Long senderId, LocalDateTime updateDate){
         if(chatMsgRepository.updateMessage(id,content,senderId,updateDate)){
-            return toDto(ChatMessage.builder().id(id).content(content).build(),ChatEvent.UPDATE);
+            return toDto(ChatMessage.builder().id(id).content(content).updateDate(updateDate).build(),ChatEvent.UPDATE);
         }
         throw new RuntimeException();
     }
@@ -53,8 +53,8 @@ public class ChatMessageService {
                 m.getRoomId(),
                 m.getSenderId(),
                 m.getContent(),
-                m.getCreateDate(),
-                m.getUpdateDate()
+                m.getCreateDate()==null ? null:m.getCreateDate().toString(),
+                m.getUpdateDate()==null ? null:m.getUpdateDate().toString()
         );
     }
 }

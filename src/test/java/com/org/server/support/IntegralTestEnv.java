@@ -6,8 +6,10 @@ import com.org.server.certification.service.CertificationService;
 import com.org.server.certification.service.ProjectMeetEntranceService;
 import com.org.server.chat.domain.ChatRoom;
 import com.org.server.chat.domain.ChatType;
+import com.org.server.chat.repository.ChatMessageAdvanceRepository;
 import com.org.server.chat.repository.ChatMessageRepository;
 import com.org.server.chat.repository.ChatRoomRepository;
+import com.org.server.chat.service.ChatMessageService;
 import com.org.server.chat.service.ChatRoomService;
 import com.org.server.graph.repository.GraphRepository;
 import com.org.server.graph.service.GraphService;
@@ -68,6 +70,7 @@ public class IntegralTestEnv {
     protected GraphRepository graphRepository;
 
 
+
     @Autowired
     protected SchedulerRepository schedulerRepository;
 
@@ -79,15 +82,18 @@ public class IntegralTestEnv {
     @Autowired
     protected GraphService graphService;
 
+
+    @Autowired
+    protected ChatMessageAdvanceRepository chatMessageAdvanceRepository;
+    @Autowired
+    protected ChatMessageService chatMessageService;
+
     @Autowired
     protected MemberServiceImpl memberService;
     @MockitoBean
     protected SecurityMemberReadService securityMemberReadService;
-
-
     @MockitoBean
     protected AlertEventListener alertEventListener;
-
     @Autowired
     protected CertificationService certificationService;
     @MockitoBean
@@ -132,6 +138,7 @@ public class IntegralTestEnv {
         meetRepository.deleteAllInBatch();
         projectRepository.deleteAllInBatch();
         chatRoomRepository.deleteAllInBatch();
+        chatMessageRepository.deleteAll();
 
     }
 

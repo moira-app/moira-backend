@@ -10,6 +10,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.time.LocalDateTime;
+
 @Document(collection = "chatmessage")
 @Getter
 @NoArgsConstructor
@@ -20,13 +22,13 @@ public class ChatMessage {
     private Long roomId;
     private Long senderId;
     private String content;
-    private boolean deleted=false;
-    private String createDate;
-    private String updateDate;
+    private Boolean deleted=false;
+    private LocalDateTime createDate;
+    private LocalDateTime updateDate;
 
     @Builder
     private ChatMessage(Long roomId, Long senderId,
-                        String content,String id,String createDate,String updateDate) {
+                        String content,String id,LocalDateTime createDate,LocalDateTime updateDate) {
         this.roomId = roomId;
         this.senderId = senderId;
         this.content = content;

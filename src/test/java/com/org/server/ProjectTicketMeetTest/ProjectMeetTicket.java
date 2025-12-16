@@ -1,7 +1,6 @@
 package com.org.server.ProjectTicketMeetTest;
 
 
-import ch.qos.logback.core.testUtil.MockInitialContext;
 import com.org.server.certification.domain.AliasDto;
 import com.org.server.chat.domain.ChatRoom;
 import com.org.server.exception.MoiraException;
@@ -17,7 +16,7 @@ import com.org.server.ticket.domain.Master;
 import com.org.server.ticket.domain.Ticket;
 import com.org.server.util.DateTimeMapUtil;
 import com.org.server.websocket.domain.AlertMessageDto;
-import org.assertj.core.api.Assertions;
+
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import com.org.server.member.domain.Member;
@@ -104,6 +103,7 @@ public class ProjectMeetTicket extends IntegralTestEnv {
         for(int i=0;5>i;i++) {
             projectCertService.createMeet(new MeetDto("test",startTime,endTime),p2.getId());
         }
+        Mockito.reset(alertEventListener);
     }
 
 
@@ -132,7 +132,6 @@ public class ProjectMeetTicket extends IntegralTestEnv {
     @Test
     @DisplayName("ticket alias 변경 체크")
     void noAuthTest(){
-
         Mockito.when(securityMemberReadService.securityMemberRead())
                 .thenReturn(m);
         Mockito.doNothing()
@@ -166,12 +165,16 @@ public class ProjectMeetTicket extends IntegralTestEnv {
     void delTest(){
         Mockito.when(securityMemberReadService.securityMemberRead())
                 .thenReturn(m);
+        Mockito.doNothing()
+                        .when(alertEventListener)
+                                .alertMessage(Mockito.any(AlertMessageDto.class));
+
+
         projectCertService.delTicket(t.getProjectId(),null);
 
         List<Meet> meets=meetRepository.findAll();
         projectCertService.delMeet(meets.getFirst().getId(),meets.getFirst().getProject().getId());
-        Mockito.verify(alertEventListener,Mockito.times(1))
-                .alertMessage(Mockito.any(AlertMessageDto.class));
+
 
         Ticket tdel=ticketRepository.findByMemberIdAndProjectId(t.getMemberId(),t.getProjectId())
                 .get();
@@ -183,9 +186,10 @@ public class ProjectMeetTicket extends IntegralTestEnv {
         assertThat(tdel.getDeleted()).isTrue();
 
         projectCertService.delProject(p.getId());
-        Mockito.verify(alertEventListener).alertMessage(Mockito.any(AlertMessageDto.class));
 
         Project project=projectRepository.findById(p.getId()).get();
+        Mockito.verify(alertEventListener,Mockito.times(3))
+                .alertMessage(Mockito.any(AlertMessageDto.class));
         assertThat(project.getDeleted()).isTrue();
     }
 
@@ -194,6 +198,10 @@ public class ProjectMeetTicket extends IntegralTestEnv {
     void testingMaster(){
         Mockito.when(securityMemberReadService.securityMemberRead())
                 .thenReturn(m);
+        Mockito.doNothing()
+                        .when(alertEventListener)
+                                .alertMessage(Mockito.any(AlertMessageDto.class));
+
         assertThrows(MoiraException.class,()->projectCertService.delTicket(p.getId(),m2.getId()));
         assertThrows(MoiraException.class,()->projectCertService.delProject(p2.getId()));
         ticketRepository.save(createTicket(m2,p,null, Master.ELSE));
@@ -208,6 +216,10 @@ public class ProjectMeetTicket extends IntegralTestEnv {
         AliasDto aliasDto =new AliasDto("testing");
         Mockito.when(securityMemberReadService.securityMemberRead())
                         .thenReturn(m);
+        Mockito.doNothing()
+                .when(alertEventListener)
+                        .alertMessage(Mockito.any(AlertMessageDto.class));
+
         assertThatThrownBy(()->{
             projectCertService.createTicket(p.getProjectUrl(),aliasDto);}
         )
@@ -223,7 +235,7 @@ public class ProjectMeetTicket extends IntegralTestEnv {
                 .hasMessage("이미 초대되었거나 혹은 퇴출된 유저입니다");
 
         projectCertService.createTicket(p2.getProjectUrl(),aliasDto);
-        Mockito.verify(alertEventListener).alertMessage(Mockito.any(AlertMessageDto.class));
+        Mockito.verify(alertEventListener,Mockito.times(2)).alertMessage(Mockito.any(AlertMessageDto.class));
         Optional<Ticket> tNew=ticketRepository.findByMemberIdAndProjectId(m.getId(),p2.getId());
         assertThat(tNew.isPresent()).isTrue();
 
