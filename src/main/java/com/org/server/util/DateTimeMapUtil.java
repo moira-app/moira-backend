@@ -29,6 +29,10 @@ public class DateTimeMapUtil {
         return formatByDot.format(date);
     }
 
+    public static final String provietTimeToString(LocalDateTime date){
+         return FLEXIBLE_NANO_FORMATTER.format(date);
+    }
+
 
 
     public static String dateFormat(Date date, String mysqlFormatPattern) {

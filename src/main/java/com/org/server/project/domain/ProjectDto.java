@@ -32,5 +32,12 @@ public class ProjectDto {
         this.projectUrl=projectUrl;
         this.createDate=createDate;
     }
+    public ProjectDto(Long id, String title,Long chatRoomId,String projectUrl) {
+        this.id = id;
+        this.title = title;
+        this.chatRoomId=chatRoomId;
+        this.projectUrl=projectUrl;
+    }
+
 
 }

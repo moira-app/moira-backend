@@ -24,6 +24,7 @@ import static org.assertj.core.api.Assertions.*;
 public class ChatMessageTest extends IntegralTestEnv {
 
 
+
     Member member;
 
     Project project;
@@ -43,7 +44,7 @@ public class ChatMessageTest extends IntegralTestEnv {
     void testChatDel(){
 
         ChatMessageDto chatMessageDto=chatMessageService.sendMessage(chatRoom.getId()
-                ,member.getId(),"test",LocalDateTime.now().toString());
+                ,member.getId(),"test",DateTimeMapUtil.provietTimeToString(LocalDateTime.now()));
         chatMessageService.delMsg(chatMessageDto.id(),chatMessageDto.senderId());
         ChatMessage chatMessage=chatMessageRepository.findById(chatMessageDto.id()).get();
 
@@ -54,7 +55,7 @@ public class ChatMessageTest extends IntegralTestEnv {
     @Test
     @DisplayName("채팅 발행 테스트")
     void testChatCreate(){
-        chatMessageService.sendMessage(chatRoom.getId(),member.getId(),"test",LocalDateTime.now().toString());
+        chatMessageService.sendMessage(chatRoom.getId(),member.getId(),"test",DateTimeMapUtil.provietTimeToString(LocalDateTime.now()));
         List<ChatMessage> chatMessageList=chatMessageRepository.findAll();
         assertThat(chatMessageList.size()).isEqualTo(1);
     }
@@ -64,28 +65,33 @@ public class ChatMessageTest extends IntegralTestEnv {
     void testUpdateChat(){
         LocalDateTime now=LocalDateTime.now();
         LocalDateTime updateDate=LocalDateTime.now().plusSeconds(60);
-        ChatMessageDto chatMessageDto=chatMessageService.sendMessage(chatRoom.getId(),member.getId(),"test",LocalDateTime.now().toString());
-        chatMessageService.updateMsg(chatMessageDto.id(),"updatetest",chatMessageDto.senderId(),updateDate.toString());
+        ChatMessageDto chatMessageDto=chatMessageService.sendMessage(chatRoom.getId(),member.getId(),"test","2025-12-12 12:12:12");
+        chatMessageService.updateMsg(chatMessageDto.id(),"updatetest",chatMessageDto.senderId(),"2025-12-12 12:12:55");
         List<ChatMessageDto>chatMessageDtos=chatMessageService.getMsgList(null,chatRoom.getId(),null);
         assertThat(chatMessageDtos.getFirst().content()).isEqualTo("updatetest");
-
+        assertThat(chatMessageDtos.getFirst().updateDate()).isEqualTo("2025.12.12.12.12");
     }
 
     @Test
     @DisplayName("커서 기반 페이징 및 채팅 초기입장시 호출 테스트")
     void testCallChats(){
 
+        String reMemberTime="";
         List<ChatMessageDto> chatMessageDtos=new ArrayList<>();
         for(int i=0;20>i;i++){
-            ChatMessageDto data=chatMessageService.sendMessage(chatRoom.getId(), member.getId(), "test",LocalDateTime.now().toString());
+
+            LocalDateTime now=LocalDateTime.now();
+            if(i==10){
+                reMemberTime=DateTimeMapUtil.provietTimeToString(now);
+            }
+            ChatMessageDto data=chatMessageService.sendMessage(chatRoom.getId(), member.getId(), "test",DateTimeMapUtil.provietTimeToString(now));
             chatMessageDtos.add(data);
         }
         List<ChatMessage> chatMessageDtos2= chatMessageAdvanceRepository.findMessages(
                 null,chatRoom.getId(),null);
         assertThat(chatMessageDtos2.size()).isEqualTo(10);
-
         List<ChatMessage> chatMessageDtos3=chatMessageAdvanceRepository.findMessages(chatMessageDtos2.getLast().getId(),chatRoom.getId()
-                ,chatMessageDtos2.getLast().getCreateDate().toString());
+                ,reMemberTime);
         assertThat(chatMessageDtos3.size()).isEqualTo(10);
         assertThat(chatMessageDtos3.getFirst().getId()).isEqualTo(chatMessageDtos.get(9).id());
     }
