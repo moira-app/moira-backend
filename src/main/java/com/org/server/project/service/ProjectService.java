@@ -38,7 +38,7 @@ public class ProjectService {
 
     public String createProject(String title,String createDate){
         UUID url=UUID.randomUUID();
-        Project project=new Project(title,url.toString(),LocalDateTime.parse(createDate, DateTimeMapUtil.formatByDot2));
+        Project project=new Project(title,url.toString(),LocalDateTime.parse(createDate,DateTimeMapUtil.FLEXIBLE_NANO_FORMATTER));
         project=projectRepository.save(project);
         Member member=securityMemberReadService.securityMemberRead();
         Ticket ticket=Ticket.builder()

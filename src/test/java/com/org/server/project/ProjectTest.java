@@ -5,6 +5,7 @@ import com.org.server.meet.domain.Meet;
 import com.org.server.member.domain.Member;
 import com.org.server.project.domain.Project;
 import com.org.server.support.IntegralTestEnv;
+import com.org.server.util.DateTimeMapUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -34,7 +35,7 @@ public class ProjectTest extends IntegralTestEnv {
         Member member=createMember(1L);
         Mockito.when(securityMemberReadService.securityMemberRead())
                 .thenReturn(member);
-        projectService.createProject("sdfddf",LocalDateTime.now().toString());
+        projectService.createProject("sdfddf", DateTimeMapUtil.provietTimeToString(LocalDateTime.now()));
         List<Project> projectList = projectRepository.findAll();
         assertThat(projectList.size()).isEqualTo(2L);
         assertThat( chatRoomRepository.findAll().size()).isEqualTo(1);
