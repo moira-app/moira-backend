@@ -33,17 +33,20 @@ public class ChatEventHandler implements EventHandler{
 		String content = (String) env.data().get("content");
 		String chatId=(String) env.data().getOrDefault("chatId","");
 		Long projectId=(Long)env.data().get("projectId");
-
 		switch (chatEvent){
 			case CREATE ->{
-				ChatMessageDto chatMessageDto=chatMessageService.sendMessage(roomId,senderId,content);
+
+
+				ChatMessageDto chatMessageDto=chatMessageService.sendMessage(roomId,senderId
+						,content,(String) env.data().get("createDate"));
 				messagingTemplate.convertAndSend(chatRoomPreFix+projectId+"-"+chatType+"-"+roomId, chatMessageDto);
 			}
 			case DELETE ->{
 				messagingTemplate.convertAndSend(chatRoomPreFix+projectId+"-"+chatType+"-"+ roomId,chatMessageService.delMsg(chatId,senderId));
 			}
 			case UPDATE ->{
-				messagingTemplate.convertAndSend(chatRoomPreFix+projectId+"-"+chatType+"-"+ roomId,chatMessageService.updateMsg(chatId,content,senderId, LocalDateTime.now()));
+				messagingTemplate.convertAndSend(chatRoomPreFix+projectId+"-"+chatType+"-"+ roomId,chatMessageService.updateMsg(chatId,content
+						,senderId, (String) env.data().get("updateDate")));
 			}
 			default -> {
 				throw new RuntimeException();

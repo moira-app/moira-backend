@@ -12,6 +12,7 @@ import com.org.server.project.repository.ProjectRepository;
 import com.org.server.ticket.domain.Master;
 import com.org.server.ticket.domain.Ticket;
 import com.org.server.ticket.service.TicketService;
+import com.org.server.util.DateTimeMapUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.http.HttpStatus;
@@ -35,9 +36,9 @@ public class ProjectService {
     private final TicketService ticketService;
 
 
-    public String createProject(String title){
+    public String createProject(String title,String createDate){
         UUID url=UUID.randomUUID();
-        Project project=new Project(title,url.toString(), LocalDateTime.now());
+        Project project=new Project(title,url.toString(),LocalDateTime.parse(createDate, DateTimeMapUtil.formatByDot2));
         project=projectRepository.save(project);
         Member member=securityMemberReadService.securityMemberRead();
         Ticket ticket=Ticket.builder()

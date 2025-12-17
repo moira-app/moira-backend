@@ -23,12 +23,14 @@ public class ProjectDto {
     private String title;
     private Long chatRoomId;
     private String projectUrl;
+    private String createDate;
 
-    public ProjectDto(Long id, String title,Long chatRoomId,String projectUrl) {
+    public ProjectDto(Long id, String title,Long chatRoomId,String projectUrl,String createDate) {
         this.id = id;
         this.title = title;
         this.chatRoomId=chatRoomId;
         this.projectUrl=projectUrl;
+        this.createDate=createDate;
     }
 
 }

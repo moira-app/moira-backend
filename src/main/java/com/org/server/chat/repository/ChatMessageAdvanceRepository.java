@@ -4,6 +4,7 @@ package com.org.server.chat.repository;
 import com.mongodb.client.result.UpdateResult;
 import com.org.server.chat.domain.ChatType;
 import com.org.server.chat.domain.ChatMessage;
+import com.org.server.util.DateTimeMapUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoTemplate;
@@ -24,8 +25,8 @@ public class ChatMessageAdvanceRepository {
     private final ChatMessageRepository messageRepository;
 
 
-    public ChatMessage createMessage(Long roomId, Long senderId, String content){
-        LocalDateTime now=LocalDateTime.now();
+    public ChatMessage createMessage(Long roomId, Long senderId, String content,String createDate){
+        LocalDateTime now=LocalDateTime.parse(createDate, DateTimeMapUtil.FLEXIBLE_NANO_FORMATTER);
         ChatMessage chatMessageDoc= ChatMessage.builder()
                 .roomId(roomId)
                 .senderId(senderId)
@@ -36,13 +37,16 @@ public class ChatMessageAdvanceRepository {
         chatMessageDoc=messageRepository.save(chatMessageDoc);
         return chatMessageDoc;
     }
-    public List<ChatMessage> findMessages(String id, Long roomId,LocalDateTime createDate){
+    public List<ChatMessage> findMessages(String id, Long roomId,String createDate){
+
+
         //커서 오프셋 방식으로 찾기.
         if(id!=null&&createDate!=null) {
+            LocalDateTime date=LocalDateTime.parse(createDate,DateTimeMapUtil.FLEXIBLE_NANO_FORMATTER);
             Criteria commonCriteria=Criteria.where("roomId").is(roomId)
                     .and("deleted").is(false);
-            Criteria finalCondition=new Criteria().orOperator(Criteria.where("createDate").lt(createDate)
-                    ,Criteria.where("createDate").is(createDate)
+            Criteria finalCondition=new Criteria().orOperator(Criteria.where("createDate").lt(date)
+                    ,Criteria.where("createDate").is(date)
                             .and("_id").lt(id));
             commonCriteria.andOperator(finalCondition);
             Query query = new Query(commonCriteria);
@@ -76,13 +80,15 @@ public class ChatMessageAdvanceRepository {
     }
 
     //내용업데이트
-    public boolean updateMessage(String id,String content,Long senderId,LocalDateTime updateDate){
+    public boolean updateMessage(String id,String content,Long senderId,String updateDate){
+
+        LocalDateTime now=LocalDateTime.parse(updateDate,DateTimeMapUtil.FLEXIBLE_NANO_FORMATTER);
         Query query = new Query(where("_id").is(id)
                 .and("deleted").is(false)
                 .and("senderId").is(senderId));
         Update update = new Update();
         update.set("content",content);
-        update.set("updateDate",updateDate);
+        update.set("updateDate",now);
         UpdateResult result = mongoTemplate.updateFirst(query,update,ChatMessage.class);
         if(result.getModifiedCount()>0){
             return true;

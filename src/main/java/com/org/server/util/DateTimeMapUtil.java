@@ -25,6 +25,9 @@ public class DateTimeMapUtil {
                         ,FLEXIBLE_NANO_FORMATTER));
 
     }
+    public static final String provideTimePattern2(LocalDateTime date){
+        return formatByDot.format(date);
+    }
 
 
 

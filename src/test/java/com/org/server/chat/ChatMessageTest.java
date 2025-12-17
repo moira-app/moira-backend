@@ -9,6 +9,7 @@ import com.org.server.project.domain.Project;
 import com.org.server.support.IntegralTestEnv;
 import com.org.server.ticket.domain.Master;
 import com.org.server.ticket.domain.Ticket;
+import com.org.server.util.DateTimeMapUtil;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -40,7 +41,9 @@ public class ChatMessageTest extends IntegralTestEnv {
     @Test
     @DisplayName("채팅 삭제 테스트")
     void testChatDel(){
-        ChatMessageDto chatMessageDto=chatMessageService.sendMessage(chatRoom.getId(),member.getId(),"test");
+
+        ChatMessageDto chatMessageDto=chatMessageService.sendMessage(chatRoom.getId()
+                ,member.getId(),"test",LocalDateTime.now().toString());
         chatMessageService.delMsg(chatMessageDto.id(),chatMessageDto.senderId());
         ChatMessage chatMessage=chatMessageRepository.findById(chatMessageDto.id()).get();
 
@@ -51,7 +54,7 @@ public class ChatMessageTest extends IntegralTestEnv {
     @Test
     @DisplayName("채팅 발행 테스트")
     void testChatCreate(){
-        chatMessageService.sendMessage(chatRoom.getId(),member.getId(),"test");
+        chatMessageService.sendMessage(chatRoom.getId(),member.getId(),"test",LocalDateTime.now().toString());
         List<ChatMessage> chatMessageList=chatMessageRepository.findAll();
         assertThat(chatMessageList.size()).isEqualTo(1);
     }
@@ -59,9 +62,10 @@ public class ChatMessageTest extends IntegralTestEnv {
     @Test
     @DisplayName("채팅 내용 업데이트 테스트")
     void testUpdateChat(){
+        LocalDateTime now=LocalDateTime.now();
         LocalDateTime updateDate=LocalDateTime.now().plusSeconds(60);
-        ChatMessageDto chatMessageDto=chatMessageService.sendMessage(chatRoom.getId(),member.getId(),"test");
-        chatMessageService.updateMsg(chatMessageDto.id(),"updatetest",chatMessageDto.senderId(),updateDate);
+        ChatMessageDto chatMessageDto=chatMessageService.sendMessage(chatRoom.getId(),member.getId(),"test",LocalDateTime.now().toString());
+        chatMessageService.updateMsg(chatMessageDto.id(),"updatetest",chatMessageDto.senderId(),updateDate.toString());
         List<ChatMessageDto>chatMessageDtos=chatMessageService.getMsgList(null,chatRoom.getId(),null);
         assertThat(chatMessageDtos.getFirst().content()).isEqualTo("updatetest");
 
@@ -72,19 +76,16 @@ public class ChatMessageTest extends IntegralTestEnv {
     void testCallChats(){
 
         List<ChatMessageDto> chatMessageDtos=new ArrayList<>();
-
         for(int i=0;20>i;i++){
-            ChatMessageDto data=chatMessageService.sendMessage(chatRoom.getId(), member.getId(), "test");
+            ChatMessageDto data=chatMessageService.sendMessage(chatRoom.getId(), member.getId(), "test",LocalDateTime.now().toString());
             chatMessageDtos.add(data);
-
         }
         List<ChatMessage> chatMessageDtos2= chatMessageAdvanceRepository.findMessages(
                 null,chatRoom.getId(),null);
         assertThat(chatMessageDtos2.size()).isEqualTo(10);
 
-
         List<ChatMessage> chatMessageDtos3=chatMessageAdvanceRepository.findMessages(chatMessageDtos2.getLast().getId(),chatRoom.getId()
-                ,chatMessageDtos2.getLast().getCreateDate());
+                ,chatMessageDtos2.getLast().getCreateDate().toString());
         assertThat(chatMessageDtos3.size()).isEqualTo(10);
         assertThat(chatMessageDtos3.getFirst().getId()).isEqualTo(chatMessageDtos.get(9).id());
     }

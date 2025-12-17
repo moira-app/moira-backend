@@ -90,10 +90,8 @@ public class ProjectMeetEntranceService {
     }
     public void createMeet(MeetDto meetDto,Long projectId){
         Project project=projectRepository.findById(projectId).get();
-        LocalDateTime startTime=LocalDateTime.parse(meetDto.getStartTime(),
-                DateTimeMapUtil.formatByDot);
-        LocalDateTime endTime=LocalDateTime.parse(meetDto.getEndTime(),
-                DateTimeMapUtil.formatByDot);
+        LocalDateTime startTime=LocalDateTime.parse(meetDto.getStartTime(),DateTimeMapUtil.formatByDot);
+        LocalDateTime endTime=LocalDateTime.parse(meetDto.getEndTime(),DateTimeMapUtil.formatByDot);
         Meet m=Meet.builder()
                 .project(project)
                 .startTime(startTime)

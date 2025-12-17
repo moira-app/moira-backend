@@ -34,7 +34,7 @@ public class ProjectTest extends IntegralTestEnv {
         Member member=createMember(1L);
         Mockito.when(securityMemberReadService.securityMemberRead())
                 .thenReturn(member);
-        projectService.createProject("sdfddf");
+        projectService.createProject("sdfddf",LocalDateTime.now().toString());
         List<Project> projectList = projectRepository.findAll();
         assertThat(projectList.size()).isEqualTo(2L);
         assertThat( chatRoomRepository.findAll().size()).isEqualTo(1);
