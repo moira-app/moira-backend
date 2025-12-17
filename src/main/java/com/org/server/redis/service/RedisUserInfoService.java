@@ -69,9 +69,9 @@ public class RedisUserInfoService {
     public void delTicketKey(String memberId,String projectId){
         redisTemplate.opsForSet().remove(ticket_key+memberId,projectId);
     }
-    public void integralDelMemberInfo(Member m){
+    public void integralDelMemberInfo(String memberId){
         stringRedisTemplate.execute(new DefaultRedisScript<>(LuaScriptSet.userInfoDelScript),
-                List.of(member_exist_check+m.getId(),refresh_token_key+m.getId(),ticket_key+m.getId())
+                List.of(member_exist_check+memberId,refresh_token_key+memberId,ticket_key+memberId)
         );
     }
     public void logoutDelMemberInfo(Long memberId){

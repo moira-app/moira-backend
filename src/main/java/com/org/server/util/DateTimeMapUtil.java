@@ -25,6 +25,13 @@ public class DateTimeMapUtil {
                         ,FLEXIBLE_NANO_FORMATTER));
 
     }
+    public static final String provideTimePattern2(LocalDateTime date){
+        return formatByDot.format(date);
+    }
+
+    public static final String provietTimeToString(LocalDateTime date){
+         return FLEXIBLE_NANO_FORMATTER.format(date);
+    }
 
 
 

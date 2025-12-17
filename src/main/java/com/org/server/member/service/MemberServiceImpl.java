@@ -9,8 +9,12 @@ import com.org.server.member.domain.*;
 import com.org.server.member.repository.MemberRepository;
 import com.org.server.redis.service.RedisUserInfoService;
 import com.org.server.s3.S3Service;
+import com.org.server.websocket.domain.AlertKey;
+import com.org.server.websocket.domain.AlertMessageDto;
+import com.org.server.websocket.domain.GlobalAlertMessageDto;
 import com.org.server.websocket.service.RedisStompService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -18,6 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
 import software.amazon.awssdk.thirdparty.jackson.core.JsonParseException;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Service
@@ -31,6 +36,7 @@ public class MemberServiceImpl implements MemberService{
     private final S3Service s3Service;
     private final RedisUserInfoService redisUserInfoService;
     private final ObjectMapper objectMapper;
+    private final ApplicationEventPublisher eventPublisher;
     private final RedisStompService redisStompService;
     public void memberSignIn(MemberSignInDto memberDto){
         if(!memberRepository.existsByEmail(memberDto.getEmail())&&
@@ -49,22 +55,19 @@ public class MemberServiceImpl implements MemberService{
     }
     public MemberDto updateMemberInfo(MemberUpdateDto memberUpdateDto) {
         try {
-            Optional<Member> member=memberRepository.findById(memberUpdateDto.getId());
-            if (!securityMemberRead.securityMemberRead().getId().equals(member.get().getId())) {
-                throw new MoiraException("권한이 부족합니다", HttpStatus.UNAUTHORIZED);
-            }
+            Member member=securityMemberRead.securityMemberRead();
             if (memberUpdateDto.getPassword() != null) {
                 String password = passwordEncoder.encode(memberUpdateDto.getPassword());
-                member.get().updatePassword(password);
+                member.updatePassword(password);
             }
-            if (!memberUpdateDto.getNickName().equals(member.get().getNickName())
+            if (!memberUpdateDto.getNickName().equals(member.getNickName())
                     && !memberRepository.existsByNickName(memberUpdateDto.getNickName())) {
 
-                member.get().updateNickName(memberUpdateDto.getNickName());
+                member.updateNickName(memberUpdateDto.getNickName());
             }
-            Member member2 = memberRepository.save(member.get());
-            redisUserInfoService.setUserInfo(member2.getId(), objectMapper.writeValueAsString(member2));
-            return MemberDto.createMemberDto(member2);
+            memberRepository.save(member);
+            redisUserInfoService.setUserInfo(member.getId(), objectMapper.writeValueAsString(member));
+            return MemberDto.createMemberDto(member);
         }
         catch (JsonProcessingException e){
             throw new MoiraException("파싱 에러 발생",HttpStatus.UNAUTHORIZED);
@@ -72,15 +75,13 @@ public class MemberServiceImpl implements MemberService{
     }
     public String updateMemberImg(MemberImgUpdate memberImgUpdate,String contentType){
         try {
-            Member member = memberRepository.findById(memberImgUpdate.getId()).get();
-            if (!securityMemberRead.securityMemberRead().getId().equals(member.getId())) {
-                throw new MoiraException("권한이 부족합니다", HttpStatus.UNAUTHORIZED);
-            }
+            Member member=securityMemberRead.securityMemberRead();
             if (memberImgUpdate.getFileName() == null) {
                 throw new MoiraException("파일 이름을 넣어주세요", HttpStatus.UNAUTHORIZED);
             }
             List<String> data = s3Service.savePreSignUrl(contentType, memberImgUpdate.getFileName());
             member.updateImgUrl(data.get(0));
+            memberRepository.save(member);
             redisUserInfoService.setUserInfo(member.getId(), objectMapper.writeValueAsString(member));
             return data.get(1);
         }
@@ -92,13 +93,20 @@ public class MemberServiceImpl implements MemberService{
         Member member=securityMemberRead.securityMemberRead();
         return MemberDto.createMemberDto(member);
     }
-    public void delMember(){
-        Member m=securityMemberRead.securityMemberRead();
+    public void delMember() {
+        Member m = securityMemberRead.securityMemberRead();
         m.updateDeleted();
         memberRepository.save(m);
-        redisUserInfoService.integralDelMemberInfo(m);
-        redisStompService.delIntegralSubDest(m.getId().toString());
+        redisUserInfoService.integralDelMemberInfo(m.getId().toString());
+        redisStompService.removeSubScribeDest(m.getId().toString());
+        publishEvent(m.getId(),AlertKey.MEMBEROUT,Map.of("memberId",m.getId()));
+
     }
-
-
+    private void publishEvent(Long memberId, AlertKey alertKey, Map<String,Object> data){
+        eventPublisher.publishEvent(GlobalAlertMessageDto.builder()
+                .alertKey(alertKey)
+                .memberId(memberId.toString())
+                .data(data)
+                .build());
+    }
 }

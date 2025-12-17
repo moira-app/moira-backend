@@ -1,11 +1,9 @@
 package com.org.server.chat.repository;
 
-import java.util.Optional;
-import org.springframework.data.jpa.repository.JpaRepository;
-
 import com.org.server.chat.domain.ChatMessage;
+import org.springframework.data.mongodb.repository.MongoRepository;
+import org.springframework.stereotype.Repository;
 
-public interface ChatMessageRepository  extends JpaRepository<ChatMessage, Long> {
-
-	Optional<ChatMessage> findTopByRoomIdOrderByIdDesc(Long roomId);
+@Repository
+public interface ChatMessageRepository extends MongoRepository<ChatMessage,String> {
 }

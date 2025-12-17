@@ -4,6 +4,13 @@ package com.org.server.support;
 import com.org.server.certification.repository.ProjectCertRepo;
 import com.org.server.certification.service.CertificationService;
 import com.org.server.certification.service.ProjectMeetEntranceService;
+import com.org.server.chat.domain.ChatRoom;
+import com.org.server.chat.domain.ChatType;
+import com.org.server.chat.repository.ChatMessageAdvanceRepository;
+import com.org.server.chat.repository.ChatMessageRepository;
+import com.org.server.chat.repository.ChatRoomRepository;
+import com.org.server.chat.service.ChatMessageService;
+import com.org.server.chat.service.ChatRoomService;
 import com.org.server.graph.repository.GraphRepository;
 import com.org.server.graph.service.GraphService;
 import com.org.server.meet.repository.MeetRepository;
@@ -18,10 +25,14 @@ import com.org.server.project.repository.ProjectRepository;
 import com.org.server.project.service.ProjectService;
 import com.org.server.redis.service.RedisUserInfoService;
 import com.org.server.s3.S3Service;
+import com.org.server.scheduler.repository.SchedulerRepository;
+import com.org.server.ticket.domain.Master;
 import com.org.server.ticket.domain.Ticket;
+import com.org.server.ticket.repository.AdvanceTicketRepository;
 import com.org.server.ticket.repository.TicketRepository;
 import com.org.server.ticket.service.TicketService;
 import com.org.server.util.jwt.JwtUtil;
+import com.org.server.websocket.eventListener.AlertEventListener;
 import com.org.server.websocket.service.RedisStompService;
 import org.junit.jupiter.api.AfterEach;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,6 +43,8 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.thymeleaf.spring6.SpringTemplateEngine;
 
+import java.time.LocalDateTime;
+
 @ActiveProfiles("test")
 @SpringBootTest
 public class IntegralTestEnv {
@@ -41,6 +54,9 @@ public class IntegralTestEnv {
     @Autowired
     protected MemberRepository memberRepository;
 
+
+    @Autowired
+    protected ChatMessageRepository chatMessageRepository;
     @Autowired
     protected TicketRepository ticketRepository;
 
@@ -54,6 +70,10 @@ public class IntegralTestEnv {
     protected GraphRepository graphRepository;
 
 
+
+    @Autowired
+    protected SchedulerRepository schedulerRepository;
+
     @Autowired
     protected ProjectCertRepo projectCertRepo;
     @Autowired
@@ -62,13 +82,18 @@ public class IntegralTestEnv {
     @Autowired
     protected GraphService graphService;
 
+
+    @Autowired
+    protected ChatMessageAdvanceRepository chatMessageAdvanceRepository;
+    @Autowired
+    protected ChatMessageService chatMessageService;
+
     @Autowired
     protected MemberServiceImpl memberService;
     @MockitoBean
     protected SecurityMemberReadService securityMemberReadService;
-
-
-
+    @MockitoBean
+    protected AlertEventListener alertEventListener;
     @Autowired
     protected CertificationService certificationService;
     @MockitoBean
@@ -84,6 +109,14 @@ public class IntegralTestEnv {
     protected TicketService ticketService;
     @Autowired
     protected ProjectMeetEntranceService projectCertService;
+
+    @Autowired
+    protected AdvanceTicketRepository advanceTicketRepository;
+
+    @Autowired
+    protected ChatRoomRepository chatRoomRepository;
+    @Autowired
+    protected ChatRoomService chatRoomService;
 
     //else
     @Autowired
@@ -104,6 +137,8 @@ public class IntegralTestEnv {
         ticketRepository.deleteAllInBatch();
         meetRepository.deleteAllInBatch();
         projectRepository.deleteAllInBatch();
+        chatRoomRepository.deleteAllInBatch();
+        chatMessageRepository.deleteAll();
 
     }
 
@@ -122,19 +157,28 @@ public class IntegralTestEnv {
     }
 
 
-    protected Ticket createTicket(Member m, Project p, String alias){
+    protected Ticket createTicket(Member m, Project p, String alias, Master master){
         Ticket t=Ticket.builder()
                 .memberId(m.getId())
                 .projectId(p.getId())
                 .alias(alias)
+                .master(master)
                 .build();
         t=ticketRepository.save(t);
         return t;
     }
 
+    protected ChatRoom createChatRoom(Project p){
+        ChatRoom c=ChatRoom.builder()
+                .chatType(ChatType.PROJECT)
+                .refId(p.getId())
+                .build();
+
+        return chatRoomRepository.save(c);
+    }
 
     protected Project createProject(String title,String projectUrl){
-        Project p=new Project(title,projectUrl);
+        Project p=new Project(title,projectUrl, LocalDateTime.now());
         return projectRepository.save(p);
     }
 

@@ -1,58 +1,40 @@
 package com.org.server.chat.domain;
 
-import com.org.server.util.BaseTime;
-import com.sun.jdi.CharType;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
+import com.org.server.chat.domain.ChatType;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.time.LocalDateTime;
+
+@Document(collection = "chatmessage")
 @Getter
-@Entity
-@NoArgsConstructor(access = lombok.AccessLevel.PROTECTED)
-public class ChatMessage extends BaseTime {
+@NoArgsConstructor
+public class ChatMessage {
 
-	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Long id;
+    @Id
+    private String id;
+    private Long roomId;
+    private Long senderId;
+    private String content;
+    private Boolean deleted=false;
+    private LocalDateTime createDate;
+    private LocalDateTime updateDate;
 
-	// 채팅 타입 ( PROJECT, MEET )
-	@Enumerated(EnumType.STRING)
-	private ChatType chatType;
-
-	// 방 Id ( 프로젝트Id, 미트Id )
-	private Long roomId;
-
-	// 사용자Id
-	private Long senderId;
-
-	// 내용
-	private String content;
-
-
-	@Builder
-	private ChatMessage(ChatType chatType, Long roomId, Long senderId, String content) {
-		this.chatType = chatType;
-		this.roomId = roomId;
-		this.senderId = senderId;
-		this.content = content;
-	}
-
-	public static ChatMessage of(ChatType chatType, long roomId, long senderId, String content) {
-		return ChatMessage.builder()
-			.chatType(chatType)
-			.roomId(roomId)
-			.senderId(senderId)
-			.content(content)
-			.build();
-	}
-
+    @Builder
+    private ChatMessage(Long roomId, Long senderId,
+                        String content,String id,LocalDateTime createDate,LocalDateTime updateDate) {
+        this.roomId = roomId;
+        this.senderId = senderId;
+        this.content = content;
+        this.id=id;
+        this.createDate=createDate;
+        this.updateDate=updateDate;
+    }
 
 }

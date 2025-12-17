@@ -5,6 +5,7 @@ import java.util.List;
 
 import com.org.server.exception.MoiraSocketException;
 import com.org.server.graph.dto.NodeCreateDto;
+import com.org.server.websocket.domain.StompPrincipal;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
@@ -38,9 +39,9 @@ public class EventGatewayController {
 	 */
 	@MessageMapping("/event")
 	@Operation(summary = "이벤트 수신 (WebSocket)", description = "STOMP /app/event 로 수신된 메시지를 처리합니다. (Swagger 참고용 문서)")
-	public void onEvent(@Payload EventEnvelope env, Principal principal) {
+	public void onEvent(@Payload EventEnvelope env,Principal principal,
+						@DestinationVariable(value ="projectId") Long projectId) {
 		log.info("send Message start");
-
 		handlers.stream()
 			.filter(h -> h.supports(env.type()))
 			.findFirst()
@@ -48,33 +49,4 @@ public class EventGatewayController {
 			.handle(env, principal);
 	}
 
-	@MessageMapping("/crdt/{projectId}")
-	public void onCrdtEvent(@Payload EventEnvelope env, Principal principal,
-							@DestinationVariable(value ="projectId") Long projectId){
-		log.info("send crdt start");
-		handlers.stream()
-				.filter(h -> h.supports(env.type()))
-				.findFirst()
-				.orElseThrow(() -> new MoiraSocketException("Unsupported type: " + env.type()
-						,projectId, NodeCreateDto.builder()
-						.requestId((String)env.data().get("requestId"))
-						.rootId((String) env.data().get("rootId"))
-						.build()))
-				.handle(env, principal);
-	}
-
-	@MessageMapping("/signaling/{projectId}/{meetId}")
-	public void onSignalingEvent(@Payload EventEnvelope env, Principal principal,
-							@DestinationVariable(value ="meetId") Long meetId){
-		env.meta().put("meetId",meetId);
-		handlers.stream()
-				.filter(h -> h.supports(env.type()))
-				.findFirst()
-				.orElseThrow(() -> new MoiraSocketException("Unsupported type: " + env.type()
-						,meetId, NodeCreateDto.builder()
-						.requestId((String)env.data().get("requestId"))
-						.rootId((String) env.data().get("rootId"))
-						.build()))
-				.handle(env, principal);
-	}
 }

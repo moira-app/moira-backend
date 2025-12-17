@@ -114,9 +114,10 @@ public class ProjectMeetEntranceController {
             in = ParameterIn.PATH)
     @DeleteMapping("/{projectId}/del/meet/{meetId}")
     public ResponseEntity<ApiResponseUtil<String>> delMeet(
-            @PathVariable(name = "meetId")Long meetId
+            @PathVariable(name = "meetId")Long meetId,
+            @PathVariable(name = "projectId")Long projectId
     ){
-        projectCertService.delMeet(meetId);
+        projectCertService.delMeet(meetId,projectId);
         return ResponseEntity.ok(ApiResponseUtil.CreateApiResponse("ok",null));
     }
 
@@ -171,6 +172,29 @@ public class ProjectMeetEntranceController {
         return ResponseEntity.ok(ApiResponseUtil.CreateApiResponse("ok",null));
     }
 
+    @Operation(summary = "프로젝트삭제 api.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "ok",
+                    useReturnTypeSchema = true),
+            @ApiResponse(responseCode = "401", description = "권한이 부족합니다.",
+                    content = @Content(schema = @Schema(implementation = ApiResponseUtil.class)))
+    })
+    @Parameter(name = "Authorization",
+            description = "jwt값",
+            required = true,
+            in = ParameterIn.HEADER)
+    @Parameter(name = "projectId",
+            description = "현재 작업을 하고있는 프로젝트의 id값",
+            required = true,
+            in = ParameterIn.PATH)
+    @DeleteMapping("/{projectId}/del")
+    public ResponseEntity<ApiResponseUtil<String>> delProject(
+            @PathVariable(name = "projectId") Long projectId){
+        projectCertService.delProject(projectId);
+        return ResponseEntity.ok(ApiResponseUtil.CreateApiResponse("ok",null));
+    }
+
+
 
     @Operation(summary = "프로젝트에 대한 티켓(접근 권한) 삭제 api.")
     @ApiResponses(value = {
@@ -187,10 +211,11 @@ public class ProjectMeetEntranceController {
             description = "현재 작업을 하고있는 프로젝트의 id값",
             required = true,
             in = ParameterIn.PATH)
-    @DeleteMapping("/{projectId}/del/ticket")
+    @DeleteMapping({"/{projectId}/del/ticket/{nextMaster}","/{projectId}/del/ticket"})
     public ResponseEntity<ApiResponseUtil<String>> delTicket(
-            @PathVariable(name = "projectId") Long projectId){
-        projectCertService.delTicket(projectId);
+            @PathVariable(name = "projectId") Long projectId,
+            @PathVariable(name="nextMaster",required = false) Long nextMaster){
+        projectCertService.delTicket(projectId,nextMaster);
         return ResponseEntity.ok(ApiResponseUtil.CreateApiResponse("ok",null));
     }
 

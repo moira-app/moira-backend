@@ -6,6 +6,7 @@ import com.org.server.member.domain.MemberSignInDto;
 import com.org.server.member.domain.MemberUpdateDto;
 import com.org.server.security.domain.CustomUserDetail;
 import com.org.server.support.IntegralTestEnv;
+import com.org.server.websocket.domain.GlobalAlertMessageDto;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -93,7 +94,6 @@ public class MemberCreateTest extends IntegralTestEnv {
                 .thenReturn(member);
 
         MemberUpdateDto memberUpdateDto=new MemberUpdateDto(
-                member.getId(),
                 "testing",
                 "12345"
         );
@@ -129,7 +129,7 @@ public class MemberCreateTest extends IntegralTestEnv {
 
         Mockito.when(securityMemberReadService.securityMemberRead())
                 .thenReturn(member);
-        String imgUrl= memberService.updateMemberImg(new MemberImgUpdate(member.getId(),"test"),
+        String imgUrl= memberService.updateMemberImg(new MemberImgUpdate("test"),
                 "image/png");
         assertThat(imgUrl!=null).isTrue();
         Member m2=memberRepository.findById(member.getId()).get();
@@ -144,13 +144,19 @@ public class MemberCreateTest extends IntegralTestEnv {
                 .thenReturn(member);
         Mockito.doNothing()
                 .when(redisUserInfoService)
-                .integralDelMemberInfo(member);
+                .integralDelMemberInfo(member.getId().toString());
         Mockito.doNothing()
                 .when(redisStompService)
-                .delIntegralSubDest(member.getId().toString());
+                .removeSubScribeDest(member.getId().toString());
+
+        Mockito.doNothing()
+                        .when(alertEventListener)
+                                .alertGlobalMessage(Mockito.any(GlobalAlertMessageDto.class));
+
         memberService.delMember();
         Member m=memberRepository.findById(member.getId()).get();
         assertThat(m.getDeleted()).isTrue();
+        Mockito.verify(alertEventListener).alertGlobalMessage(Mockito.any(GlobalAlertMessageDto.class));
     }
 
     @Test

@@ -48,6 +48,6 @@ public class ProjectController {
     public ResponseEntity<ApiResponseUtil<String>> createProject(@RequestBody ProjectDto projectDto){
         return ResponseEntity.ok(
                 ApiResponseUtil
-                        .CreateApiResponse(projectService.createProject(projectDto.getTitle()),null));
+                        .CreateApiResponse(projectService.createProject(projectDto.getTitle(),projectDto.getCreateDate()),null));
     }
 }

@@ -23,7 +23,6 @@ public class LuaScriptSet {
             "    redis.call(\"del\",KEYS[1])\n" +
             "    return 1 \n" +
             "end";
-
     public final static String checkStompSessionExistScript="local exists = redis.call(\"EXISTS\", KEYS[1])\n" +
             "\n" +
             "if exists==0 then\n" +
@@ -32,11 +31,4 @@ public class LuaScriptSet {
             "else\n" +
             "    return 0  \n" +
             "end";
-
-    public final static String getSubScribeListAndDelScript="local subScribeList = redis.call(\"SMEMBERS\", KEYS[1])\n" +
-            "\n" +
-            "redis.call(\"DEL\", KEYS[1])\n" +
-            "\n" +
-            "\n" +
-            "return subScribeList";
 }

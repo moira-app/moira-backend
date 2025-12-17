@@ -9,34 +9,25 @@ import org.springframework.data.redis.core.script.DefaultRedisScript;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
 public class RedisStompService {
-    private static final String stompSessionBaseKey="BASEKEY";
+    private static final String stompSessionBaseKey="/queue/";
     private static final String stompSessionKey="stomp-session-";
     private final RedisTemplate<String,String> redisTemplate;
     private final StringRedisTemplate stringRedisTemplate;
     public boolean checkSessionKeyExist(String memberId){
         Long result=stringRedisTemplate.execute(new DefaultRedisScript<>(LuaScriptSet.checkStompSessionExistScript,Long.class)
-                , List.of(stompSessionKey+memberId),stompSessionBaseKey);
+                , List.of(stompSessionKey+memberId),stompSessionBaseKey+memberId);
         if(result==1){
             return false;
         }
         return true;
     }
-    public List<String> getSubScribeAndDelKey(String memberId){
-        List<String> result=stringRedisTemplate.execute(new DefaultRedisScript<>(LuaScriptSet.getSubScribeListAndDelScript,List.class)
-                ,List.of(stompSessionKey+memberId));
-        return result;
-    }
-    public void addSubScribeDest(String memberId,String dest){
-        redisTemplate.opsForSet().add(stompSessionKey+memberId,dest);
-    }
-    public void removeSubScribeDest(String memberId,String dest){
-        redisTemplate.opsForSet().remove(stompSessionKey+memberId,dest);
-    }
-    public void delIntegralSubDest(String memberId){
+    public void removeSubScribeDest(String memberId){
         redisTemplate.opsForSet().remove(stompSessionKey+memberId);
     }
+
 }

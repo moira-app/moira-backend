@@ -20,7 +20,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 				classes = MongoRepository.class
 		)
 )
-@EnableMongoRepositories(basePackages = "com.org.server.graph")
+@EnableMongoRepositories(basePackages = {"com.org.server.graph","com.org.server.chat"})
 @EnableAsync
 @EnableScheduling
 public class ServerApplication {

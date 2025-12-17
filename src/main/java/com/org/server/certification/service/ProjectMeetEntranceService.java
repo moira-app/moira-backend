@@ -1,6 +1,9 @@
 package com.org.server.certification.service;
 
 import com.org.server.certification.domain.AliasDto;
+import com.org.server.chat.domain.ChatRoom;
+import com.org.server.chat.domain.ChatType;
+import com.org.server.chat.service.ChatRoomService;
 import com.org.server.exception.MoiraException;
 import com.org.server.meet.domain.Meet;
 import com.org.server.meet.domain.MeetConnectDto;
@@ -11,15 +14,20 @@ import com.org.server.project.domain.Project;
 import com.org.server.project.domain.ProjectDto;
 import com.org.server.project.repository.ProjectRepository;
 import com.org.server.redis.service.RedisUserInfoService;
+import com.org.server.ticket.domain.Master;
 import com.org.server.ticket.domain.Ticket;
 import com.org.server.ticket.service.TicketService;
 import com.org.server.util.DateTimeMapUtil;
+import com.org.server.websocket.domain.AlertKey;
+import com.org.server.websocket.domain.AlertMessageDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import com.org.server.member.domain.Member;
 import com.org.server.certification.repository.ProjectCertRepo;
@@ -37,6 +45,8 @@ public class ProjectMeetEntranceService {
     private final ProjectRepository projectRepository;
     private final TicketService ticketService;
     private final RedisUserInfoService redisUserInfoService;
+    private final ChatRoomService chatRoomService;
+    private final ApplicationEventPublisher eventPublisher;
 
     public List<ProjectDto> getProejctList(){
         Member m=securityMemberReadService.securityMemberRead();
@@ -51,16 +61,19 @@ public class ProjectMeetEntranceService {
         if(ticketService.checkByProjectIdAndMemberId(project.get().getId(),m.getId())){
             throw new MoiraException("이미 초대되었거나 혹은 퇴출된 유저입니다", HttpStatus.BAD_REQUEST);
         }
-        Ticket ticket= new Ticket(project.get().getId(),m.getId(),ticketDto.getAlias());
+        Ticket ticket= new Ticket(project.get().getId(),m.getId(),ticketDto.getAlias(), Master.ELSE);
         ticketService.saveTicket(ticket);
         redisUserInfoService.setTicketKey(String.valueOf(ticket.getMemberId())
                 ,String.valueOf(project.get().getId()));
+        publishEvent(project.get().getId(),AlertKey.MEMBERIN
+                ,Map.of("memberId",m.getId(),"alias",ticketDto.getAlias()));
+
     }
     public void changeAlias(String alias,Long projectId){
         Member m=securityMemberReadService.securityMemberRead();
         Ticket ticket= ticketService.findByProjectIdAndMemberId(projectId,m.getId());
         ticket.updateAlias(alias);
-        return ;
+        publishEvent(projectId,AlertKey.MEMBERALIAS,Map.of("memberId",m.getId(), "alias",alias));
     }
     public MeetConnectDto checkInMeet(Long id,Long projectId) {
         LocalDateTime now = LocalDateTime.now();
@@ -71,29 +84,62 @@ public class ProjectMeetEntranceService {
         }
         Member m = securityMemberReadService.securityMemberRead();
         Ticket t=ticketService.findByProjectIdAndMemberId(projectId,m.getId());
+        ChatRoom c=chatRoomService.ensureRoom(ChatType.MEET, meet.getId());
         return new MeetConnectDto(meet.getMeetName(),
-                t.getAlias()==null ? m.getNickName() :t.getAlias());
+                t.getAlias()==null ? m.getNickName() :t.getAlias(),c.getId());
     }
     public void createMeet(MeetDto meetDto,Long projectId){
         Project project=projectRepository.findById(projectId).get();
-        LocalDateTime startTime=LocalDateTime.parse(meetDto.getStartTime(),
-                DateTimeMapUtil.formatByDot);
-        LocalDateTime endTime=LocalDateTime.parse(meetDto.getEndTime(),
-                DateTimeMapUtil.formatByDot);
+        LocalDateTime startTime=LocalDateTime.parse(meetDto.getStartTime(),DateTimeMapUtil.formatByDot);
+        LocalDateTime endTime=LocalDateTime.parse(meetDto.getEndTime(),DateTimeMapUtil.formatByDot);
         Meet m=Meet.builder()
                 .project(project)
                 .startTime(startTime)
                 .meetName(meetDto.getMeetName())
                 .endTime(endTime)
                 .build();
-        meetService.saveMeet(m);
+        Long meetId=meetService.saveMeet(m);
+        publishEvent(projectId,AlertKey.CREATEMEET,Map.of("meetId",meetId,
+                "meetName",meetDto.getMeetName(),"startTime", meetDto.getStartTime()));
     }
 
-    public void delTicket(Long projectId){
-        ticketService.delTicket(projectId,securityMemberReadService.securityMemberRead().getId());
+    public void delTicket(Long projectId,Long nextMaster){
+        Member m=securityMemberReadService.securityMemberRead();
+        publishEvent(projectId,AlertKey.MEMBEROUT,Map.of("memberId",m.getId()));
+        if(nextMaster!=null&&ticketService.checkIsMaster(projectId,m.getId())) {
+            ticketService.nextMaster(projectId,nextMaster);
+            ticketService.delTicket(projectId, m.getId());
+            publishEvent(projectId,AlertKey.MASTERCHANGE,Map.of("memberId",m.getId()));
+        }
+        else{
+            ticketService.delTicket(projectId, m.getId());
+        }
+    }
+    public void delProject(Long projectId){
+        Member m=securityMemberReadService.securityMemberRead();;
+        if(ticketService.checkIsMaster(projectId,m.getId())){
+            Optional<Project> p=projectRepository.findById(projectId);
+            if(p.isEmpty()||p.get().getDeleted()){
+                throw new MoiraException("없는 프로젝트입니다", HttpStatus.BAD_REQUEST);
+            }
+            p.get().updateDeleted();
+            publishEvent(projectId,AlertKey.PROJECTDEL,Map.of("projectId",projectId));
+        }
+        else {
+            throw new MoiraException("프로젝트에 대한 권한이 부족합니다.", HttpStatus.BAD_REQUEST);
+        }
     }
 
-    public void delMeet(Long meetId){
+    public void delMeet(Long meetId,Long projectId){
         meetService.delMeet(meetId);
+        publishEvent(projectId,AlertKey.MEETDEL,Map.of("meetId",meetId));
+    }
+
+    private void publishEvent(Long projectId,AlertKey alertKey,Map<String,Object> data){
+        eventPublisher.publishEvent(AlertMessageDto.builder()
+                .alertKey(alertKey)
+                .projectId(projectId)
+                .data(data)
+                .build());
     }
 }
