@@ -7,6 +7,7 @@ import com.org.server.graph.dto.NodeDelDto;
 import com.org.server.graph.dto.PropertyChangeDto;
 import com.org.server.graph.dto.StructureChangeDto;
 import com.org.server.support.IntegralTestEnv;
+import com.org.server.util.DateTimeMapUtil;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -39,9 +40,9 @@ public class GraphUpdateTest extends IntegralTestEnv {
                 propertiesMap.put(i+"-"+j,properties);
             }
             Element pages = graphs.isEmpty() ? new Element(UUID.randomUUID().toString(),
-                    root.getId(),propertiesMap,LocalDateTime.now().toString(),1L) :
+                    root.getId(),propertiesMap,LocalDateTime.now().toString()) :
                     new Element(UUID.randomUUID().toString(),
-                            graphs.get(i-1).getId(),propertiesMap,LocalDateTime.now().toString(),null);
+                            graphs.get(i-1).getId(),propertiesMap,LocalDateTime.now().toString());
 
             graphs.add(pages);
             graphRepository.save(pages);
@@ -51,10 +52,14 @@ public class GraphUpdateTest extends IntegralTestEnv {
     @Test
     @DisplayName("트리구조 수정 테스트 및 노드 속성 업데이트 테스트")
     void updateTest(){
+
+
+        String currentDate= DateTimeMapUtil.FLEXIBLE_NANO_FORMATTER.format(LocalDateTime.now());
+
         PropertyChangeDto propertiesUpdateDto=PropertyChangeDto.builder()
                 .nodeId(graphs.get(0).getId())
                 .name("0-0")
-                .modifyDate(LocalDateTime.now())
+                .modifyDate(currentDate)
                 .graphActionType(GraphActionType.Property)
                 .value("testing")
                 .build();
@@ -71,7 +76,6 @@ public class GraphUpdateTest extends IntegralTestEnv {
                                     .nodeId(graphs.getFirst().getId())
                                     .parentId(graphs.getLast().getId())
                                     .rootId("rootId")
-                                    .projectId(1L)
                                     .build())
         ).isEqualTo(false);
 
@@ -84,7 +88,6 @@ public class GraphUpdateTest extends IntegralTestEnv {
                         .nodeId(graphs.getLast().getId())
                         .parentId(graphs.getFirst().getId())
                         .rootId("rootId")
-                        .projectId(1L)
                         .build())).isEqualTo(true);
         e=(Element) graphRepository.findById(graphs.getLast().getId()).get();
         Assertions.assertThat(e.getParentId()).isEqualTo(graphs.getFirst().getId());
@@ -105,7 +108,7 @@ public class GraphUpdateTest extends IntegralTestEnv {
     @Test
     @DisplayName("속성 수정시에 이미 수정된 시간보다 이전의 수정 내역이 들어오면 거부함.")
     void lateUpdateTest(){
-        LocalDateTime modifyDate=LocalDateTime.now().minusDays(1L);
+        String modifyDate=DateTimeMapUtil.FLEXIBLE_NANO_FORMATTER.format(LocalDateTime.now().minusDays(1L));
 
         PropertyChangeDto propertiesUpdateDto=PropertyChangeDto.builder()
                 .nodeId(graphs.get(0).getId())
@@ -114,7 +117,6 @@ public class GraphUpdateTest extends IntegralTestEnv {
                 .graphActionType(GraphActionType.Property)
                 .value(String.valueOf("xvcvcvc"))
                 .rootId("rootId")
-                .projectId(1L)
                 .build();
         Assertions.assertThat(graphService.updateProperties(propertiesUpdateDto)).isEqualTo(false);
     }

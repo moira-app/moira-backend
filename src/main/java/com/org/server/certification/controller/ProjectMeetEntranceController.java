@@ -47,7 +47,7 @@ public class ProjectMeetEntranceController {
         return ResponseEntity.ok(ApiResponseUtil.CreateApiResponse("ok",
                 projectCertService.getProejctList()));
     }
-    @Operation(summary = "프로젝트 url 검증",description = "프로젝트 에대한 링크를 바탕으로 해당 프로젝트에 대한 ticket을 발행합니다.")
+    @Operation(summary = "프로젝트 url 검증",description = "프로젝트 에대한 링크를 바탕으로 해당 프로젝트에 대한 ticket을 발행 및 필요한 project data를 전송합니다.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "생성 성공",
                     useReturnTypeSchema = true),
@@ -63,12 +63,13 @@ public class ProjectMeetEntranceController {
             required = true,
             in = ParameterIn.PATH)
     @PostMapping("/project/{projectUrl}")
-    public ResponseEntity<ApiResponseUtil<String>> enterProjectUrl(
+    public ResponseEntity<ApiResponseUtil<ProjectDto>> enterProjectUrl(
             @PathVariable(name = "projectUrl") String projectUrl
             ,@RequestBody AliasDto enterDto
     ) {
-        projectCertService.createTicket(projectUrl,enterDto);
-        return ResponseEntity.ok(ApiResponseUtil.CreateApiResponse("ok", null));
+        return ResponseEntity.ok(ApiResponseUtil
+                .CreateApiResponse("ok" ,projectCertService.createTicket(projectUrl,enterDto)));
+
     }
 
 

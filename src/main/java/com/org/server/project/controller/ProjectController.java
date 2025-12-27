@@ -1,6 +1,7 @@
 package com.org.server.project.controller;
 
 
+import com.org.server.project.domain.ProjectCreateDto;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
@@ -45,9 +46,9 @@ public class ProjectController {
             example = "Bearer [tokenvalue]",
             in = ParameterIn.HEADER)
     @PostMapping("/create")
-    public ResponseEntity<ApiResponseUtil<String>> createProject(@RequestBody ProjectDto projectDto){
+    public ResponseEntity<ApiResponseUtil<ProjectDto>> createProject(@RequestBody ProjectCreateDto projectCreateDto){
         return ResponseEntity.ok(
                 ApiResponseUtil
-                        .CreateApiResponse(projectService.createProject(projectDto.getTitle(),projectDto.getCreateDate()),null));
+                        .CreateApiResponse("ok",projectService.createProject(projectCreateDto.getTitle(),projectCreateDto.getCreateDate())));
     }
 }

@@ -11,6 +11,7 @@ import com.org.server.graph.NodeType;
 import com.org.server.graph.domain.*;
 import com.org.server.graph.dto.*;
 import com.org.server.graph.repository.GraphRepository;
+import com.org.server.util.DateTimeMapUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataAccessException;
@@ -22,6 +23,7 @@ import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.thymeleaf.model.IModel;
 
 import java.time.LocalDateTime;
 import java.util.*;
@@ -96,11 +98,12 @@ public class GraphService {
                 });
         return domTree;
     }
-    public Boolean createElementNode(NodeCreateDto nodeCreateDto){
+    public Boolean createElementNode(NodeCreateDto nodeCreateDto,Long projectId){
         if(nodeCreateDto.getNodeType().equals(NodeType.ROOT)){
             Root root = new Root(nodeCreateDto.getNodeId(), LocalDateTime.now().toString()
-                    ,nodeCreateDto.getProjectId(),nodeCreateDto.getRootName());
-            graphRepository.save(root);
+                    ,projectId,nodeCreateDto.getRootName());
+            root=graphRepository.save(root);
+            nodeCreateDto.updateNodeId(root.getId());
             return true;
         }
         if(nodeCreateDto.getNodeType().equals(NodeType.ELEMENT)){
@@ -108,9 +111,9 @@ public class GraphService {
             Element element=
                     new Element(nodeCreateDto.getNodeId()
                             ,nodeCreateDto.getParentId(),
-                            nodeCreateDto.getPropertiesList(),now.toString()
-                            ,null);
-            graphRepository.save(element);
+                            nodeCreateDto.getPropertiesList(),now.toString());
+            element=graphRepository.save(element);
+            nodeCreateDto.updateNodeId(element.getId());
             return true;
         }
         return false;
@@ -152,13 +155,17 @@ public class GraphService {
 
     public Boolean updateProperties(PropertyChangeDto propertyChangeDto){
 
+
+        LocalDateTime modifyDate=LocalDateTime.parse(propertyChangeDto.getModifyDate(),
+                DateTimeMapUtil.FLEXIBLE_NANO_FORMATTER);
+
         Query query=new Query(where("_id").is(propertyChangeDto.getNodeId())
                 .and("deleted").is(false)
                 .and("properties."+propertyChangeDto.getName()+".modifyDate")
-                .lt(propertyChangeDto.getModifyDate()));
+                .lt(modifyDate));
         Update update = new Update();
         update.set("properties."+propertyChangeDto.getName()+".value",propertyChangeDto.getValue());
-        update.set("properties."+propertyChangeDto.getName()+".modifyDate",propertyChangeDto.getModifyDate());
+        update.set("properties."+propertyChangeDto.getName()+".modifyDate",modifyDate);
 
         UpdateResult result= mongoTemplate.updateFirst(query, update, Element.class);
         if(result.getModifiedCount()==0){

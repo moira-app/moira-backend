@@ -116,6 +116,8 @@ public class ProjectMeetTicket extends IntegralTestEnv {
         List<ProjectDto> projectDtoList=projectCertService.getProejctList();
         assertThat(projectDtoList.size()).isEqualTo(1);
     }
+
+
     @Test
     @DisplayName("회원별 해당되는 meeting 내역을 잘가져오는가.")
     void callMeetTest() {

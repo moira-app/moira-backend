@@ -55,7 +55,8 @@ public class GraphAop {
         }
         catch (Exception e){
             log.info("트리구조 수정중 에러발생:{}",e.getMessage());
-            throw new MoiraSocketException(e.getMessage(),nodeDto.getProjectId(),nodeDto);
+            throw  e;
+            //소켓 통신 에러 통합 컨트롤링 방법 생각하기.
         }
         finally {
             log.info("redssion lock 반납");
