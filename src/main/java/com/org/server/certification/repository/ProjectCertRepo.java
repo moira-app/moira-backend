@@ -4,6 +4,7 @@ package com.org.server.certification.repository;
 import com.org.server.chat.domain.ChatType;
 import com.org.server.chat.domain.QChatRoom;
 import com.org.server.member.domain.Member;
+import com.org.server.project.domain.Project;
 import com.org.server.project.domain.ProjectDto;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import java.util.List;
@@ -41,4 +42,5 @@ public class ProjectCertRepo {
                 .where(ticket.memberId.eq(m.getId()).and(project.deleted.isFalse()))
                 .fetch();
     }
+
 }

@@ -14,8 +14,8 @@ public class Element extends Graph{
     private String parentId;
     private Map<String,Properties> properties;
     public Element(String id, String parentId, Map<String,Properties>properties,
-                   String localDateTime, Long projectId) {
-        super(id, NodeType.ELEMENT,localDateTime,projectId);
+                   String localDateTime) {
+        super(id, NodeType.ELEMENT,localDateTime,null);
         this.parentId=parentId;
         this.properties=properties;
     }

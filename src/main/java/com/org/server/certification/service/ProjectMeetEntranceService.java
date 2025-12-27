@@ -33,6 +33,9 @@ import com.org.server.member.domain.Member;
 import com.org.server.certification.repository.ProjectCertRepo;
 import org.springframework.transaction.annotation.Transactional;
 
+import static com.org.server.chat.domain.QChatRoom.chatRoom;
+import static com.org.server.project.domain.QProject.project;
+
 @Service
 @RequiredArgsConstructor
 @Transactional
@@ -52,7 +55,7 @@ public class ProjectMeetEntranceService {
         Member m=securityMemberReadService.securityMemberRead();
         return projectCertRepo.getProjectList(m);
     }
-    public void createTicket(String projectUrl, AliasDto ticketDto){
+    public ProjectDto createTicket(String projectUrl, AliasDto ticketDto){
         Optional<Project> project=projectRepository.findByProjectUrl(projectUrl);
         if(project.isEmpty()){
             throw new MoiraException("존재하지 않는 프로젝트입니다", HttpStatus.BAD_REQUEST);
@@ -68,6 +71,12 @@ public class ProjectMeetEntranceService {
         publishEvent(project.get().getId(),AlertKey.MEMBERIN
                 ,Map.of("memberId",m.getId(),"alias",ticketDto.getAlias()));
 
+        ChatRoom chatRoom=chatRoomService.ensureRoom(ChatType.PROJECT,project.get().getId());
+        return ProjectDto.builder()
+                .id(project.get().getId())
+                .title(project.get().getTitle())
+                .chatRoomId(chatRoom.getId())
+                .build();
     }
     public void changeAlias(String alias,Long projectId){
         Member m=securityMemberReadService.securityMemberRead();

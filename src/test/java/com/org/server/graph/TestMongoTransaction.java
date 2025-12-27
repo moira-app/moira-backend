@@ -8,6 +8,7 @@ import com.org.server.graph.domain.Properties;
 import com.org.server.graph.domain.Root;
 import com.org.server.graph.dto.PropertyChangeDto;
 import com.org.server.support.IntegralTestEnv;
+import com.org.server.util.DateTimeMapUtil;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -46,7 +47,7 @@ public class TestMongoTransaction extends IntegralTestEnv {
             propertiesMap.put(0+"-"+j,properties);
         }
         e =new Element(UUID.randomUUID().toString(),
-                root.getId(),propertiesMap,LocalDateTime.now().toString(),1L);
+                root.getId(),propertiesMap,LocalDateTime.now().toString());
         graphRepository.save(e);
 
     }
@@ -62,7 +63,7 @@ public class TestMongoTransaction extends IntegralTestEnv {
             int val=i;
             executorService.submit(()->{
                 try{
-                    LocalDateTime now=LocalDateTime.now();
+                    String now= DateTimeMapUtil.FLEXIBLE_NANO_FORMATTER.format(LocalDateTime.now());
                     PropertyChangeDto propertiesUpdateDto=PropertyChangeDto.builder()
                             .nodeId(e.getId())
                             .name("0-"+val)
@@ -70,7 +71,6 @@ public class TestMongoTransaction extends IntegralTestEnv {
                             .graphActionType(GraphActionType.Property)
                             .value("changed")
                             .rootId("rootId")
-                            .projectId(1L)
                             .build();
 
                     if(!graphService.updateProperties(propertiesUpdateDto)){
@@ -105,7 +105,7 @@ public class TestMongoTransaction extends IntegralTestEnv {
         for(int i=0;5>i;i++){
             executorService.submit(()->{
                 try{
-                    LocalDateTime now=LocalDateTime.now();
+                    String now= DateTimeMapUtil.FLEXIBLE_NANO_FORMATTER.format(LocalDateTime.now());
                     PropertyChangeDto propertiesUpdateDto=PropertyChangeDto.builder()
                             .nodeId(e.getId())
                             .name("0-0")
@@ -113,7 +113,6 @@ public class TestMongoTransaction extends IntegralTestEnv {
                             .graphActionType(GraphActionType.Property)
                             .value("changed")
                             .rootId("rootId")
-                            .projectId(1L)
                             .build();
 
                     if(!graphService.updateProperties(propertiesUpdateDto)){

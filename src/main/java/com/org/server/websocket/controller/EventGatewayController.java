@@ -39,8 +39,7 @@ public class EventGatewayController {
 	 */
 	@MessageMapping("/event")
 	@Operation(summary = "이벤트 수신 (WebSocket)", description = "STOMP /app/event 로 수신된 메시지를 처리합니다. (Swagger 참고용 문서)")
-	public void onEvent(@Payload EventEnvelope env,Principal principal,
-						@DestinationVariable(value ="projectId") Long projectId) {
+	public void onEvent(@Payload EventEnvelope env,Principal principal) {
 		log.info("send Message start");
 		handlers.stream()
 			.filter(h -> h.supports(env.type()))
@@ -48,5 +47,4 @@ public class EventGatewayController {
 			.orElseThrow(() -> new IllegalArgumentException("Unsupported type: " + env.type()))
 			.handle(env, principal);
 	}
-
 }
