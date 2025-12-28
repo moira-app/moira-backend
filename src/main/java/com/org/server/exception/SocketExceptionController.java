@@ -1,7 +1,6 @@
 package com.org.server.exception;
 
 
-import com.org.server.graph.dto.GraphErrorDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.handler.annotation.MessageExceptionHandler;
@@ -21,11 +20,10 @@ public class SocketExceptionController {
     public void controlEx(Exception e){
         log.info("소켓 연결 알수없는 서버에러 발생:{}",e.getMessage());
     }
-    @MessageExceptionHandler(MoiraSocketException.class)
-    public void moiraSocketEx(MoiraSocketException moiraSocketException) {
+    @MessageExceptionHandler(SocketException.class)
+    public void moiraSocketEx(SocketException socketException, Principal principal) {
         log.info("소켓 에러전송 발생");
-        String des="/topic/crdt/"+moiraSocketException.getProjectId();
-        moiraSocketException.getNodeDto().updateCheckPass();
-        simpMessagingTemplate.convertAndSend(des,moiraSocketException.getNodeDto());
+        String des="/queue/"+principal.getName();
+        simpMessagingTemplate.convertAndSend(des,socketException);
     }
 }

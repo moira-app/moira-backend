@@ -3,14 +3,10 @@ package com.org.server.websocket.controller;
 import java.security.Principal;
 import java.util.List;
 
-import com.org.server.exception.MoiraSocketException;
-import com.org.server.graph.dto.NodeCreateDto;
-import com.org.server.websocket.domain.StompPrincipal;
-import org.springframework.messaging.handler.annotation.DestinationVariable;
+import com.org.server.exception.SocketException;
+import com.org.server.exception.SocketExceptionType;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
-import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 import org.springframework.stereotype.Controller;
 
 import com.org.server.websocket.domain.EventEnvelope;
@@ -20,7 +16,6 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
-import org.springframework.web.bind.annotation.PathVariable;
 
 @Controller
 @RequiredArgsConstructor
@@ -44,7 +39,7 @@ public class EventGatewayController {
 		handlers.stream()
 			.filter(h -> h.supports(env.type()))
 			.findFirst()
-			.orElseThrow(() -> new IllegalArgumentException("Unsupported type: " + env.type()))
+			.orElseThrow(() -> new SocketException("Unsupported type: " + env.type(),SocketExceptionType.ELSE,env))
 			.handle(env, principal);
 	}
 }

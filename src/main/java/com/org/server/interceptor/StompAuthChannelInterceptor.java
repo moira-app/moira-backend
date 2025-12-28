@@ -1,17 +1,11 @@
 package com.org.server.interceptor;
 
 
-import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
-import com.org.server.exception.MoiraSocketException;
 import com.org.server.exception.SocketAuthError;
-import com.org.server.graph.dto.NodeDto;
 import com.org.server.member.domain.Member;
 import com.org.server.member.repository.MemberRepository;
-import com.org.server.member.service.MemberService;
-import com.org.server.member.service.MemberServiceImpl;
 import com.org.server.redis.service.RedisUserInfoService;
 import com.org.server.util.jwt.JwtUtil;
 import com.org.server.websocket.domain.StompPrincipal;
@@ -26,12 +20,7 @@ import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 import org.springframework.messaging.support.ChannelInterceptor;
 import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.messaging.support.MessageHeaderAccessor;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.stereotype.Component;
-
-import javax.swing.text.html.Option;
-
-import static com.org.server.util.jwt.TokenEnum.TOKEN_PREFIX;
 
 @Component
 @RequiredArgsConstructor
@@ -98,7 +87,7 @@ public class StompAuthChannelInterceptor  implements ChannelInterceptor {
         Long projectId=getProjectIdFromDest(acc.getDestination());
         if (projectId>-1&&!redisUserInfoService.checkTicketKey(String.valueOf(memberId)
                 , String.valueOf(projectId))) {
-            throw new MoiraSocketException(noTicketError, projectId,null);
+            throw new SocketAuthError(noTicketError);
         }
     }
     private boolean checkStompSessionExist(String memberId){
