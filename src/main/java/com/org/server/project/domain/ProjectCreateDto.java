@@ -1,6 +1,7 @@
 package com.org.server.project.domain;
 
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 

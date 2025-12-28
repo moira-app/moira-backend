@@ -1,6 +1,8 @@
 package com.org.server.websocket.service;
 
 
+import com.org.server.exception.SocketException;
+import com.org.server.exception.SocketExceptionType;
 import com.org.server.websocket.domain.EventEnvelope;
 import com.org.server.websocket.domain.WebRtcDataType;
 import lombok.RequiredArgsConstructor;
@@ -27,17 +29,22 @@ public class SignalingEventHandler implements EventHandler{
     }
     @Override
     public void handle(EventEnvelope env, Principal principal) {
-        Map<String,Object> metaData=env.meta();
-        metaData.putIfAbsent("senderId",principal.getName());
-        if(metaData.get("webRtcDataType").equals(WebRtcDataType.SDPOFFER)||
-                metaData.get("webRtcDataType").equals(WebRtcDataType.CANDIDATEOFFER)){
-            //프로젝트 주소
-            simpMessagingTemplate.convertAndSend("/topic/meet/"+metaData.get("meetId"),env);
+        try {
+            Map<String, Object> metaData = env.meta();
+            metaData.putIfAbsent("senderId", principal.getName());
+            if (metaData.get("webRtcDataType").equals(WebRtcDataType.SDPOFFER) ||
+                    metaData.get("webRtcDataType").equals(WebRtcDataType.CANDIDATEOFFER)) {
+                //프로젝트 주소
+                simpMessagingTemplate.convertAndSend("/topic/meet/" + metaData.get("meetId"), env);
+            }
+            if (metaData.get("webRtcDataType").equals(WebRtcDataType.SDPANSWER) ||
+                    metaData.get("webRtcDataType").equals(WebRtcDataType.CANDIATEANSWER)) {
+                //개인 주소
+                simpMessagingTemplate.convertAndSend("/queue/" + metaData.get("targetId"), env);
+            }
         }
-        if(metaData.get("webRtcDataType").equals(WebRtcDataType.SDPANSWER)||
-                metaData.get("webRtcDataType").equals(WebRtcDataType.CANDIATEANSWER)){
-            //개인 주소
-            simpMessagingTemplate.convertAndSend("/user/"+metaData.get("targetId"),env);
+        catch (Exception e){
+            throw new SocketException(e.getMessage(),SocketExceptionType.SIGNALING,env);
         }
     }
     /*

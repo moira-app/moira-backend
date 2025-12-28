@@ -1,7 +1,8 @@
 package com.org.server.websocket.service;
 
 
-import com.org.server.exception.MoiraSocketException;
+import com.org.server.exception.SocketException;
+import com.org.server.exception.SocketExceptionType;
 import com.org.server.graph.GraphActionType;
 import com.org.server.graph.dto.*;
 import com.org.server.graph.service.GraphEnvelopService;
@@ -27,41 +28,43 @@ public class CrdtEventHandler implements EventHandler{
     }
     @Override
     public void handle(EventEnvelope env, Principal principal) {
-
-        Long projectId = (Long) env.data().get("projectId");
-        GraphActionType actionType = GraphActionType.valueOf((String) env.data().get("graphActionType"));
-
+        try {
+            Long projectId = (Long) env.data().get("projectId");
+            GraphActionType actionType = GraphActionType.valueOf((String) env.data().get("graphActionType"));
+            String memberId = principal.getName();
             switch (actionType) {
                 case GraphActionType.Create -> {
                     NodeCreateDto nodeCreateDto =
-                            (NodeCreateDto) GraphEnvelopService.createFromEvent(env, actionType);
+                            (NodeCreateDto) GraphEnvelopService.createFromEvent(env, actionType, memberId);
                     checkPassRouting(graphService.createElementNode(nodeCreateDto, projectId), nodeCreateDto);
                     messagingTemplate.convertAndSend("/topic/crdt/" +
                             projectId, nodeCreateDto);
                 }
                 case GraphActionType.Delete -> {
-                    NodeDelDto nodeDelDto = (NodeDelDto) GraphEnvelopService.createFromEvent(env, actionType);
+                    NodeDelDto nodeDelDto = (NodeDelDto) GraphEnvelopService.createFromEvent(env, actionType, memberId);
                     checkPassRouting(graphService.delGraphNode(nodeDelDto), nodeDelDto);
                     messagingTemplate.convertAndSend("/topic/crdt/" +
                             projectId, nodeDelDto);
                 }
                 case GraphActionType.Property -> {
                     PropertyChangeDto propertyChangeDto =
-                            (PropertyChangeDto) GraphEnvelopService.createFromEvent(env, actionType);
+                            (PropertyChangeDto) GraphEnvelopService.createFromEvent(env, actionType, memberId);
                     checkPassRouting(graphService.updateProperties(propertyChangeDto), propertyChangeDto);
                     messagingTemplate.convertAndSend("/topic/crdt/" +
                             projectId, propertyChangeDto);
                 }
                 default -> {
                     StructureChangeDto structureChangeDto =
-                            (StructureChangeDto) GraphEnvelopService.createFromEvent(env, actionType);
+                            (StructureChangeDto) GraphEnvelopService.createFromEvent(env, actionType, memberId);
                     checkPassRouting(graphService.updateNodeReference(structureChangeDto), structureChangeDto);
                     messagingTemplate.convertAndSend("/topic/crdt/" +
                             projectId, structureChangeDto);
                 }
             }
-
-
+        }
+        catch (Exception e){
+            throw new SocketException(e.getMessage(), SocketExceptionType.CRDT,env);
+        }
     }
 
     private void checkPassRouting(Boolean check,NodeDto nodeDto){

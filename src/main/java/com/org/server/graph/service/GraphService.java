@@ -1,11 +1,8 @@
 package com.org.server.graph.service;
 
 import com.mongodb.MongoBulkWriteException;
-import com.mongodb.MongoCommandException;
 import com.mongodb.bulk.BulkWriteError;
-import com.mongodb.client.model.BulkWriteOptions;
 import com.mongodb.client.result.UpdateResult;
-import com.org.server.exception.MoiraSocketException;
 import com.org.server.graph.GraphTransaction;
 import com.org.server.graph.NodeType;
 import com.org.server.graph.domain.*;
@@ -22,12 +19,9 @@ import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.thymeleaf.model.IModel;
 
 import java.time.LocalDateTime;
 import java.util.*;
-import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 import static org.springframework.data.mongodb.core.aggregation.Aggregation.*;

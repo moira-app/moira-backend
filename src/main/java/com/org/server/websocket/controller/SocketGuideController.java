@@ -21,6 +21,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import lombok.Getter;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -110,6 +111,7 @@ public class SocketGuideController {
     public StructureChangeDto nodeStructure(@RequestBody BasicNdoeClass basicNdoeClass){
         return StructureChangeDto.builder().build();
     }
+    @Getter
     private class SingalingDataClass{
         @Schema(description =" crdt.webrtc 를넣어주세요. EventEnvelope의 type에 해당됩니다.")
         private String type;
@@ -126,6 +128,7 @@ public class SocketGuideController {
                 "EventEnvelope의 data에 넣어주세요")
         private String meetId;
     }
+    @Getter
     private class ChattingDataClass{
         @Schema(description ="chat.message 를넣어주세요. EventEnvelope의 type에 해당됩니다.")
         private String type;
@@ -152,7 +155,7 @@ public class SocketGuideController {
         private String chatId;
 
     }
-
+    @Getter
     private class NodeCreateClass{
         @Schema(description = "create시 nodetype을 의미합니다. 일반 노드면 element를 해주시면됩니다.")
         private NodeType nodeType;
@@ -162,6 +165,7 @@ public class SocketGuideController {
         private Map<String,Object> properties;
 
     }
+    @Getter
     private class NodePropertyClass{
         @Schema(description = "수정 하려는 property 값의 이름")
         private String name;
@@ -171,6 +175,7 @@ public class SocketGuideController {
         private String modifyData;
     }
 
+    @Getter
     private class BasicNdoeClass{
         @Schema(description ="crdt.action 를넣어주세요. EventEnvelope의 type에 해당됩니다.")
         private String type;
