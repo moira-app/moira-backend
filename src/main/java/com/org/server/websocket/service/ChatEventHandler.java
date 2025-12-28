@@ -35,8 +35,6 @@ public class ChatEventHandler implements EventHandler{
 		Long projectId=(Long)env.data().get("projectId");
 		switch (chatEvent){
 			case CREATE ->{
-
-
 				ChatMessageDto chatMessageDto=chatMessageService.sendMessage(roomId,senderId
 						,content,(String) env.data().get("createDate"));
 				messagingTemplate.convertAndSend(chatRoomPreFix+projectId+"-"+chatType+"-"+roomId, chatMessageDto);

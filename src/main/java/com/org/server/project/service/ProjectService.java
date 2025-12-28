@@ -2,12 +2,14 @@ package com.org.server.project.service;
 
 
 
+import com.org.server.chat.domain.ChatRoom;
 import com.org.server.chat.domain.ChatType;
 import com.org.server.chat.service.ChatRoomService;
 import com.org.server.exception.MoiraException;
 import com.org.server.member.domain.Member;
 import com.org.server.member.service.SecurityMemberReadService;
 import com.org.server.project.domain.Project;
+import com.org.server.project.domain.ProjectDto;
 import com.org.server.project.repository.ProjectRepository;
 import com.org.server.ticket.domain.Master;
 import com.org.server.ticket.domain.Ticket;
@@ -36,7 +38,7 @@ public class ProjectService {
     private final TicketService ticketService;
 
 
-    public String createProject(String title,String createDate){
+    public ProjectDto createProject(String title, String createDate){
         UUID url=UUID.randomUUID();
         Project project=new Project(title,url.toString(),LocalDateTime.parse(createDate,DateTimeMapUtil.FLEXIBLE_NANO_FORMATTER));
         project=projectRepository.save(project);
@@ -48,8 +50,12 @@ public class ProjectService {
                 .master(Master.MASTER)
                 .build();
         ticketService.saveTicket(ticket);
-        chatRoomService.ensureRoom(ChatType.PROJECT,project.getId());
-        return url.toString();
+        ChatRoom chatRoom=chatRoomService.ensureRoom(ChatType.PROJECT,project.getId());
+        return ProjectDto.builder()
+                .id(project.getId())
+                .title(project.getTitle())
+                .chatRoomId(chatRoom.getId())
+                .build();
     }
 
 

@@ -38,9 +38,9 @@ public class GraphTest extends IntegralTestEnv {
                 propertiesMap.put(i+"-"+j,properties);
             }
             Element pages = graphs.isEmpty() ? new Element(UUID.randomUUID().toString(),
-                    root.getId(),propertiesMap,LocalDateTime.now().toString(),1L) :
+                    root.getId(),propertiesMap,LocalDateTime.now().toString()) :
                     new Element(UUID.randomUUID().toString(),
-                            graphs.get(i-1).getId(),propertiesMap,LocalDateTime.now().toString(),null);
+                            graphs.get(i-1).getId(),propertiesMap,LocalDateTime.now().toString());
 
             graphs.add(pages);
             graphRepository.save(pages);
@@ -64,7 +64,7 @@ public class GraphTest extends IntegralTestEnv {
                         .parentId(rootID)
                         .nodeType(NodeType.ELEMENT)
                         .propertiesList(Map.of())
-                .build());
+                .build(),1L);
 
         graphData=graphService.getWholeGraph(rootID);
         Assertions.assertThat(graphData.keySet().size()).isEqualTo(300);

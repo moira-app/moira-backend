@@ -45,6 +45,6 @@ public class SignalingEventHandler implements EventHandler{
     * webRtcDataType==>SDPOFFER,SDPANSWER,ANDIDATEOFFER,ANDIDATEANSWER
     * senderId==>서버에서 알아서 넣음.
     * targetId==>클라이언트에서 넣어줄것.-->ANSWER인 케이스에 넣을것.
-    * meetId==>서버에서 알아서 넣음.
+    * meetId==>클라이언트에서 넣어주십쇼.
     * */
 }

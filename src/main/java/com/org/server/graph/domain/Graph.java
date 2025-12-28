@@ -20,7 +20,6 @@ public abstract class Graph {
     private Boolean deleted=false;
     private Long projectId;
 
-
     public Graph(String id,NodeType nodeType, String createDate,Long projectId) {
         this.id=id;
         this.nodeType =nodeType;

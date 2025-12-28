@@ -82,7 +82,6 @@ public class IntegralTestEnv {
     @Autowired
     protected GraphService graphService;
 
-
     @Autowired
     protected ChatMessageAdvanceRepository chatMessageAdvanceRepository;
     @Autowired
@@ -139,6 +138,7 @@ public class IntegralTestEnv {
         projectRepository.deleteAllInBatch();
         chatRoomRepository.deleteAllInBatch();
         chatMessageRepository.deleteAll();
+
 
     }
 
