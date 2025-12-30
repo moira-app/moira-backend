@@ -3,9 +3,9 @@ package com.org.server.certification.controller;
 
 import com.org.server.certification.domain.AliasDto;
 import com.org.server.certification.service.ProjectMeetEntranceService;
-import com.org.server.meet.domain.MeetConnectDto;
-import com.org.server.meet.domain.MeetDto;
-import com.org.server.project.domain.ProjectDto;
+import com.org.server.meet.domain.*;
+import com.org.server.project.domain.ProjectEnterAnsDto;
+import com.org.server.project.domain.ProjectInfoDto;
 import com.org.server.util.ApiResponseUtil;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -15,6 +15,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -43,11 +44,11 @@ public class ProjectMeetEntranceController {
             required = true,
             in = ParameterIn.HEADER)
     @GetMapping("/list")
-    public ResponseEntity<ApiResponseUtil<List<ProjectDto>>> getProjectList(){
+    public ResponseEntity<ApiResponseUtil<List<ProjectInfoDto>>> getProjectList(){
         return ResponseEntity.ok(ApiResponseUtil.CreateApiResponse("ok",
                 projectCertService.getProejctList()));
     }
-    @Operation(summary = "프로젝트 url 검증",description = "프로젝트 에대한 링크를 바탕으로 해당 프로젝트에 대한 ticket을 발행 및 필요한 project data를 전송합니다.")
+    @Operation(summary = "프로젝트 url 검증",description = "프로젝트에 대한 url을 바탕으로 해당 프로젝트에 대한 ticket을 발행 및 필요한 project data를 전송합니다.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "생성 성공",
                     useReturnTypeSchema = true),
@@ -63,7 +64,7 @@ public class ProjectMeetEntranceController {
             required = true,
             in = ParameterIn.PATH)
     @PostMapping("/project/{projectUrl}")
-    public ResponseEntity<ApiResponseUtil<ProjectDto>> enterProjectUrl(
+    public ResponseEntity<ApiResponseUtil<ProjectEnterAnsDto>> enterProjectUrl(
             @PathVariable(name = "projectUrl") String projectUrl
             ,@RequestBody AliasDto enterDto
     ) {
@@ -141,12 +142,12 @@ public class ProjectMeetEntranceController {
             description = "현재 입장하려는 미팅의 id값",
             required = true,
             in = ParameterIn.PATH)
-    @GetMapping("/{projectId}/checkIn/meet/{meetId}")
+    @PostMapping("/{projectId}/checkIn/meet")
     public ResponseEntity<ApiResponseUtil<MeetConnectDto>> checkInMeet(
             @PathVariable(name = "projectId")Long projectId,
-            @PathVariable(name = "meetId")Long meetId){
+            @Valid  @RequestBody MeetEnterDto meetEnterDto){
         return ResponseEntity.ok(ApiResponseUtil.CreateApiResponse("ok",
-                projectCertService.checkInMeet(meetId,projectId)));
+                projectCertService.checkInMeet(meetEnterDto,projectId)));
     }
 
 
@@ -168,7 +169,7 @@ public class ProjectMeetEntranceController {
     @PostMapping("/{projectId}/create/meet")
     public ResponseEntity<ApiResponseUtil<String>> createMeet(
             @PathVariable(name = "projectId") Long projectId,
-            @RequestBody MeetDto meetDto){
+            @RequestBody MeetCreateDto meetDto){
         projectCertService.createMeet(meetDto,projectId);
         return ResponseEntity.ok(ApiResponseUtil.CreateApiResponse("ok",null));
     }
@@ -197,7 +198,7 @@ public class ProjectMeetEntranceController {
 
 
 
-    @Operation(summary = "프로젝트에 대한 티켓(접근 권한) 삭제 api.")
+    @Operation(summary = "프로젝트에 대한 티켓(접근 권한) 삭제 api.",description = "master 권한을 가진사람은 삭제시 반드시 다음주자가 필요합니다.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "ok",
                     useReturnTypeSchema = true),
@@ -212,6 +213,10 @@ public class ProjectMeetEntranceController {
             description = "현재 작업을 하고있는 프로젝트의 id값",
             required = true,
             in = ParameterIn.PATH)
+    @Parameter(name = "nextMaster",
+            description = "master권한을 넘길 다음 주자.",
+            required = false,
+            in = ParameterIn.PATH)
     @DeleteMapping({"/{projectId}/del/ticket/{nextMaster}","/{projectId}/del/ticket"})
     public ResponseEntity<ApiResponseUtil<String>> delTicket(
             @PathVariable(name = "projectId") Long projectId,
@@ -219,6 +224,32 @@ public class ProjectMeetEntranceController {
         projectCertService.delTicket(projectId,nextMaster);
         return ResponseEntity.ok(ApiResponseUtil.CreateApiResponse("ok",null));
     }
+
+
+
+    @Operation(summary = "미팅 리스트 조회 api", description = "특정 한달동안의 미팅을 조회합니다.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "조회 성공",useReturnTypeSchema = true),
+            @ApiResponse(responseCode = "401", description = "권한이 부족합니다.",
+                    content = @Content(schema = @Schema(implementation = ApiResponseUtil.class)))
+    })
+    @Parameter(name="projectId",
+    description = "미팅이 속한 프로젝트 id값",
+    required = true,
+    in=ParameterIn.PATH)
+    @Parameter(name = "Authorization",
+            description = "요청시 토큰값을 넣어주셔야됩니다.",
+            required = true,
+            example = "Bearer [tokenvalue]",
+            in = ParameterIn.HEADER)
+    @PostMapping("/{projectId}/meetList")
+    public ResponseEntity<ApiResponseUtil<List<MeetDateDto>>> getMeetList(
+            @PathVariable(name ="projectId") Long projectId,
+            @RequestBody @Valid MeetListDto meetListDto){
+        return ResponseEntity.ok(ApiResponseUtil.CreateApiResponse("ok",
+                projectCertService.getMeetList(meetListDto,projectId)));
+    }
+
 
 
 

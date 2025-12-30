@@ -55,8 +55,8 @@ public class ChatMessageService {
                 m.getRoomId(),
                 m.getSenderId(),
                 m.getContent(),
-                m.getCreateDate()==null ? null:DateTimeMapUtil.provideTimePattern2(m.getCreateDate()),
-                m.getUpdateDate()==null ? null:DateTimeMapUtil.provideTimePattern2(m.getUpdateDate())
+                m.getCreateDate()==null ? null:DateTimeMapUtil.parseServerTimeToClientFormat(m.getCreateDate()),
+                m.getUpdateDate()==null ? null:DateTimeMapUtil.parseServerTimeToClientFormat(m.getUpdateDate())
         );
     }
 }

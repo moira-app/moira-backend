@@ -9,16 +9,16 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 public class Properties{
     private String value;
-    private LocalDateTime modifyDate;
-    public Properties(String value,LocalDateTime modifyDate){
+    private LocalDateTime updateDate;
+    public Properties(String value,LocalDateTime updateDate){
         this.value = value;
-        this.modifyDate=modifyDate;
+        this.updateDate=updateDate;
     }
 
     public void updateValue(String value){
         this.value=value;
     }
     public void updateModifyDate(LocalDateTime modifyDate){
-        this.modifyDate=modifyDate;
+        this.updateDate=updateDate;
     }
 }

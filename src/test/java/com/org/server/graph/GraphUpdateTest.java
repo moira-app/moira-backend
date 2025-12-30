@@ -12,6 +12,7 @@ import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.springframework.cglib.core.Local;
 
 
 import java.net.SocketException;
@@ -30,19 +31,24 @@ public class GraphUpdateTest extends IntegralTestEnv {
     String rootID= UUID.randomUUID().toString();
     @BeforeEach
     void settingBeforeTest(){
-        root=new Root(rootID, LocalDateTime.now().toString(),1L,"root");
+
+        String time="2025-12-30 20:27:11";
+        LocalDateTime date=DateTimeMapUtil.parseClientTimetoServerFormat(time);
+
+
+        root=new Root(rootID, date,1L,"root");
         root=graphRepository.save(root);
         for(int i=0;10>i;i++){
 
             Map<String, Properties> propertiesMap=new HashMap<>();
             for(int j=0;3>j;j++){
-                Properties properties=new Properties("Test",LocalDateTime.now());
+                Properties properties=new Properties("Test",date);
                 propertiesMap.put(i+"-"+j,properties);
             }
             Element pages = graphs.isEmpty() ? new Element(UUID.randomUUID().toString(),
-                    root.getId(),propertiesMap,LocalDateTime.now().toString()) :
+                    root.getId(),propertiesMap,LocalDateTime.now()) :
                     new Element(UUID.randomUUID().toString(),
-                            graphs.get(i-1).getId(),propertiesMap,LocalDateTime.now().toString());
+                            graphs.get(i-1).getId(),propertiesMap,date);
 
             graphs.add(pages);
             graphRepository.save(pages);
@@ -54,12 +60,12 @@ public class GraphUpdateTest extends IntegralTestEnv {
     void updateTest(){
 
 
-        String currentDate= DateTimeMapUtil.FLEXIBLE_NANO_FORMATTER.format(LocalDateTime.now());
+        String currentDate= "2025-12-30 20:27:12";
 
         PropertyChangeDto propertiesUpdateDto=PropertyChangeDto.builder()
                 .nodeId(graphs.get(0).getId())
                 .name("0-0")
-                .modifyDate(currentDate)
+                .updateDate(currentDate)
                 .graphActionType(GraphActionType.Property)
                 .value("testing")
                 .build();
@@ -108,12 +114,12 @@ public class GraphUpdateTest extends IntegralTestEnv {
     @Test
     @DisplayName("속성 수정시에 이미 수정된 시간보다 이전의 수정 내역이 들어오면 거부함.")
     void lateUpdateTest(){
-        String modifyDate=DateTimeMapUtil.FLEXIBLE_NANO_FORMATTER.format(LocalDateTime.now().minusDays(1L));
+        String modifyDate=DateTimeMapUtil.parseServerTimeToClientFormat(LocalDateTime.now().minusDays(1L));
 
         PropertyChangeDto propertiesUpdateDto=PropertyChangeDto.builder()
                 .nodeId(graphs.get(0).getId())
                 .name("0-0")
-                .modifyDate(modifyDate)
+                .updateDate(modifyDate)
                 .graphActionType(GraphActionType.Property)
                 .value(String.valueOf("xvcvcvc"))
                 .rootId("rootId")

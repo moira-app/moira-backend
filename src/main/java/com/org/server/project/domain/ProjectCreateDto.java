@@ -9,5 +9,4 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class ProjectCreateDto {
     private String title;
-    private String createDate;
 }

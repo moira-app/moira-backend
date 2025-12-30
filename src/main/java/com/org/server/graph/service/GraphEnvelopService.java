@@ -5,9 +5,12 @@ import com.org.server.exception.SocketExceptionType;
 import com.org.server.graph.GraphActionType;
 import com.org.server.graph.NodeType;
 import com.org.server.graph.domain.Properties;
+import com.org.server.graph.domain.PropertiesDto;
 import com.org.server.graph.dto.*;
+import com.org.server.util.DateTimeMapUtil;
 import com.org.server.websocket.domain.EventEnvelope;
 
+import java.util.HashMap;
 import java.util.Map;
 
 public class GraphEnvelopService {
@@ -19,9 +22,11 @@ public class GraphEnvelopService {
         switch (graphActionType){
             case GraphActionType.Create->{
                 NodeType nodeType = NodeType.valueOf((String) eventEnvelope.data().get("nodeType"));
-                Map<String, Properties> propertiesMap =
-                        (Map<String, Properties>) eventEnvelope.data().getOrDefault("properties",Map.of());
+                Map<String, PropertiesDto> propertiesDtoMap =
+                        (Map<String, PropertiesDto>) eventEnvelope.data().getOrDefault("properties",Map.of());
+
                 String rootName = (String) eventEnvelope.data().getOrDefault("rootName",null);
+                String createDate=(String) eventEnvelope.data().get("createDate");
                 return NodeCreateDto.builder()
                         .nodeId(nodeId)
                         .rootId(rootId)
@@ -29,8 +34,9 @@ public class GraphEnvelopService {
                         .parentId(parentId)
                         .nodeType(nodeType)
                         .graphActionType(graphActionType)
-                        .propertiesList(propertiesMap)
+                        .propertiesMap(propertiesDtoMap)
                         .rootName(rootName)
+                        .createDate(createDate)
                         .build();
             }
             case GraphActionType.Delete -> {
@@ -53,7 +59,7 @@ public class GraphEnvelopService {
             }
             case Property -> {
                 String value = (String) eventEnvelope.data().get("value");
-                String modifyDate=(String)eventEnvelope.data().get("modifyDate");
+                String updateDate=(String)eventEnvelope.data().get("updateDate");
                 String name = (String) eventEnvelope.data().get("name");
                 return PropertyChangeDto.builder()
                         .graphActionType(graphActionType)
@@ -62,7 +68,7 @@ public class GraphEnvelopService {
                         .nodeId(nodeId)
                         .value(value)
                         .name(name)
-                        .modifyDate(modifyDate)
+                        .updateDate(updateDate)
                         .build();
             }
             default -> {

@@ -5,25 +5,21 @@ package com.org.server.project.service;
 import com.org.server.chat.domain.ChatRoom;
 import com.org.server.chat.domain.ChatType;
 import com.org.server.chat.service.ChatRoomService;
-import com.org.server.exception.MoiraException;
 import com.org.server.member.domain.Member;
 import com.org.server.member.service.SecurityMemberReadService;
 import com.org.server.project.domain.Project;
-import com.org.server.project.domain.ProjectDto;
+import com.org.server.project.domain.ProjectInfoDto;
 import com.org.server.project.repository.ProjectRepository;
 import com.org.server.ticket.domain.Master;
 import com.org.server.ticket.domain.Ticket;
 import com.org.server.ticket.service.TicketService;
 import com.org.server.util.DateTimeMapUtil;
 import lombok.RequiredArgsConstructor;
-import org.springframework.context.annotation.Lazy;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Optional;
+
 import java.util.UUID;
 
 
@@ -38,9 +34,9 @@ public class ProjectService {
     private final TicketService ticketService;
 
 
-    public ProjectDto createProject(String title, String createDate){
+    public ProjectInfoDto createProject(String title){
         UUID url=UUID.randomUUID();
-        Project project=new Project(title,url.toString(),LocalDateTime.parse(createDate,DateTimeMapUtil.FLEXIBLE_NANO_FORMATTER));
+        Project project=new Project(title,url.toString());
         project=projectRepository.save(project);
         Member member=securityMemberReadService.securityMemberRead();
         Ticket ticket=Ticket.builder()
@@ -51,10 +47,13 @@ public class ProjectService {
                 .build();
         ticketService.saveTicket(ticket);
         ChatRoom chatRoom=chatRoomService.ensureRoom(ChatType.PROJECT,project.getId());
-        return ProjectDto.builder()
-                .id(project.getId())
+        return ProjectInfoDto.builder()
+                .projectId(project.getId())
                 .title(project.getTitle())
                 .chatRoomId(chatRoom.getId())
+                .alias(member.getNickName())
+                .projectUrl(project.getProjectUrl())
+                .master(Master.MASTER)
                 .build();
     }
 

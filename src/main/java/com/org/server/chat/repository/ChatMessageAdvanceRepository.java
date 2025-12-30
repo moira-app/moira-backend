@@ -26,7 +26,7 @@ public class ChatMessageAdvanceRepository {
 
 
     public ChatMessage createMessage(Long roomId, Long senderId, String content,String createDate){
-        LocalDateTime now=LocalDateTime.parse(createDate, DateTimeMapUtil.FLEXIBLE_NANO_FORMATTER);
+        LocalDateTime now=DateTimeMapUtil.parseClientTimetoServerFormat(createDate);
         ChatMessage chatMessageDoc= ChatMessage.builder()
                 .roomId(roomId)
                 .senderId(senderId)
@@ -38,11 +38,9 @@ public class ChatMessageAdvanceRepository {
         return chatMessageDoc;
     }
     public List<ChatMessage> findMessages(String id, Long roomId,String createDate){
-
-
         //커서 오프셋 방식으로 찾기.
         if(id!=null&&createDate!=null) {
-            LocalDateTime date=LocalDateTime.parse(createDate,DateTimeMapUtil.FLEXIBLE_NANO_FORMATTER);
+            LocalDateTime date=DateTimeMapUtil.parseClientTimetoServerFormat(createDate);
             Criteria commonCriteria=Criteria.where("roomId").is(roomId)
                     .and("deleted").is(false);
             Criteria finalCondition=new Criteria().orOperator(Criteria.where("createDate").lt(date)
@@ -82,7 +80,7 @@ public class ChatMessageAdvanceRepository {
     //내용업데이트
     public boolean updateMessage(String id,String content,Long senderId,String updateDate){
 
-        LocalDateTime now=LocalDateTime.parse(updateDate,DateTimeMapUtil.FLEXIBLE_NANO_FORMATTER);
+        LocalDateTime now=DateTimeMapUtil.parseClientTimetoServerFormat(updateDate);
         Query query = new Query(where("_id").is(id)
                 .and("deleted").is(false)
                 .and("senderId").is(senderId));

@@ -6,6 +6,7 @@ import com.mongodb.client.result.UpdateResult;
 import com.org.server.graph.GraphTransaction;
 import com.org.server.graph.NodeType;
 import com.org.server.graph.domain.*;
+import com.org.server.graph.domain.Properties;
 import com.org.server.graph.dto.*;
 import com.org.server.graph.repository.GraphRepository;
 import com.org.server.util.DateTimeMapUtil;
@@ -93,19 +94,29 @@ public class GraphService {
         return domTree;
     }
     public Boolean createElementNode(NodeCreateDto nodeCreateDto,Long projectId){
+        LocalDateTime createTime=DateTimeMapUtil.parseClientTimetoServerFormat(nodeCreateDto.getCreateDate());
+
+
         if(nodeCreateDto.getNodeType().equals(NodeType.ROOT)){
-            Root root = new Root(nodeCreateDto.getNodeId(), LocalDateTime.now().toString()
+            Root root = new Root(nodeCreateDto.getNodeId(),createTime
                     ,projectId,nodeCreateDto.getRootName());
             root=graphRepository.save(root);
             nodeCreateDto.updateNodeId(root.getId());
             return true;
         }
         if(nodeCreateDto.getNodeType().equals(NodeType.ELEMENT)){
-            LocalDateTime now=LocalDateTime.now();
+            Map<String, Properties> propertiesMap=new HashMap<>();
+
+            nodeCreateDto.getPropertiesMap().keySet().stream().forEach(x->{
+                propertiesMap.put(x,new Properties(nodeCreateDto.getPropertiesMap().get(x).getValue(),
+                        DateTimeMapUtil.parseClientTimetoServerFormat(
+                                nodeCreateDto.getPropertiesMap().get(x).getUpdateDate())));
+            });
+
             Element element=
                     new Element(nodeCreateDto.getNodeId()
                             ,nodeCreateDto.getParentId(),
-                            nodeCreateDto.getPropertiesList(),now.toString());
+                            propertiesMap,createTime);
             element=graphRepository.save(element);
             nodeCreateDto.updateNodeId(element.getId());
             return true;
@@ -150,16 +161,15 @@ public class GraphService {
     public Boolean updateProperties(PropertyChangeDto propertyChangeDto){
 
 
-        LocalDateTime modifyDate=LocalDateTime.parse(propertyChangeDto.getModifyDate(),
-                DateTimeMapUtil.FLEXIBLE_NANO_FORMATTER);
+        LocalDateTime modifyDate=DateTimeMapUtil.parseClientTimetoServerFormat(propertyChangeDto.getUpdateDate());
 
         Query query=new Query(where("_id").is(propertyChangeDto.getNodeId())
                 .and("deleted").is(false)
-                .and("properties."+propertyChangeDto.getName()+".modifyDate")
+                .and("properties."+propertyChangeDto.getName()+".updateDate")
                 .lt(modifyDate));
         Update update = new Update();
         update.set("properties."+propertyChangeDto.getName()+".value",propertyChangeDto.getValue());
-        update.set("properties."+propertyChangeDto.getName()+".modifyDate",modifyDate);
+        update.set("properties."+propertyChangeDto.getName()+".updateDate",modifyDate);
 
         UpdateResult result= mongoTemplate.updateFirst(query, update, Element.class);
         if(result.getModifiedCount()==0){

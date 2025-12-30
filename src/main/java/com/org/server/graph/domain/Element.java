@@ -3,6 +3,7 @@ package com.org.server.graph.domain;
 import com.org.server.graph.NodeType;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.springframework.cglib.core.Local;
 
 import java.time.LocalDateTime;
 import java.util.Map;
@@ -14,8 +15,8 @@ public class Element extends Graph{
     private String parentId;
     private Map<String,Properties> properties;
     public Element(String id, String parentId, Map<String,Properties>properties,
-                   String localDateTime) {
-        super(id, NodeType.ELEMENT,localDateTime,null);
+                    LocalDateTime createTime) {
+        super(id, NodeType.ELEMENT,createTime,null);
         this.parentId=parentId;
         this.properties=properties;
     }
