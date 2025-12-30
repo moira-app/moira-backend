@@ -61,11 +61,13 @@ public class ChatMessageTest extends IntegralTestEnv {
     void testUpdateChat(){
         LocalDateTime now=LocalDateTime.now();
         LocalDateTime updateDate=LocalDateTime.now().plusSeconds(60);
-        ChatMessageDto chatMessageDto=chatMessageService.sendMessage(chatRoom.getId(),member.getId(),"test","2025-12-12 12:12:12");
-        chatMessageService.updateMsg(chatMessageDto.id(),"updatetest",chatMessageDto.senderId(),"2025-12-12 12:12:55");
+        String nowString="2025-12-30 20:27:11";
+        String updaetDateString="2025-12-30 20:28:11";
+        ChatMessageDto chatMessageDto=chatMessageService.sendMessage(chatRoom.getId(),member.getId(),"test",nowString);
+        chatMessageService.updateMsg(chatMessageDto.id(),"updatetest",chatMessageDto.senderId(),updaetDateString);
         List<ChatMessageDto>chatMessageDtos=chatMessageService.getMsgList(null,chatRoom.getId(),null);
         assertThat(chatMessageDtos.getFirst().content()).isEqualTo("updatetest");
-        assertThat(chatMessageDtos.getFirst().updateDate()).isEqualTo("2025.12.12.12.12");
+        assertThat(chatMessageDtos.getFirst().updateDate()).isEqualTo(updaetDateString);
     }
 
     @Test

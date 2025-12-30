@@ -32,7 +32,7 @@ public class GraphUpdateTest extends IntegralTestEnv {
     @BeforeEach
     void settingBeforeTest(){
 
-        String time=DateTimeMapUtil.parseServerTimeToClientFormat(LocalDateTime.now());
+        String time="2025-12-30 20:27:11";
         LocalDateTime date=DateTimeMapUtil.parseClientTimetoServerFormat(time);
 
 
@@ -60,7 +60,7 @@ public class GraphUpdateTest extends IntegralTestEnv {
     void updateTest(){
 
 
-        String currentDate= DateTimeMapUtil.parseServerTimeToClientFormat(LocalDateTime.now());
+        String currentDate= "2025-12-30 20:27:12";
 
         PropertyChangeDto propertiesUpdateDto=PropertyChangeDto.builder()
                 .nodeId(graphs.get(0).getId())

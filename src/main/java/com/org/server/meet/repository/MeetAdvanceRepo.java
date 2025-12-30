@@ -33,7 +33,7 @@ public class MeetAdvanceRepo {
                 .join(project)
                 .on(project.eq(meet.project))
                 .where(meet.startTime.goe(startTime).and(meet.startTime.lt(endTime))
-                        .and(project.id.eq(projectId)))
+                        .and(project.id.eq(projectId)).and(meet.deleted.isFalse()))
                 .fetch();
     }
 

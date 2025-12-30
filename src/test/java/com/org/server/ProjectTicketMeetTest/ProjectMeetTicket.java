@@ -100,10 +100,7 @@ public class ProjectMeetTicket extends IntegralTestEnv {
 
         for(int i=0;5>i;i++) {
             projectCertService.createMeet(new MeetCreateDto("Test",startTime,endTime),p.getId());
-            projectCertService.createMeet(new MeetCreateDto("test",startTime2,endTime2),p.getId());
-        }
-        for(int i=0;5>i;i++) {
-            projectCertService.createMeet(new MeetCreateDto("test",startTime,endTime),p2.getId());
+            projectCertService.createMeet(new MeetCreateDto("test",startTime2,endTime2),p2.getId());
         }
         Mockito.reset(alertEventListener);
     }
@@ -177,29 +174,18 @@ public class ProjectMeetTicket extends IntegralTestEnv {
         Mockito.doNothing()
                         .when(alertEventListener)
                                 .alertMessage(Mockito.any(AlertMessageDto.class));
-
-
-        projectCertService.delTicket(t.getProjectId(),null);
-
-        List<Meet> meets=meetRepository.findAll();
-        projectCertService.delMeet(meets.getFirst().getId(),meets.getFirst().getProject().getId());
-
-
-        Ticket tdel=ticketRepository.findByMemberIdAndProjectId(t.getMemberId(),t.getProjectId())
-                .get();
-
-        Mockito.when(securityMemberReadService.securityMemberRead())
-                .thenReturn(m);
-
         MeetListDto meetListDto=new MeetListDto(monthCurrent);
+        List<MeetDateDto> meetList=meetService.getMeetList(meetListDto,p.getId());
+        projectCertService.delMeet(meetList.getFirst().getMeetId(),p.getId());
+
         List<MeetDateDto> meetDateDtos = meetService.getMeetList(meetListDto,p.getId());
         assertThat(meetDateDtos.size()).isEqualTo(4);
-        assertThat(tdel.getDeleted()).isTrue();
+
 
         projectCertService.delProject(p.getId());
 
         Project project=projectRepository.findById(p.getId()).get();
-        Mockito.verify(alertEventListener,Mockito.times(3))
+        Mockito.verify(alertEventListener,Mockito.times(2))
                 .alertMessage(Mockito.any(AlertMessageDto.class));
         assertThat(project.getDeleted()).isTrue();
     }
@@ -222,7 +208,7 @@ public class ProjectMeetTicket extends IntegralTestEnv {
                 .isEqualTo(Master.MASTER);
     }
     @Test
-    @DisplayName("티켓 발급 테스트")
+    @DisplayName("티켓 발급 삭제 테스트")
     void ticketProvideTest(){
         AliasDto aliasDto =new AliasDto("testing");
         Mockito.when(securityMemberReadService.securityMemberRead())
@@ -237,7 +223,12 @@ public class ProjectMeetTicket extends IntegralTestEnv {
                 .isInstanceOf(MoiraException.class)
                 .hasMessage("이미 초대되었거나 혹은 퇴출된 유저입니다");
 
-        projectCertService.delTicket(t.getProjectId(),null);
+        assertThatThrownBy(()->{projectCertService.delTicket(t.getProjectId(),null);})
+                .isInstanceOf(MoiraException.class)
+                        .hasMessage("마스터 권한은 탈퇴시 다음 마스터를 지정해야됩니다");
+
+        assertThat(ticketRepository.findByMemberIdAndProjectId(m.getId(),t.getProjectId()).get().getDeleted())
+                .isFalse();
 
         assertThatThrownBy(()->{
             projectCertService.createTicket(p.getProjectUrl(),aliasDto);}
@@ -246,9 +237,17 @@ public class ProjectMeetTicket extends IntegralTestEnv {
                 .hasMessage("이미 초대되었거나 혹은 퇴출된 유저입니다");
 
         projectCertService.createTicket(p2.getProjectUrl(),aliasDto);
-        Mockito.verify(alertEventListener,Mockito.times(2)).alertMessage(Mockito.any(AlertMessageDto.class));
+        Mockito.when(securityMemberReadService.securityMemberRead())
+                .thenReturn(m2);
+        assertThatThrownBy(()->{projectCertService.delTicket(p2.getId(), m2.getId());})
+                .isInstanceOf(MoiraException.class)
+                .hasMessage("마스터 권한은 탈퇴시 다음 마스터를 지정해야됩니다");
+        projectCertService.delTicket(p2.getId(),m.getId());
+
+        Mockito.verify(alertEventListener,Mockito.times(3)).alertMessage(Mockito.any(AlertMessageDto.class));
         Optional<Ticket> tNew=ticketRepository.findByMemberIdAndProjectId(m.getId(),p2.getId());
         assertThat(tNew.isPresent()).isTrue();
+        assertThat(tNew.get().getMaster()).isEqualTo(Master.MASTER);
 
     }
 }

@@ -64,6 +64,7 @@ public class GraphTest extends IntegralTestEnv {
                         .parentId(rootID)
                         .nodeType(NodeType.ELEMENT)
                         .propertiesMap(Map.of())
+                        .createDate("2025-12-30 20:27:11")
                 .build(),1L);
 
         graphData=graphService.getWholeGraph(rootID);

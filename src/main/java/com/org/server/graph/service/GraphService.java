@@ -161,16 +161,15 @@ public class GraphService {
     public Boolean updateProperties(PropertyChangeDto propertyChangeDto){
 
 
-        LocalDateTime modifyDate=LocalDateTime.parse(propertyChangeDto.getUpdateDate(),
-                DateTimeMapUtil.FLEXIBLE_NANO_FORMATTER);
+        LocalDateTime modifyDate=DateTimeMapUtil.parseClientTimetoServerFormat(propertyChangeDto.getUpdateDate());
 
         Query query=new Query(where("_id").is(propertyChangeDto.getNodeId())
                 .and("deleted").is(false)
-                .and("properties."+propertyChangeDto.getName()+".modifyDate")
+                .and("properties."+propertyChangeDto.getName()+".updateDate")
                 .lt(modifyDate));
         Update update = new Update();
         update.set("properties."+propertyChangeDto.getName()+".value",propertyChangeDto.getValue());
-        update.set("properties."+propertyChangeDto.getName()+".modifyDate",modifyDate);
+        update.set("properties."+propertyChangeDto.getName()+".updateDate",modifyDate);
 
         UpdateResult result= mongoTemplate.updateFirst(query, update, Element.class);
         if(result.getModifiedCount()==0){

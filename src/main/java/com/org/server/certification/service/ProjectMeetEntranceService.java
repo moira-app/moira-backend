@@ -119,7 +119,7 @@ public class ProjectMeetEntranceService {
         publishEvent(projectId,AlertKey.MEMBEROUT,Map.of("memberId",m.getId()));
 
         if(ticketService.checkIsMaster(projectId,m.getId())){
-            if (nextMaster != null) {
+            if (nextMaster != null&&nextMaster!=m.getId()) {
                 ticketService.nextMaster(projectId, nextMaster);
                 publishEvent(projectId, AlertKey.MASTERCHANGE, Map.of("memberId", m.getId()));
             } else {

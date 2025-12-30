@@ -23,7 +23,7 @@ public class ProjectInfoDto {
     private Master master;
 
     @Builder
-    public ProjectInfoDto(Long projectId, String title, Long chatRoomId, String projectUrl,String alias,Master master) {
+    public ProjectInfoDto(Long projectId,  Long chatRoomId,String title, String projectUrl,String alias,Master master) {
         this.projectId = projectId;
         this.title = title;
         this.chatRoomId = chatRoomId;
