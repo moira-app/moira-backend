@@ -6,27 +6,25 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
+
 @Getter
 @NoArgsConstructor
 public class MeetDateDto {
 
-
-
     private Long meetId;
-    private Long projectId;
     private String meetName;
-    private String date;
+    private String startTime;
 
 
-    public void updateDate(String date){
-        this.date=date;
+    public void updateDate(String startTime){
+        this.startTime=startTime;
     }
 
     @Builder
-    public MeetDateDto(Long meetId, Long projectId, String meetName, String date) {
+    public MeetDateDto(Long meetId,String meetName, String startTime) {
         this.meetId = meetId;
-        this.projectId = projectId;
         this.meetName=meetName;
-        this.date = date;
+        this.startTime = startTime;
     }
 }

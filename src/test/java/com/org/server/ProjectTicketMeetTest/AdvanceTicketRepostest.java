@@ -7,9 +7,8 @@ import com.org.server.project.domain.Project;
 import com.org.server.support.IntegralTestEnv;
 import com.org.server.ticket.domain.Master;
 import com.org.server.ticket.domain.Ticket;
-import com.org.server.ticket.domain.TicketDto;
+import com.org.server.ticket.domain.TicketInfoDto;
 import com.org.server.ticket.domain.TicketMetaDto;
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -44,7 +43,7 @@ public class AdvanceTicketRepostest extends IntegralTestEnv {
     @Test
     @DisplayName("기능 테스트")
     void testing(){
-        List<TicketDto> ticketDtoList=advanceTicketRepository.getMemberList(p1.getId());
+        List<TicketInfoDto> ticketDtoList=advanceTicketRepository.getMemberList(p1.getId());
         assertThat(ticketDtoList.size()).isEqualTo(2);
         assertThat(ticketDtoList).extracting("memberId")
                 .contains(m1.getId(),m2.getId());

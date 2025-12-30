@@ -3,14 +3,10 @@ package com.org.server.chat;
 import com.org.server.chat.domain.ChatMessage;
 import com.org.server.chat.domain.ChatMessageDto;
 import com.org.server.chat.domain.ChatRoom;
-import com.org.server.chat.repository.ChatMessageAdvanceRepository;
 import com.org.server.member.domain.Member;
 import com.org.server.project.domain.Project;
 import com.org.server.support.IntegralTestEnv;
-import com.org.server.ticket.domain.Master;
-import com.org.server.ticket.domain.Ticket;
 import com.org.server.util.DateTimeMapUtil;
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -44,7 +40,7 @@ public class ChatMessageTest extends IntegralTestEnv {
     void testChatDel(){
 
         ChatMessageDto chatMessageDto=chatMessageService.sendMessage(chatRoom.getId()
-                ,member.getId(),"test",DateTimeMapUtil.provietTimeToString(LocalDateTime.now()));
+                ,member.getId(),"test",DateTimeMapUtil.parseServerTimeToClientFormat(LocalDateTime.now()));
         chatMessageService.delMsg(chatMessageDto.id(),chatMessageDto.senderId());
         ChatMessage chatMessage=chatMessageRepository.findById(chatMessageDto.id()).get();
 
@@ -55,7 +51,7 @@ public class ChatMessageTest extends IntegralTestEnv {
     @Test
     @DisplayName("채팅 발행 테스트")
     void testChatCreate(){
-        chatMessageService.sendMessage(chatRoom.getId(),member.getId(),"test",DateTimeMapUtil.provietTimeToString(LocalDateTime.now()));
+        chatMessageService.sendMessage(chatRoom.getId(),member.getId(),"test",DateTimeMapUtil.parseServerTimeToClientFormat(LocalDateTime.now()));
         List<ChatMessage> chatMessageList=chatMessageRepository.findAll();
         assertThat(chatMessageList.size()).isEqualTo(1);
     }
@@ -82,9 +78,9 @@ public class ChatMessageTest extends IntegralTestEnv {
 
             LocalDateTime now=LocalDateTime.now();
             if(i==10){
-                reMemberTime=DateTimeMapUtil.provietTimeToString(now);
+                reMemberTime=DateTimeMapUtil.parseServerTimeToClientFormat(now);
             }
-            ChatMessageDto data=chatMessageService.sendMessage(chatRoom.getId(), member.getId(), "test",DateTimeMapUtil.provietTimeToString(now));
+            ChatMessageDto data=chatMessageService.sendMessage(chatRoom.getId(), member.getId(), "test",DateTimeMapUtil.parseServerTimeToClientFormat(now));
             chatMessageDtos.add(data);
         }
         List<ChatMessage> chatMessageDtos2= chatMessageAdvanceRepository.findMessages(

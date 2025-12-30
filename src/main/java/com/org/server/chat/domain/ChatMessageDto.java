@@ -17,9 +17,9 @@ public record ChatMessageDto(
         Long senderId,
         @Schema(description = "내용 입니다.")
         String content,
-        @Schema(description = "생성 일자입니다. 항상 포함되어있습니다.")
+        @Schema(example = "yyyy-MM-dd HH:mm:ss",description = "생성 일자입니다. 항상 포함되어있습니다.")
         String createDate,
-        @Schema(description = "수정을 하였다면 값이 존재하고 없다면 null값입니다.")
+        @Schema(example="yyyy-MM-dd HH:mm:ss",description = "수정을 하였다면 값이 존재하고 없다면 null값입니다.")
         String updateDate
 ) {
 

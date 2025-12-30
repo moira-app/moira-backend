@@ -2,12 +2,7 @@ package com.org.server.ticket.repository;
 
 
 import com.org.server.chat.domain.ChatType;
-import com.org.server.chat.domain.QChatRoom;
-import com.org.server.meet.domain.MeetDateDto;
-import com.org.server.member.domain.QMember;
-import com.org.server.project.domain.Project;
-import com.org.server.ticket.domain.QTicket;
-import com.org.server.ticket.domain.TicketDto;
+import com.org.server.ticket.domain.TicketInfoDto;
 import com.org.server.ticket.domain.TicketMetaDto;
 import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -25,11 +20,12 @@ import static com.org.server.ticket.domain.QTicket.*;
 public class AdvanceTicketRepository {
 
     private final JPAQueryFactory queryFactory;
-    public List<TicketDto> getMemberList(Long projectId){
+    public List<TicketInfoDto> getMemberList(Long projectId){
         return queryFactory.select(
-                Projections.constructor(TicketDto.class,
+                Projections.constructor(TicketInfoDto.class,
                         member.id,
-                        ticket.alias)
+                        ticket.alias,
+                        ticket.master)
                 )
                 .from(ticket)
                 .join(member)

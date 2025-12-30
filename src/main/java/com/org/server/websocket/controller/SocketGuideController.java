@@ -6,7 +6,7 @@ import com.org.server.chat.domain.ChatMessageDto;
 import com.org.server.chat.domain.ChatType;
 import com.org.server.graph.GraphActionType;
 import com.org.server.graph.NodeType;
-import com.org.server.graph.domain.Properties;
+import com.org.server.graph.domain.PropertiesDto;
 import com.org.server.graph.dto.NodeCreateDto;
 import com.org.server.graph.dto.NodeDelDto;
 import com.org.server.graph.dto.PropertyChangeDto;
@@ -30,6 +30,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import javax.swing.*;
 import java.time.LocalDateTime;
 import java.util.Map;
+import java.util.Properties;
 import java.util.UUID;
 
 
@@ -161,9 +162,10 @@ public class SocketGuideController {
         private NodeType nodeType;
         @Schema(description = "생성하는 루트 노드의 이름. 즉 화이트 보드의 이름입니다.")
         private String rootName;
-        @Schema(description = "생성하는 노드의 속성값. key:value로 주시면됩니다.")
-        private Map<String,Object> properties;
-
+        @Schema(description = "생성하는 노드의 속성값. key값으로 이름을 value로 PropertisDto를 주시면됩니다.")
+        private Map<String, PropertiesDto> properties;
+        @Schema(example = "yyyy-MM-dd HH:mm:ss",description = "생성 시각")
+        private String createDate;
     }
     @Getter
     private class NodePropertyClass{
@@ -171,8 +173,8 @@ public class SocketGuideController {
         private String name;
         @Schema(description = "수정 하려는 property 값")
         private String value;
-        @Schema(description = "수정 하려는 property의 수정 날짜.")
-        private String modifyData;
+        @Schema(example = "yyyy-MM-dd HH:mm:ss",description = "수정 하려는 property의 수정 날짜.")
+        private String updateDate;
     }
 
     @Getter

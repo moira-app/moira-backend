@@ -2,6 +2,7 @@ package com.org.server.project.controller;
 
 
 import com.org.server.project.domain.ProjectCreateDto;
+import com.org.server.project.domain.ProjectInfoDto;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
@@ -15,7 +16,6 @@ import org.springframework.http.ResponseEntity;
 import com.org.server.project.service.ProjectService;
 import com.org.server.util.ApiResponseUtil;
 import lombok.RequiredArgsConstructor;
-import com.org.server.project.domain.ProjectDto;
 import org.springframework.web.bind.annotation.*;
 
 
@@ -46,9 +46,9 @@ public class ProjectController {
             example = "Bearer [tokenvalue]",
             in = ParameterIn.HEADER)
     @PostMapping("/create")
-    public ResponseEntity<ApiResponseUtil<ProjectDto>> createProject(@RequestBody ProjectCreateDto projectCreateDto){
+    public ResponseEntity<ApiResponseUtil<ProjectInfoDto>> createProject(@RequestBody ProjectCreateDto projectCreateDto){
         return ResponseEntity.ok(
                 ApiResponseUtil
-                        .CreateApiResponse("ok",projectService.createProject(projectCreateDto.getTitle(),projectCreateDto.getCreateDate())));
+                        .CreateApiResponse("ok",projectService.createProject(projectCreateDto.getTitle())));
     }
 }

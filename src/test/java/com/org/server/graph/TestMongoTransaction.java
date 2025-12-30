@@ -39,15 +39,18 @@ public class TestMongoTransaction extends IntegralTestEnv {
     String rootID= UUID.randomUUID().toString();
     @BeforeEach
     void settingBeforeTest(){
-        root=new Root(rootID, LocalDateTime.now().toString(),1L,"root");
+
+        String time=DateTimeMapUtil.parseServerTimeToClientFormat(LocalDateTime.now());
+        LocalDateTime now=DateTimeMapUtil.parseClientTimetoServerFormat(time);
+        root=new Root(rootID, now,1L,"root");
         root=graphRepository.save(root);
         Map<String, Properties> propertiesMap=new HashMap<>();
         for(int j=0;5>j;j++){
-            Properties properties=new Properties("Test",LocalDateTime.now());
+            Properties properties=new Properties("Test",now);
             propertiesMap.put(0+"-"+j,properties);
         }
         e =new Element(UUID.randomUUID().toString(),
-                root.getId(),propertiesMap,LocalDateTime.now().toString());
+                root.getId(),propertiesMap,now);
         graphRepository.save(e);
 
     }
@@ -63,11 +66,11 @@ public class TestMongoTransaction extends IntegralTestEnv {
             int val=i;
             executorService.submit(()->{
                 try{
-                    String now= DateTimeMapUtil.FLEXIBLE_NANO_FORMATTER.format(LocalDateTime.now());
+                    String now= DateTimeMapUtil.parseServerTimeToClientFormat(LocalDateTime.now());
                     PropertyChangeDto propertiesUpdateDto=PropertyChangeDto.builder()
                             .nodeId(e.getId())
                             .name("0-"+val)
-                            .modifyDate(now)
+                            .updateDate(now)
                             .graphActionType(GraphActionType.Property)
                             .value("changed")
                             .rootId("rootId")
@@ -105,11 +108,11 @@ public class TestMongoTransaction extends IntegralTestEnv {
         for(int i=0;5>i;i++){
             executorService.submit(()->{
                 try{
-                    String now= DateTimeMapUtil.FLEXIBLE_NANO_FORMATTER.format(LocalDateTime.now());
+                    String now= DateTimeMapUtil.parseServerTimeToClientFormat(LocalDateTime.now());
                     PropertyChangeDto propertiesUpdateDto=PropertyChangeDto.builder()
                             .nodeId(e.getId())
                             .name("0-0")
-                            .modifyDate(now)
+                            .updateDate(now)
                             .graphActionType(GraphActionType.Property)
                             .value("changed")
                             .rootId("rootId")

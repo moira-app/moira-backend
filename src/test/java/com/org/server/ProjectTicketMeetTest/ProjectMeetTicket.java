@@ -4,13 +4,10 @@ package com.org.server.ProjectTicketMeetTest;
 import com.org.server.certification.domain.AliasDto;
 import com.org.server.chat.domain.ChatRoom;
 import com.org.server.exception.MoiraException;
-import com.org.server.meet.domain.Meet;
-import com.org.server.meet.domain.MeetConnectDto;
-import com.org.server.meet.domain.MeetDateDto;
-import com.org.server.meet.domain.MeetDto;
+import com.org.server.meet.domain.*;
 import com.org.server.project.domain.Project;
-import com.org.server.project.domain.ProjectDto;
 
+import com.org.server.project.domain.ProjectInfoDto;
 import com.org.server.support.IntegralTestEnv;
 import com.org.server.ticket.domain.Master;
 import com.org.server.ticket.domain.Ticket;
@@ -29,6 +26,10 @@ import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeFormatterBuilder;
+import java.time.temporal.ChronoField;
 import java.util.List;
 import java.util.Optional;
 
@@ -55,6 +56,7 @@ public class ProjectMeetTicket extends IntegralTestEnv {
     String monthFuture;
 
     private static DataSource testDataSource;
+
 
     @BeforeAll
     static void setupH2CustomFunctions(@Autowired DataSource dataSource) {
@@ -89,19 +91,19 @@ public class ProjectMeetTicket extends IntegralTestEnv {
         t=createTicket(m,p,null, Master.MASTER);
         createTicket(m2,p2,"p2",Master.MASTER);
 
-        String startTime=LocalDate.now().atStartOfDay().format(DateTimeMapUtil.formatByDot);
-        String endTime=LocalDate.now().atStartOfDay().plusDays(1L).format(DateTimeMapUtil.formatByDot);
-        String startTime2=LocalDate.now().plusMonths(1L).atStartOfDay().format(DateTimeMapUtil.formatByDot);
-        String endTime2=LocalDate.now().plusMonths(1L).plusDays(1L).atStartOfDay().format(DateTimeMapUtil.formatByDot);
-        monthCurrent=LocalDate.now().format(DateTimeMapUtil.formatByDot2);
-        monthFuture=LocalDate.now().plusMonths(1L).format(DateTimeMapUtil.formatByDot2);
+        String startTime=DateTimeMapUtil.parseServerTimeToClientFormat(LocalDate.now().atStartOfDay());
+        String endTime=DateTimeMapUtil.parseServerTimeToClientFormat(LocalDate.now().atStartOfDay().plusDays(1L));
+        String startTime2=DateTimeMapUtil.parseServerTimeToClientFormat(LocalDate.now().plusMonths(1L).atStartOfDay());
+        String endTime2=DateTimeMapUtil.parseServerTimeToClientFormat(LocalDate.now().plusMonths(1L).plusDays(1L).atStartOfDay());
+        monthCurrent=DateTimeMapUtil.parseServerTimeToClientFormat(LocalDate.now().atStartOfDay());
+        monthFuture=DateTimeMapUtil.parseServerTimeToClientFormat(LocalDate.now().plusMonths(1L).atStartOfDay());
 
         for(int i=0;5>i;i++) {
-            projectCertService.createMeet(new MeetDto("Test",startTime,endTime),p.getId());
-            projectCertService.createMeet(new MeetDto("test",startTime2,endTime2),p.getId());
+            projectCertService.createMeet(new MeetCreateDto("Test",startTime,endTime),p.getId());
+            projectCertService.createMeet(new MeetCreateDto("test",startTime2,endTime2),p.getId());
         }
         for(int i=0;5>i;i++) {
-            projectCertService.createMeet(new MeetDto("test",startTime,endTime),p2.getId());
+            projectCertService.createMeet(new MeetCreateDto("test",startTime,endTime),p2.getId());
         }
         Mockito.reset(alertEventListener);
     }
@@ -113,7 +115,7 @@ public class ProjectMeetTicket extends IntegralTestEnv {
     void callProjectsTest(){
         Mockito.when(securityMemberReadService.securityMemberRead())
                 .thenReturn(m);
-        List<ProjectDto> projectDtoList=projectCertService.getProejctList();
+        List<ProjectInfoDto> projectDtoList=projectCertService.getProejctList();
         assertThat(projectDtoList.size()).isEqualTo(1);
     }
 
@@ -123,11 +125,12 @@ public class ProjectMeetTicket extends IntegralTestEnv {
     void callMeetTest() {
         Mockito.when(securityMemberReadService.securityMemberRead())
                 .thenReturn(m);
-
-        List<MeetDateDto> meetDateDtos = meetService.getMeetList(monthCurrent);
+        MeetListDto meetListDto=new MeetListDto(monthCurrent);
+        MeetListDto meetListDtoFuture=new MeetListDto(monthFuture);
+        List<MeetDateDto> meetDateDtos = meetService.getMeetList(meetListDto,p.getId());
         assertThat(meetDateDtos.size()).isEqualTo(5);
 
-        List<MeetDateDto> meetDateDtos2 = meetService.getMeetList(monthFuture);
+        List<MeetDateDto> meetDateDtos2 = meetService.getMeetList(meetListDtoFuture,p2.getId());
         assertThat(meetDateDtos2.size()).isEqualTo(5);
     }
 
@@ -145,8 +148,10 @@ public class ProjectMeetTicket extends IntegralTestEnv {
         Ticket t2=ticketRepository.findById(t.getId()).get();
         assertThat(t2.getAlias()).isEqualTo("change");
         List<Meet> meets=meetRepository.findAll();
-        MeetConnectDto meetConnectDto=projectCertService.checkInMeet(meets.getFirst().getId(),
-                p.getId());
+
+        MeetEnterDto meetEnterDto=new MeetEnterDto(meets.getFirst().getId(),DateTimeMapUtil.parseServerTimeToClientFormat(LocalDateTime.now()));
+
+        MeetConnectDto meetConnectDto=projectCertService.checkInMeet(meetEnterDto,p.getId());
         assertThat(meetConnectDto.getAlias()).isEqualTo("change");
     }
 
@@ -157,7 +162,9 @@ public class ProjectMeetTicket extends IntegralTestEnv {
         Mockito.when(securityMemberReadService.securityMemberRead())
                 .thenReturn(m);
         List<Meet> meets=meetRepository.findAll();
-        MeetConnectDto meetConnectDto=projectCertService.checkInMeet(meets.getFirst().getId(),
+
+        MeetEnterDto meetEnterDto=new MeetEnterDto(meets.getFirst().getId(),DateTimeMapUtil.parseServerTimeToClientFormat(LocalDateTime.now()));
+        MeetConnectDto meetConnectDto=projectCertService.checkInMeet(meetEnterDto,
                 p.getId());
         assertThat(meetConnectDto.getAlias()).isEqualTo("test1");
     }
@@ -183,7 +190,9 @@ public class ProjectMeetTicket extends IntegralTestEnv {
 
         Mockito.when(securityMemberReadService.securityMemberRead())
                 .thenReturn(m);
-        List<MeetDateDto> meetDateDtos = meetService.getMeetList(monthCurrent);
+
+        MeetListDto meetListDto=new MeetListDto(monthCurrent);
+        List<MeetDateDto> meetDateDtos = meetService.getMeetList(meetListDto,p.getId());
         assertThat(meetDateDtos.size()).isEqualTo(4);
         assertThat(tdel.getDeleted()).isTrue();
 

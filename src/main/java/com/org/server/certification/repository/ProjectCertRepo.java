@@ -2,10 +2,8 @@ package com.org.server.certification.repository;
 
 
 import com.org.server.chat.domain.ChatType;
-import com.org.server.chat.domain.QChatRoom;
 import com.org.server.member.domain.Member;
-import com.org.server.project.domain.Project;
-import com.org.server.project.domain.ProjectDto;
+import com.org.server.project.domain.ProjectInfoDto;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import java.util.List;
 import com.querydsl.core.types.Projections;
@@ -25,13 +23,15 @@ public class ProjectCertRepo {
 
     private final JPAQueryFactory queryFactory;
 
-    public List<ProjectDto> getProjectList(Member m){
+    public List<ProjectInfoDto> getProjectList(Member m){
        return queryFactory
-                .select(Projections.constructor(ProjectDto.class,
+                .select(Projections.constructor(ProjectInfoDto.class,
                         project.id,
-                        project.title,
                         chatRoom.id,
-                        project.projectUrl
+                        project.title,
+                        project.projectUrl,
+                        ticket.alias,
+                        ticket.master
                 ))
                 .from(ticket)
                 .join(project)

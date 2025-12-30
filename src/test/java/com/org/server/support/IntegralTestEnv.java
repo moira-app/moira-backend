@@ -178,7 +178,7 @@ public class IntegralTestEnv {
     }
 
     protected Project createProject(String title,String projectUrl){
-        Project p=new Project(title,projectUrl, LocalDateTime.now());
+        Project p=new Project(title,projectUrl);
         return projectRepository.save(p);
     }
 

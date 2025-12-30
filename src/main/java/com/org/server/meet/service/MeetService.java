@@ -5,27 +5,19 @@ import com.org.server.chat.domain.ChatType;
 import com.org.server.chat.service.ChatRoomService;
 import com.org.server.exception.MoiraException;
 import com.org.server.meet.domain.Meet;
-import com.org.server.meet.domain.MeetConnectDto;
 import com.org.server.meet.domain.MeetDateDto;
-import com.org.server.meet.domain.MeetDto;
+import com.org.server.meet.domain.MeetListDto;
 import com.org.server.meet.repository.MeetAdvanceRepo;
 import com.org.server.meet.repository.MeetRepository;
-import com.org.server.member.service.SecurityMemberReadService;
-import com.org.server.project.domain.Project;
-import com.org.server.project.repository.ProjectRepository;
-import com.org.server.ticket.domain.Ticket;
-import com.org.server.ticket.repository.TicketRepository;
 import com.org.server.util.DateTimeMapUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import com.org.server.util.RandomCharSet;
 import java.util.Optional;
 import java.time.LocalDateTime;
-import com.org.server.member.domain.Member;
 import java.util.List;
-import java.time.LocalDate;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -35,19 +27,20 @@ public class MeetService {
 
     private final MeetRepository meetRepository;
     private final MeetAdvanceRepo meetAdvanceRepo;
-    private final SecurityMemberReadService securityMemberReadService;
     private final ChatRoomService chatRoomService;
 
-    public List<MeetDateDto> getMeetList(String date){
-        LocalDateTime startTime=LocalDate.parse(date,DateTimeMapUtil.formatByDot2).atStartOfDay();
+    public List<MeetDateDto> getMeetList(MeetListDto meetListDto,Long projectId){
+        LocalDateTime startTime=DateTimeMapUtil.parseClientTimetoServerFormat(meetListDto.getTime());
         LocalDateTime endTime=startTime.plusMonths(1L);
-        Member m=securityMemberReadService.securityMemberRead();
-        List<MeetDateDto> meetList=meetAdvanceRepo.getMeetList(startTime,endTime,m);
-        meetList.forEach(x->{
-            x.updateDate(DateTimeMapUtil.provideTimePattern(x.getDate()));
+        List<Meet> meetList=meetAdvanceRepo.getMeetList(startTime,endTime,projectId);
 
-        });
-        return meetList;
+       return meetList.stream().map(x->{
+            return MeetDateDto.builder()
+                    .meetId(x.getId())
+                    .meetName(x.getMeetName())
+                    .startTime(DateTimeMapUtil.parseServerTimeToClientFormat(x.getStartTime()))
+                    .build();
+        }).collect(Collectors.toList());
     }
     public void delMeet(Long meetId){
         Optional<Meet> m=meetRepository.findById(meetId);
