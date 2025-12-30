@@ -63,7 +63,7 @@ public class GraphTest extends IntegralTestEnv {
                         .nodeId(UUID.randomUUID().toString())
                         .parentId(rootID)
                         .nodeType(NodeType.ELEMENT)
-                        .propertiesList(Map.of())
+                        .propertiesMap(Map.of())
                 .build(),1L);
 
         graphData=graphService.getWholeGraph(rootID);
