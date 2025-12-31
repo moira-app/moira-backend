@@ -22,10 +22,10 @@ public class AdvanceTicketRepository {
     private final JPAQueryFactory queryFactory;
     public List<TicketInfoDto> getMemberList(Long projectId){
         return queryFactory.select(
-                Projections.constructor(TicketInfoDto.class,
-                        member.id,
-                        ticket.alias,
-                        ticket.master)
+                        Projections.constructor(TicketInfoDto.class,
+                                member.id,
+                                ticket.alias,
+                                ticket.master)
                 )
                 .from(ticket)
                 .join(member)

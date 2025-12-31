@@ -6,7 +6,7 @@ import com.org.server.member.domain.MemberSignInDto;
 import com.org.server.member.domain.MemberUpdateDto;
 import com.org.server.security.domain.CustomUserDetail;
 import com.org.server.support.IntegralTestEnv;
-import com.org.server.websocket.domain.GlobalAlertMessageDto;
+import com.org.server.websocket.domain.MemberAlertMessageDto;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -151,12 +151,12 @@ public class MemberCreateTest extends IntegralTestEnv {
 
         Mockito.doNothing()
                         .when(alertEventListener)
-                                .alertGlobalMessage(Mockito.any(GlobalAlertMessageDto.class));
+                                .alertGlobalMessage(Mockito.any(MemberAlertMessageDto.class));
 
         memberService.delMember();
         Member m=memberRepository.findById(member.getId()).get();
         assertThat(m.getDeleted()).isTrue();
-        Mockito.verify(alertEventListener).alertGlobalMessage(Mockito.any(GlobalAlertMessageDto.class));
+        Mockito.verify(alertEventListener).alertGlobalMessage(Mockito.any(MemberAlertMessageDto.class));
     }
 
     @Test

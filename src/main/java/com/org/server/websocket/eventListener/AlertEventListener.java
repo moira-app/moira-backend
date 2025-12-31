@@ -4,22 +4,16 @@ package com.org.server.websocket.eventListener;
 import com.org.server.chat.domain.ChatRoom;
 import com.org.server.chat.domain.ChatType;
 import com.org.server.chat.service.ChatRoomService;
-import com.org.server.redis.service.RedisUserInfoService;
 import com.org.server.ticket.domain.TicketMetaDto;
 import com.org.server.ticket.repository.AdvanceTicketRepository;
-import com.org.server.ticket.repository.TicketRepository;
-import com.org.server.ticket.service.TicketService;
-import com.org.server.websocket.domain.AlertKey;
 import com.org.server.websocket.domain.AlertMessageDto;
-import com.org.server.websocket.domain.GlobalAlertMessageDto;
-import com.org.server.websocket.service.RedisStompService;
+import com.org.server.websocket.domain.MemberAlertMessageDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.event.TransactionalEventListener;
 
 import java.util.List;
-import java.util.Set;
 
 import static org.springframework.transaction.event.TransactionPhase.AFTER_COMMIT;
 
@@ -42,7 +36,7 @@ public class AlertEventListener {
     }
 
     @TransactionalEventListener(phase= AFTER_COMMIT)
-    public void alertGlobalMessage(GlobalAlertMessageDto alertMessageDto){
+    public void alertGlobalMessage(MemberAlertMessageDto alertMessageDto){
             List<TicketMetaDto> ticketMetaDtoList=
                     advanceTicketRepository.getProjectList(Long.parseLong(alertMessageDto.memberId()));
             ticketMetaDtoList.stream().forEach(x->{
@@ -51,7 +45,7 @@ public class AlertEventListener {
             });
     }
 
-    private AlertMessageDto createAlertMessageFromGlobal(GlobalAlertMessageDto alertMessageDto,Long projectId){
+    private AlertMessageDto createAlertMessageFromGlobal(MemberAlertMessageDto alertMessageDto, Long projectId){
         return AlertMessageDto.builder()
                 .alertKey(alertMessageDto.alertKey())
                 .projectId(projectId)
