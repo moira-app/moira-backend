@@ -5,7 +5,7 @@ import lombok.Builder;
 import java.util.Map;
 
 @Builder
-public record GlobalAlertMessageDto(
+public record MemberAlertMessageDto(
         String memberId,
         AlertKey alertKey,
         Map<String,Object> data

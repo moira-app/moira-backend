@@ -19,6 +19,7 @@ import org.springframework.data.mongodb.core.aggregation.*;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -36,6 +37,7 @@ public class GraphService {
 
     private final GraphRepository graphRepository;
     private final MongoTemplate mongoTemplate;
+    private final GraphAsyncService graphAsyncService;
 
 
     public List<Graph> getRootNodes(Long projectId){
@@ -126,7 +128,7 @@ public class GraphService {
     /**
      * moving id는 움직이는애, stayId는 movingId가 그아래로 들어가고자하는 id
      * 애는 redssion락을 그냥 rootid단위로 걸어야될듯 즉 a-b를 수정하는거랑 c-d를 수정하는것은 각각
-     * 다른 노들을 수정하는거지만 전부다 redssion 락 영향을 받게 설계.
+     * 다른 노드를 수정하는거지만 전부다 redssion 락 영향을 받게 설계.
      * 단 아래의 속성 수정과는 공유되지 않는 락 즉 속성 수정이 트리구조 수정의 영향을 받지는 않으니까.
      */
     @GraphTransaction
@@ -200,66 +202,11 @@ public class GraphService {
             if (result.getModifiedCount() == 0) {
                 return false;
             }
-            bulkDelete(nodeDelDto.getNodeId());
+            graphAsyncService.bulkDelete(nodeDelDto.getNodeId());
             log.info("삭제 완료\n");
             return true;
     }
-    private void bulkDelete(String graphId){
-        MatchOperation matchStage = match(where("_id").is(graphId));
-        Criteria filter = where("deleted").is(false);
-        GraphLookupOperation graphLookupStage = graphLookup("graph")
-                .startWith("$_id")
-                .connectFrom("_id")
-                .connectTo("parentId")
-                .restrict(filter)
-                .as("descendants");
-        UnwindOperation unwindStage = unwind("descendants");
 
-        ProjectionOperation projectDescendantsStage = project()
-                .and("descendants._id").as("_id");
-
-        Aggregation aggregation = newAggregation(
-                matchStage,
-                graphLookupStage,
-                unwindStage,
-                projectDescendantsStage);
-        //merge,set,unionwithstage같은 복잡한애는 multi doc transaction에서 사용할수없어서 이렇게 바꿈.
-        //이렇게 쓰면 트랜잭션 내에서 전부다 다뤄진다.-->수정 트랜잭션을 없앴으므로 bulkopertions으로 실패한건 따로 추적을시도.
-        List<String> results = mongoTemplate.aggregate(
-                        aggregation, "graph", SimpleDto.class
-                ).getMappedResults()
-                .stream().map(x->{
-                    return x.getId();
-                }).collect(Collectors.toList());
-
-        BulkOperations bulkOperations=mongoTemplate.bulkOps(BulkOperations.BulkMode.UNORDERED, Graph.class);
-        results.stream().forEach(x->{
-            Query query =new Query(where("_id").in(x));
-            Update update = new Update().set("deleted", true);
-            bulkOperations.updateOne(query,update);
-        });
-        try {
-            if(!results.isEmpty()){
-                bulkOperations.execute();
-            }
-        }
-        catch (DataAccessException e) {
-            if (e.getCause() instanceof MongoBulkWriteException) {
-                MongoBulkWriteException bulkEx = (MongoBulkWriteException) e.getCause();
-                List<BulkWriteError> errors = bulkEx.getWriteErrors();
-                for (BulkWriteError err : errors) {
-                    System.out.println("실패한 인덱스: " + err.getIndex() + ", 메시지: " + err.getMessage());
-                    //메시징 큐에 재시도 로그 남기는 영역.
-                    //err.getindex는 bulkopertion에넣은 순서 즉 일반적인 list 인덱스를 의미하며 stream으로 차례대로넣었으므로
-                    //results에서 꺼내와서 쓰면된다.
-                }
-            } else {
-                System.err.println("에러 메시지: " + e.getMessage());
-            }
-        } catch (Exception e) {
-            System.err.println("예상치 못한 오류: " + e.getMessage());
-        }
-    }
 
     private boolean checkCycleExist(String movingId,String stayId){
         log.info("cycle start");

@@ -116,17 +116,13 @@ public class SocketGuideController {
     private class SingalingDataClass{
         @Schema(description =" crdt.webrtc 를넣어주세요. EventEnvelope의 type에 해당됩니다.")
         private String type;
-        @Schema(description = "입장하는 사람은 offer를, 기존에 있던 인원이 입장하는 사람에대한 응답을 보낼시엔 ANSWER를 넣어주세요" +
-                "EventEnvelope의 data에 넣어주세요")
+        @Schema(description = "입장하는 사람은 offer를, 기존에 있던 인원이 입장하는 사람에대한 응답을 보낼시엔 ANSWER를 넣어주세요")
         private WebRtcDataType webRtcDataType;
-        @Schema(description = "보낸이의 id값입니다. 서버에서 처리합니다."+
-                "EventEnvelope의 data에 넣어주세요")
+        @Schema(description = "보낸이의 id값입니다. 서버에서 처리합니다.")
         private String senderId;
-        @Schema(description = "받는이의 회원 id값. 클라이언트에서 answer를 보낼시에 넣어주십시오."+
-                "EventEnvelope의 data에 넣어주세요")
+        @Schema(description = "받는이의 회원 id값. 클라이언트에서 answer를 보낼시에 넣어주십시오.")
         private String targetId;
-        @Schema(description = "회의 id값,클라이언트에서 넣어주세요."+
-                "EventEnvelope의 data에 넣어주세요")
+        @Schema(description = "회의 id값,클라이언트에서 넣어주세요.")
         private String meetId;
     }
     @Getter

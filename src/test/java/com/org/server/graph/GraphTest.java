@@ -95,4 +95,16 @@ public class GraphTest extends IntegralTestEnv {
         List<Graph> g=graphService.getRootNodes(1L);
         Assertions.assertThat(g.size()).isEqualTo(1);
     }
+
+    @Test
+    @DisplayName("비동기 처리한 삭제 함수 실행 테스트")
+    void testAsyncDelete(){
+
+        NodeDelDto nodeDelDto=NodeDelDto.builder()
+                .graphActionType(GraphActionType.Delete)
+                .nodeId(root.getId())
+                .build();
+        graphService.delGraphNode(nodeDelDto);
+
+    }
 }

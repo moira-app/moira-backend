@@ -1,7 +1,6 @@
 package com.org.server.member.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.org.server.exception.MoiraException;
 import com.org.server.member.MemberType;
@@ -10,8 +9,7 @@ import com.org.server.member.repository.MemberRepository;
 import com.org.server.redis.service.RedisUserInfoService;
 import com.org.server.s3.S3Service;
 import com.org.server.websocket.domain.AlertKey;
-import com.org.server.websocket.domain.AlertMessageDto;
-import com.org.server.websocket.domain.GlobalAlertMessageDto;
+import com.org.server.websocket.domain.MemberAlertMessageDto;
 import com.org.server.websocket.service.RedisStompService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
@@ -19,11 +17,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import software.amazon.awssdk.thirdparty.jackson.core.JsonParseException;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -103,7 +99,7 @@ public class MemberServiceImpl implements MemberService{
 
     }
     private void publishEvent(Long memberId, AlertKey alertKey, Map<String,Object> data){
-        eventPublisher.publishEvent(GlobalAlertMessageDto.builder()
+        eventPublisher.publishEvent(MemberAlertMessageDto.builder()
                 .alertKey(alertKey)
                 .memberId(memberId.toString())
                 .data(data)
