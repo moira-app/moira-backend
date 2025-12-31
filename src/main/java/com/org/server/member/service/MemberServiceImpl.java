@@ -6,11 +6,11 @@ import com.org.server.exception.MoiraException;
 import com.org.server.member.MemberType;
 import com.org.server.member.domain.*;
 import com.org.server.member.repository.MemberRepository;
-import com.org.server.redis.service.RedisUserInfoService;
+import com.org.server.eventListener.domain.RedisEvent;
+import com.org.server.eventListener.domain.RedisEventEnum;
 import com.org.server.s3.S3Service;
-import com.org.server.websocket.domain.AlertKey;
-import com.org.server.websocket.domain.MemberAlertMessageDto;
-import com.org.server.websocket.service.RedisStompService;
+import com.org.server.eventListener.domain.AlertKey;
+import com.org.server.eventListener.domain.MemberAlertMessageDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.HttpStatus;
@@ -30,10 +30,8 @@ public class MemberServiceImpl implements MemberService{
     private final PasswordEncoder passwordEncoder;
     private final SecurityMemberReadService securityMemberRead;
     private final S3Service s3Service;
-    private final RedisUserInfoService redisUserInfoService;
     private final ObjectMapper objectMapper;
     private final ApplicationEventPublisher eventPublisher;
-    private final RedisStompService redisStompService;
     public void memberSignIn(MemberSignInDto memberDto){
         if(!memberRepository.existsByEmail(memberDto.getEmail())&&
                 !memberRepository.existsByNickName(memberDto.getNickName())){
@@ -62,7 +60,8 @@ public class MemberServiceImpl implements MemberService{
                 member.updateNickName(memberUpdateDto.getNickName());
             }
             memberRepository.save(member);
-            redisUserInfoService.setUserInfo(member.getId(), objectMapper.writeValueAsString(member));
+            publishRedisEvent(RedisEventEnum.MEMBERUPDATE,Map.of("memberId",member.getId(),
+                    "memberData",objectMapper.writeValueAsString(member)));
             return MemberDto.createMemberDto(member);
         }
         catch (JsonProcessingException e){
@@ -78,7 +77,8 @@ public class MemberServiceImpl implements MemberService{
             List<String> data = s3Service.savePreSignUrl(contentType, memberImgUpdate.getFileName());
             member.updateImgUrl(data.get(0));
             memberRepository.save(member);
-            redisUserInfoService.setUserInfo(member.getId(), objectMapper.writeValueAsString(member));
+            publishRedisEvent(RedisEventEnum.MEMBERUPDATE,Map.of("memberId",member.getId(),
+                    "memberData",objectMapper.writeValueAsString(member)));
             return data.get(1);
         }
         catch (JsonProcessingException e){
@@ -93,10 +93,14 @@ public class MemberServiceImpl implements MemberService{
         Member m = securityMemberRead.securityMemberRead();
         m.updateDeleted();
         memberRepository.save(m);
-        redisUserInfoService.integralDelMemberInfo(m.getId().toString());
-        redisStompService.removeSubScribeDest(m.getId().toString());
         publishEvent(m.getId(),AlertKey.MEMBEROUT,Map.of("memberId",m.getId()));
+    }
 
+
+    private void publishRedisEvent(RedisEventEnum redisEventEnum,Map<String,Object> data){
+        eventPublisher.publishEvent(RedisEvent.builder()
+                .redisEventEnum(redisEventEnum)
+                .data(data).build());
     }
     private void publishEvent(Long memberId, AlertKey alertKey, Map<String,Object> data){
         eventPublisher.publishEvent(MemberAlertMessageDto.builder()

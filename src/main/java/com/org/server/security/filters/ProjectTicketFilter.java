@@ -8,20 +8,19 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.filter.OncePerRequestFilter;
-import com.org.server.redis.service.RedisUserInfoService;
+import com.org.server.redis.service.RedisIntegralService;
 import java.io.IOException;
 import com.org.server.member.domain.Member;
 import com.org.server.security.domain.CustomUserDetail;
-import com.org.server.exception.MoiraException;
 
 @Slf4j
 public class ProjectTicketFilter extends OncePerRequestFilter{
 
 
-    private RedisUserInfoService redisUserInfoService;
+    private RedisIntegralService redisUserInfoService;
 
     private  TicketService ticketService;
-    public ProjectTicketFilter(RedisUserInfoService redisUserInfoService,
+    public ProjectTicketFilter(RedisIntegralService redisUserInfoService,
                                TicketService ticketService) {
         this.redisUserInfoService=redisUserInfoService;
         this.ticketService = ticketService;
@@ -48,14 +47,14 @@ public class ProjectTicketFilter extends OncePerRequestFilter{
         CustomUserDetail customUserDetail= (CustomUserDetail) SecurityContextHolder.getContext()
                 .getAuthentication().getPrincipal();
         Member m=customUserDetail.getMember();
-        if(!redisUserInfoService.checkTicketKey(String.valueOf(m.getId()),arr[2])){
+        if(!redisUserInfoService.checkTicketKey(arr[2],String.valueOf(m.getId()))){
             if(!ticketService.checkIn(Long.parseLong(arr[2]),m.getId())){
                 sendErrorResponse(response,HttpStatus.BAD_REQUEST,
                         "해당 프로젝트에 대한 권한이없습니다");
                 return;
             }
             else{
-                redisUserInfoService.setTicketKey(String.valueOf(m.getId()),arr[arr.length-2]);
+                redisUserInfoService.setTicketKey(arr[arr.length-2],String.valueOf(m.getId()));
             }
         };
         filterChain.doFilter(request,response);

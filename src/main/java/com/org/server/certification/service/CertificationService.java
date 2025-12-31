@@ -5,7 +5,7 @@ import com.org.server.Mail.EmailType;
 import com.org.server.Mail.MailFactory;
 import com.org.server.Mail.MailSend;
 import com.org.server.exception.MoiraException;
-import com.org.server.redis.service.RedisUserInfoService;
+import com.org.server.redis.service.RedisIntegralService;
 import com.org.server.util.RandomCharSet;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -17,7 +17,7 @@ public class CertificationService {
 
 
     private final MailFactory mailFactory;
-    private final RedisUserInfoService redisUserInfoService;
+    private final RedisIntegralService redisUserInfoService;
     public void createCertCode(String email){
         MailSend<String> mailSend=mailFactory.supplyMailSend(EmailType.CERTIFICATION, String.class);
         String code= RandomCharSet.createRandomName();

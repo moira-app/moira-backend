@@ -11,12 +11,10 @@ import com.org.server.graph.dto.NodeCreateDto;
 import com.org.server.graph.dto.NodeDelDto;
 import com.org.server.graph.dto.PropertyChangeDto;
 import com.org.server.graph.dto.StructureChangeDto;
-import com.org.server.websocket.domain.AlertMessageDto;
+import com.org.server.eventListener.domain.AlertMessageDto;
 import com.org.server.websocket.domain.EventEnvelope;
 import com.org.server.websocket.domain.WebRtcDataType;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -27,12 +25,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
-import javax.swing.*;
-import java.time.LocalDateTime;
 import java.util.Map;
-import java.util.Properties;
-import java.util.UUID;
-
 
 
 @Controller

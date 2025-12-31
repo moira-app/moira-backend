@@ -1,9 +1,6 @@
-package com.org.server.websocket.domain;
+package com.org.server.eventListener.domain;
 
-import com.org.server.chat.domain.ChatEvent;
-import com.org.server.chat.domain.ChatType;
 import io.swagger.v3.oas.annotations.media.Schema;
-import jakarta.xml.bind.annotation.XmlElementDecl;
 import lombok.Builder;
 
 import java.util.Map;

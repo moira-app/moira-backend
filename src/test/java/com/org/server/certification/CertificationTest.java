@@ -26,13 +26,13 @@ public class CertificationTest extends IntegralTestEnv {
         when(mailFactory.supplyMailSend(EmailType.CERTIFICATION,String.class))
                         .thenReturn(mailSend);
         Mockito.doNothing()
-                .when(redisUserInfoService)
+                .when(redisIntegralService)
                 .setCertCode(Mockito.any(String.class), Mockito.any(String.class));
         Mockito.doNothing()
                 .when(mailSend)
                 .sendMail(Mockito.any(String.class), Mockito.any(String.class));
         certificationService.createCertCode(email);
-        Mockito.verify(redisUserInfoService).setCertCode(Mockito.any(String.class),Mockito.any(String.class));
+        Mockito.verify(redisIntegralService).setCertCode(Mockito.any(String.class),Mockito.any(String.class));
         Mockito.verify(mailSend).sendMail(Mockito.any(String.class),Mockito.any(String.class));
     }
 
@@ -42,10 +42,10 @@ public class CertificationTest extends IntegralTestEnv {
         String email="Zxczx";
         String code="Zxczxcx";
 
-        Mockito.when(redisUserInfoService.checkCertCode(email,
+        Mockito.when(redisIntegralService.checkCertCode(email,
                         code))
                 .thenReturn(true);
         certificationService.checkCode(email,code);
-        Mockito.verify(redisUserInfoService).checkCertCode(email,code);
+        Mockito.verify(redisIntegralService).checkCertCode(email,code);
     }
 }

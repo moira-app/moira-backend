@@ -1,6 +1,6 @@
 package com.org.server.redis.service;
 
-import com.org.server.member.domain.Member;
+import com.org.server.ticket.domain.TicketMetaDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -9,20 +9,22 @@ import org.springframework.data.redis.core.script.DefaultRedisScript;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.UUID;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class RedisUserInfoService {
+public class RedisIntegralService {
 
     private final RedisTemplate<String,String> redisTemplate;
     private static final String refresh_token_key="X-REFRESH-KEY-";
     private static final String mail_cert_key="MAIL-CERT-";
     private static final String member_exist_check="MEMBER-EXIST-";
     private static final String ticket_key="TICKET-KEY-";
-
+    private static final String stompSessionValueKey="/queue/";
+    private static final String stompSessionKey="stomp-session-";
 
     private final StringRedisTemplate stringRedisTemplate;
 
@@ -60,25 +62,53 @@ public class RedisUserInfoService {
         }
         return false;
     }
-    public void setTicketKey(String memberId,String projectId){
-        redisTemplate.opsForSet().add(ticket_key+memberId,projectId);
+
+    // 레디스에 티켓 정보 저장시 project->member꼴로저장. 이게좀더 유연한듯. 왜냐면 회원 탈퇴보단 프로젝트 or 티켓단위의
+    //삭제가 더 빈번하다고 보기때문.
+    public void setTicketKey(String projectId,String memberId){
+        redisTemplate.opsForSet().add(ticket_key+projectId,memberId);
     }
-    public Boolean checkTicketKey(String memberId,String projectId){
-        return redisTemplate.opsForSet().isMember(ticket_key+memberId,projectId);
+    public Boolean checkTicketKey(String projectId,String memberId){
+        return redisTemplate.opsForSet().isMember(ticket_key+projectId,memberId);
     }
-    public void delTicketKey(String memberId,String projectId){
-        redisTemplate.opsForSet().remove(ticket_key+memberId,projectId);
+    public void delTicketKey(String projectId,String memberId){
+        redisTemplate.opsForSet().remove(ticket_key+projectId,memberId);
     }
-    public void integralDelMemberInfo(String memberId){
+    public void delProjectKey(String projectId){
+        redisTemplate.opsForSet().remove(projectId);
+    }
+
+    //리프레쉬토큰,티켓키,stompession,memeber_exist_check 삭제
+    public void integralDelMemberInfo(String memberId,List<TicketMetaDto> ticketMetaDtoList){
+
+        List<String> keys= Stream.concat(Stream.of(
+                member_exist_check+memberId,refresh_token_key+memberId
+                        ,ticket_key+memberId,stompSessionKey+memberId),ticketMetaDtoList.stream().map(x->{
+            return ticket_key+x.getProjectId();
+        })).collect(Collectors.toList());
+
         stringRedisTemplate.execute(new DefaultRedisScript<>(LuaScriptSet.userInfoDelScript),
-                List.of(member_exist_check+memberId,refresh_token_key+memberId,ticket_key+memberId)
-        );
+             keys,memberId);
     }
+
+    //리프레쉬토큰,stompession,memeber_exist_check 삭제
     public void logoutDelMemberInfo(Long memberId){
-        stringRedisTemplate.execute(new DefaultRedisScript<>(LuaScriptSet.userInfoDelScript),
-                List.of(member_exist_check+memberId,refresh_token_key+memberId)
+        stringRedisTemplate.execute(new DefaultRedisScript<>(LuaScriptSet.userLogOutScript),
+                List.of(member_exist_check+memberId,refresh_token_key+memberId,stompSessionKey+memberId)
         );
     }
+    public boolean checkSessionKeyExist(String memberId){
+        Long result=stringRedisTemplate.execute(new DefaultRedisScript<>(LuaScriptSet.checkStompSessionExistScript,Long.class)
+                , List.of(stompSessionKey+memberId),stompSessionValueKey+memberId);
+        if(result==1){
+            return false;
+        }
+        return true;
+    }
+    public void removeSubScribeDest(String memberId){
+        redisTemplate.opsForSet().remove(stompSessionKey+memberId);
+    }
+
 
 
 

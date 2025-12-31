@@ -6,10 +6,9 @@ import java.util.Optional;
 import com.org.server.exception.SocketAuthError;
 import com.org.server.member.domain.Member;
 import com.org.server.member.repository.MemberRepository;
-import com.org.server.redis.service.RedisUserInfoService;
+import com.org.server.redis.service.RedisIntegralService;
 import com.org.server.util.jwt.JwtUtil;
 import com.org.server.websocket.domain.StompPrincipal;
-import com.org.server.websocket.service.RedisStompService;
 import io.jsonwebtoken.Claims;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -29,9 +28,8 @@ public class StompAuthChannelInterceptor  implements ChannelInterceptor {
 
 
 	private final JwtUtil jwtUtil;
-	private final RedisUserInfoService redisUserInfoService;
+	private final RedisIntegralService redisIntegralService;
     private final MemberRepository memberRepository;
-    private final RedisStompService redisStompService;
     private final static String noTicketError="NoTicket";
     private final static String noMemberError="NoMember";
     private final static String noAccessToken="NoToken";
@@ -68,7 +66,7 @@ public class StompAuthChannelInterceptor  implements ChannelInterceptor {
 	    return message;
 	}
     private void checkMemberExist(Long memberId){
-        if(!redisUserInfoService.CheckMemberExist(memberId)){
+        if(!redisIntegralService.CheckMemberExist(memberId)){
             Optional<Member> m=memberRepository.findById(memberId);
             if(m.isEmpty()||m.get().getDeleted()){
                 throw new SocketAuthError(noMemberError);
@@ -85,13 +83,13 @@ public class StompAuthChannelInterceptor  implements ChannelInterceptor {
     private void handleSendMessage(Long memberId,StompHeaderAccessor acc){
         //메시지 전송시마다 권한 검증
         Long projectId=getProjectIdFromDest(acc.getDestination());
-        if (projectId>-1&&!redisUserInfoService.checkTicketKey(String.valueOf(memberId)
-                , String.valueOf(projectId))) {
+        if (projectId>-1&&!redisIntegralService.checkTicketKey(
+                String.valueOf(projectId),String.valueOf(memberId))) {
             throw new SocketAuthError(noTicketError);
         }
     }
     private boolean checkStompSessionExist(String memberId){
-        return redisStompService.checkSessionKeyExist(memberId);
+        return redisIntegralService.checkSessionKeyExist(memberId);
     }
 }
 

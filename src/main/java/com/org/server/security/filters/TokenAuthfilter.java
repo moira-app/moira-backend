@@ -1,10 +1,9 @@
 package com.org.server.security.filters;
 
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.org.server.member.domain.Member;
 import com.org.server.member.repository.MemberRepository;
-import com.org.server.redis.service.RedisUserInfoService;
+import com.org.server.redis.service.RedisIntegralService;
 import com.org.server.security.domain.CustomUserDetail;
 import com.org.server.util.jwt.JwtUtil;
 import io.jsonwebtoken.Claims;
@@ -18,9 +17,6 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.filter.OncePerRequestFilter;
-import org.yaml.snakeyaml.tokens.ScalarToken;
-import software.amazon.awssdk.services.s3.model.OptionalObjectAttributes;
-import software.amazon.awssdk.thirdparty.jackson.core.JsonParseException;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -32,12 +28,12 @@ import java.util.Optional;
 public class TokenAuthfilter extends OncePerRequestFilter {
 
     private JwtUtil jwtUtil;
-    private RedisUserInfoService redisUserInfoService;
+    private RedisIntegralService redisUserInfoService;
     private MemberRepository memberRepository;
 
     private ObjectMapper objectMapper;
 
-    public TokenAuthfilter(JwtUtil jwtUtil, RedisUserInfoService redisUserInfoService,
+    public TokenAuthfilter(JwtUtil jwtUtil, RedisIntegralService redisUserInfoService,
                            MemberRepository memberRepository,ObjectMapper objectMapper) {
         this.jwtUtil = jwtUtil;
         this.redisUserInfoService = redisUserInfoService;
