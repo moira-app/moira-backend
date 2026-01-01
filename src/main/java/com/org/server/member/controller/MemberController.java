@@ -2,6 +2,8 @@ package com.org.server.member.controller;
 
 import com.org.server.member.domain.*;
 import com.org.server.member.service.MemberServiceImpl;
+import com.org.server.s3.domain.ImgAnsDto;
+import com.org.server.s3.domain.ImgUpdateDto;
 import com.org.server.util.ApiResponseUtil;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -72,7 +74,22 @@ public class MemberController {
         return ResponseEntity.ok(ApiResponseUtil.CreateApiResponse("ok",
                 memberService.updateMemberInfo(memberUpdateDto)));
     }
-
+    @Operation(summary = "내 프로필 이미지 업데이트", description = "내 프로필 이미지를 업데이트합니다..")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = " 성공",useReturnTypeSchema = true),
+            @ApiResponse(responseCode = "401", description = "권한이 부족합니다.",
+                    content = @Content(schema = @Schema(implementation = ApiResponseUtil.class)))
+    })
+    @Parameter(name = "Authorization",
+            description = "요청시 토큰값을 넣어주셔야됩니다.",
+            required = true,
+            example = "Bearer [tokenvalue]",
+            in = ParameterIn.HEADER)
+    @PostMapping("/update/myImg")
+    public ResponseEntity<ApiResponseUtil<ImgAnsDto>> memberUpdateImg(@RequestBody @Valid ImgUpdateDto imgUpdateDto){
+        return ResponseEntity.ok(ApiResponseUtil.CreateApiResponse("ok",
+                memberService.updateMemberImg(imgUpdateDto)));
+    }
 
     @Operation(summary = "일반 회원 로그인", description = "일반 회원 로그인 api입니다.")
     @ApiResponses(value = {

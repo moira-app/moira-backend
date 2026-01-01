@@ -27,5 +27,4 @@ public class MemberSignInDto {
 	@Schema(description = "비밀번호는 공백,비는게 안됩니다.")
 	private String password;
 
-
 }

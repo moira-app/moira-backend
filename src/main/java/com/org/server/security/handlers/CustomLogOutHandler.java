@@ -1,6 +1,6 @@
 package com.org.server.security.handlers;
 
-import com.org.server.redis.service.RedisUserInfoService;
+import com.org.server.redis.service.RedisIntegralService;
 import com.org.server.util.jwt.JwtUtil;
 import io.jsonwebtoken.Claims;
 import jakarta.servlet.ServletException;
@@ -23,7 +23,7 @@ import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 @Component
 public class CustomLogOutHandler implements LogoutSuccessHandler {
 
-    private final RedisUserInfoService redisUserInfoService;
+    private final RedisIntegralService redisIntegralService;
     private final JwtUtil jwtUtil;
 
     @Override
@@ -35,7 +35,8 @@ public class CustomLogOutHandler implements LogoutSuccessHandler {
           return;
         }
         Claims claims=jwtUtil.getClaims(token);
-        redisUserInfoService.logoutDelMemberInfo(claims.get("id",Long.class));
+        Long memberId=claims.get("id",Long.class);
+        redisIntegralService.logoutDelMemberInfo(memberId);
         SecurityContextHolder.clearContext();;
         log.info("로그아웃이 성공적으로 처리되었습니다");
     }

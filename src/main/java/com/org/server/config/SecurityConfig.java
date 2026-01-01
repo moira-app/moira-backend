@@ -3,8 +3,7 @@ package com.org.server.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.org.server.member.repository.MemberRepository;
-import com.org.server.member.service.SecurityMemberReadService;
-import com.org.server.redis.service.RedisUserInfoService;
+import com.org.server.redis.service.RedisIntegralService;
 import com.org.server.security.detailservices.CustomOAuth2Service;
 import com.org.server.security.detailservices.CustomUserDetailService;
 import com.org.server.security.filters.JwtAuthFilter;
@@ -22,7 +21,6 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -36,7 +34,7 @@ public class SecurityConfig {
     private final OAuth2SuccessHandler oAuth2SuccessHandler;
     private final OAuth2FailHandler oAuth2FailHandler;
     private final CustomLogOutHandler customLogOutHandler;
-    private final RedisUserInfoService redisUserInfoService;
+    private final RedisIntegralService redisUserInfoService;
     private final MemberRepository memberRepository;
     private final WebConfig webConfig;
     private final JwtUtil jwtUtil;

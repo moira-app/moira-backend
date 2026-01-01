@@ -1,18 +1,22 @@
 package com.org.server.ProjectTicketMeetTest;
 
 
+import ch.qos.logback.core.testUtil.MockInitialContext;
 import com.org.server.certification.domain.AliasDto;
 import com.org.server.chat.domain.ChatRoom;
+import com.org.server.eventListener.domain.RedisEvent;
 import com.org.server.exception.MoiraException;
 import com.org.server.meet.domain.*;
 import com.org.server.project.domain.Project;
 
 import com.org.server.project.domain.ProjectInfoDto;
+import com.org.server.s3.domain.ImgAnsDto;
+import com.org.server.s3.domain.ImgUpdateDto;
 import com.org.server.support.IntegralTestEnv;
 import com.org.server.ticket.domain.Master;
 import com.org.server.ticket.domain.Ticket;
 import com.org.server.util.DateTimeMapUtil;
-import com.org.server.websocket.domain.AlertMessageDto;
+import com.org.server.eventListener.domain.AlertMessageDto;
 
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -27,9 +31,6 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeFormatterBuilder;
-import java.time.temporal.ChronoField;
 import java.util.List;
 import java.util.Optional;
 
@@ -174,6 +175,12 @@ public class ProjectMeetTicket extends IntegralTestEnv {
         Mockito.doNothing()
                         .when(alertEventListener)
                                 .alertMessage(Mockito.any(AlertMessageDto.class));
+        Mockito.doNothing()
+                .when(redisEventListener)
+                .redisEventHandler(Mockito.any(RedisEvent.class));
+
+
+
         MeetListDto meetListDto=new MeetListDto(monthCurrent);
         List<MeetDateDto> meetList=meetService.getMeetList(meetListDto,p.getId());
         projectCertService.delMeet(meetList.getFirst().getMeetId(),p.getId());
@@ -185,6 +192,8 @@ public class ProjectMeetTicket extends IntegralTestEnv {
         projectCertService.delProject(p.getId());
 
         Project project=projectRepository.findById(p.getId()).get();
+        Mockito.verify(redisEventListener,Mockito.times(1))
+                .redisEventHandler(Mockito.any(RedisEvent.class));
         Mockito.verify(alertEventListener,Mockito.times(2))
                 .alertMessage(Mockito.any(AlertMessageDto.class));
         assertThat(project.getDeleted()).isTrue();
@@ -216,6 +225,11 @@ public class ProjectMeetTicket extends IntegralTestEnv {
         Mockito.doNothing()
                 .when(alertEventListener)
                         .alertMessage(Mockito.any(AlertMessageDto.class));
+        Mockito.doNothing()
+                .when(redisEventListener)
+                .redisEventHandler(Mockito.any(RedisEvent.class));
+
+
 
         assertThatThrownBy(()->{
             projectCertService.createTicket(p.getProjectUrl(),aliasDto);}
@@ -244,10 +258,27 @@ public class ProjectMeetTicket extends IntegralTestEnv {
                 .hasMessage("마스터 권한은 탈퇴시 다음 마스터를 지정해야됩니다");
         projectCertService.delTicket(p2.getId(),m.getId());
 
+        Mockito.verify(redisEventListener,Mockito.times(2))
+                .redisEventHandler(Mockito.any(RedisEvent.class));
         Mockito.verify(alertEventListener,Mockito.times(3)).alertMessage(Mockito.any(AlertMessageDto.class));
         Optional<Ticket> tNew=ticketRepository.findByMemberIdAndProjectId(m.getId(),p2.getId());
         assertThat(tNew.isPresent()).isTrue();
         assertThat(tNew.get().getMaster()).isEqualTo(Master.MASTER);
 
+    }
+
+    @Test
+    @DisplayName("프로젝트 이미지 체인지 테스트")
+    void testProjectImgChange(){
+        Mockito.doNothing().when(alertEventListener)
+                .alertMessage(Mockito.any(AlertMessageDto.class));
+
+        ImgAnsDto imgAnsDto=projectCertService.updateProjectImg(ImgUpdateDto.builder()
+                .contentType("image/png")
+                .fileName("change").build(),p.getId());
+        assertThat(imgAnsDto.getGetUrl()).isEqualTo(projectRepository.findById(p.getId()).get().getImgUrl());
+
+        Mockito.verify(alertEventListener,Mockito.times(1))
+                .alertMessage(Mockito.any(AlertMessageDto.class));
     }
 }

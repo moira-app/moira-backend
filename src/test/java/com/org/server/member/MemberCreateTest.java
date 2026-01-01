@@ -1,12 +1,14 @@
 package com.org.server.member;
 
+import com.org.server.eventListener.domain.RedisEvent;
 import com.org.server.member.domain.Member;
-import com.org.server.member.domain.MemberImgUpdate;
 import com.org.server.member.domain.MemberSignInDto;
 import com.org.server.member.domain.MemberUpdateDto;
+import com.org.server.s3.domain.ImgAnsDto;
+import com.org.server.s3.domain.ImgUpdateDto;
 import com.org.server.security.domain.CustomUserDetail;
 import com.org.server.support.IntegralTestEnv;
-import com.org.server.websocket.domain.MemberAlertMessageDto;
+import com.org.server.eventListener.domain.MemberAlertMessageDto;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -76,6 +78,10 @@ public class MemberCreateTest extends IntegralTestEnv {
     @DisplayName("회원 정보 업데이트 테스트")
     void testUpdateUserInfo()throws  Exception{
 
+        Mockito.doNothing()
+                .when(redisEventListener)
+                .redisEventHandler(Mockito.any(RedisEvent.class));
+
 
         CustomUserDetail customUserDetail = new CustomUserDetail(member);
 
@@ -100,6 +106,8 @@ public class MemberCreateTest extends IntegralTestEnv {
         memberService.updateMemberInfo(memberUpdateDto);
         Member test=memberRepository.findById(member.getId()).get();
         assertThat(test.getNickName()).isEqualTo("testing");
+        Mockito.verify(redisEventListener,Mockito.times(1))
+                .redisEventHandler(Mockito.any(RedisEvent.class));
 
         String requestBody="""
                 {
@@ -127,14 +135,30 @@ public class MemberCreateTest extends IntegralTestEnv {
     @DisplayName("회원 이미지 업데이트 테스트")
     void testGetMemberImgUrlUpdate(){
 
+        Mockito.doNothing()
+                .when(redisEventListener)
+                .redisEventHandler(Mockito.any(RedisEvent.class));
+        Mockito.doNothing()
+                .when(alertEventListener)
+                .alertGlobalMessage(Mockito.any(MemberAlertMessageDto.class));
+
+
         Mockito.when(securityMemberReadService.securityMemberRead())
                 .thenReturn(member);
-        String imgUrl= memberService.updateMemberImg(new MemberImgUpdate("test"),
-                "image/png");
-        assertThat(imgUrl!=null).isTrue();
+        ImgAnsDto imgUrl= memberService.updateMemberImg(ImgUpdateDto.builder()
+                        .fileName("test")
+                        .contentType("image/png")
+                .build());
+
+        assertThat(imgUrl.getPutUrl()).isNotEmpty();
+
         Member m2=memberRepository.findById(member.getId()).get();
         assertThat(m2.getImgUrl()!=null).isTrue();
-
+        assertThat(imgUrl.getGetUrl()).isEqualTo(m2.getImgUrl());
+        Mockito.verify(alertEventListener,Mockito.times(1))
+                        .alertGlobalMessage(Mockito.any(MemberAlertMessageDto.class));
+        Mockito.verify(redisEventListener,Mockito.times(1))
+                .redisEventHandler(Mockito.any(RedisEvent.class));
     }
 
     @Test
@@ -143,10 +167,10 @@ public class MemberCreateTest extends IntegralTestEnv {
         Mockito.when(securityMemberReadService.securityMemberRead())
                 .thenReturn(member);
         Mockito.doNothing()
-                .when(redisUserInfoService)
-                .integralDelMemberInfo(member.getId().toString());
+                .when(redisIntegralService)
+                .integralDelMemberInfo(member.getId().toString(),List.of());
         Mockito.doNothing()
-                .when(redisStompService)
+                .when(redisIntegralService)
                 .removeSubScribeDest(member.getId().toString());
 
         Mockito.doNothing()

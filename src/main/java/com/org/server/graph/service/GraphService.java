@@ -57,7 +57,7 @@ public class GraphService {
                 .restrict(filter)//where 즉 필터링
                 .as("descendants");
 
-        ProjectionOperation projectStage = project("pageType", "createDate","parentId","descendants")
+        ProjectionOperation projectStage = project("pageType","parentId","descendants")
                 .and("_id").as("startId");
 
         Aggregation aggregation = newAggregation(matchStage, graphLookupStage,projectStage);
@@ -96,12 +96,9 @@ public class GraphService {
         return domTree;
     }
     public Boolean createElementNode(NodeCreateDto nodeCreateDto,Long projectId){
-        LocalDateTime createTime=DateTimeMapUtil.parseClientTimetoServerFormat(nodeCreateDto.getCreateDate());
-
 
         if(nodeCreateDto.getNodeType().equals(NodeType.ROOT)){
-            Root root = new Root(nodeCreateDto.getNodeId(),createTime
-                    ,projectId,nodeCreateDto.getRootName());
+            Root root = new Root(nodeCreateDto.getNodeId(),projectId,nodeCreateDto.getRootName());
             root=graphRepository.save(root);
             nodeCreateDto.updateNodeId(root.getId());
             return true;
@@ -118,7 +115,7 @@ public class GraphService {
             Element element=
                     new Element(nodeCreateDto.getNodeId()
                             ,nodeCreateDto.getParentId(),
-                            propertiesMap,createTime);
+                            propertiesMap);
             element=graphRepository.save(element);
             nodeCreateDto.updateNodeId(element.getId());
             return true;

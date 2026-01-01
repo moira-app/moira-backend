@@ -2,7 +2,7 @@ package com.org.server.ticket.service;
 
 
 import com.org.server.exception.MoiraException;
-import com.org.server.redis.service.RedisUserInfoService;
+import com.org.server.redis.service.RedisIntegralService;
 import com.org.server.ticket.domain.Master;
 import com.org.server.ticket.domain.Ticket;
 import com.org.server.ticket.domain.TicketInfoDto;
@@ -23,7 +23,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class TicketService {
 
     private final TicketRepository ticketRepository;
-    private final RedisUserInfoService redisUserInfoService;
+    private final RedisIntegralService redisUserInfoService;
     private final AdvanceTicketRepository advanceTicketRepository;
     public Boolean checkIn(Long projectId,Long memberId){
         Optional<Ticket> ticket=
@@ -44,8 +44,11 @@ public class TicketService {
         }
         ticket.get().updateDeleted();
         ticketRepository.save(ticket.get());
-        redisUserInfoService.delTicketKey(String.valueOf(memberId)
-                ,String.valueOf(ticket.get().getId()));
+
+
+
+        redisUserInfoService.delTicketKey(String.valueOf(ticket.get().getId()),
+                String.valueOf(memberId));
     }
     public Boolean checkByProjectIdAndMemberId(Long projectId,Long memberId){
         return ticketRepository.existsByMemberIdAndProjectId(memberId,projectId);
@@ -81,6 +84,9 @@ public class TicketService {
 
     public void saveTicket(Ticket t){
         ticketRepository.save(t);
+        redisUserInfoService.setTicketKey(String.valueOf(t.getProjectId()),
+                String.valueOf(t.getMemberId()));
     }
+
 }
 

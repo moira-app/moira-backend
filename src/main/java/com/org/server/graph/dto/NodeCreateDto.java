@@ -26,18 +26,16 @@ public class NodeCreateDto extends NodeDto {
     private String rootName;
     @Schema(description = "생성한 노드의 property값입니다. key는 string, value는 propertisDto입니다.")
     private Map<String, PropertiesDto> propertiesMap;
-    @Schema(example = "yyyy-MM-dd HH:mm:ss",description = "생성 시각")
-    private String createDate;
+
 
     @Builder
     public NodeCreateDto(String nodeId,String parentId,String requestId,String rootId,
                          Map<String,PropertiesDto> propertiesMap,
-                         NodeType nodeType,String rootName,GraphActionType graphActionType,String createDate) {
+                         NodeType nodeType,String rootName,GraphActionType graphActionType) {
         super(nodeId,graphActionType,rootId,requestId);
         this.parentId=parentId;
         this.propertiesMap=propertiesMap;
         this.nodeType=nodeType;
         this.rootName=rootName;
-        this.createDate=createDate;
     }
 }

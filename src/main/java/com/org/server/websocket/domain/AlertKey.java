@@ -1,5 +1,0 @@
-package com.org.server.websocket.domain;
-
-public enum AlertKey {
-   MEMBERALIAS,MEMBERIN,MEMBEROUT,MEMBERLIST,MASTERCHANGE,PROJECTDEL,MEETDEL,CREATEMEET
-}

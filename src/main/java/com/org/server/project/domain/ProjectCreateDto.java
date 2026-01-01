@@ -9,4 +9,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class ProjectCreateDto {
     private String title;
+
+    public ProjectCreateDto(String title) {
+        this.title = title;
+    }
 }

@@ -62,9 +62,9 @@ public class ProjectMeetMvcTest extends IntegralTestEnv{
         Mockito.when(securityMemberReadService.securityMemberRead())
                 .thenReturn(member);
 
-        Mockito.when(redisUserInfoService.checkTicketKey(String.valueOf(member.getId()),
-                        String.valueOf(
-                                withNoTicket.getId())))
+        Mockito.when(redisIntegralService.checkTicketKey(    String.valueOf(
+                                withNoTicket.getId()),String.valueOf(member.getId())
+                    ))
                 .thenReturn(false);
 
         String val=String.valueOf(withNoTicket.getId());

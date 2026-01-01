@@ -11,6 +11,7 @@ import com.org.server.chat.repository.ChatMessageRepository;
 import com.org.server.chat.repository.ChatRoomRepository;
 import com.org.server.chat.service.ChatMessageService;
 import com.org.server.chat.service.ChatRoomService;
+import com.org.server.eventListener.listener.RedisEventListener;
 import com.org.server.graph.repository.GraphRepository;
 import com.org.server.graph.service.GraphService;
 import com.org.server.meet.repository.MeetRepository;
@@ -23,7 +24,7 @@ import com.org.server.member.service.SecurityMemberReadService;
 import com.org.server.project.domain.Project;
 import com.org.server.project.repository.ProjectRepository;
 import com.org.server.project.service.ProjectService;
-import com.org.server.redis.service.RedisUserInfoService;
+import com.org.server.redis.service.RedisIntegralService;
 import com.org.server.s3.S3Service;
 import com.org.server.scheduler.repository.SchedulerRepository;
 import com.org.server.ticket.domain.Master;
@@ -32,8 +33,7 @@ import com.org.server.ticket.repository.AdvanceTicketRepository;
 import com.org.server.ticket.repository.TicketRepository;
 import com.org.server.ticket.service.TicketService;
 import com.org.server.util.jwt.JwtUtil;
-import com.org.server.websocket.eventListener.AlertEventListener;
-import com.org.server.websocket.service.RedisStompService;
+import com.org.server.eventListener.listener.AlertEventListener;
 import org.junit.jupiter.api.AfterEach;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -42,8 +42,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.thymeleaf.spring6.SpringTemplateEngine;
-
-import java.time.LocalDateTime;
 
 @ActiveProfiles("test")
 @SpringBootTest
@@ -93,13 +91,13 @@ public class IntegralTestEnv {
     protected SecurityMemberReadService securityMemberReadService;
     @MockitoBean
     protected AlertEventListener alertEventListener;
+
+    @MockitoBean
+    protected RedisEventListener redisEventListener;
     @Autowired
     protected CertificationService certificationService;
     @MockitoBean
-    protected RedisUserInfoService redisUserInfoService;
-
-    @MockitoBean
-    protected RedisStompService redisStompService;
+    protected RedisIntegralService redisIntegralService;
     @Autowired
     protected MeetService meetService;
     @Autowired
@@ -151,6 +149,7 @@ public class IntegralTestEnv {
                 .nickName("test"+idx)
                 .password(passwordEncoder.encode("1234"))
                 .memberType(MemberType.LOCAL)
+                .imgUrl("test")
                 .build();
         member=memberRepository.save(member);
         return member;
@@ -178,7 +177,7 @@ public class IntegralTestEnv {
     }
 
     protected Project createProject(String title,String projectUrl){
-        Project p=new Project(title,projectUrl);
+        Project p=new Project(title,projectUrl,"test");
         return projectRepository.save(p);
     }
 

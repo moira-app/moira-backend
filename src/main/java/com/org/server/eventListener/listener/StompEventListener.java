@@ -1,13 +1,13 @@
-package com.org.server.websocket.eventListener;
+package com.org.server.eventListener.listener;
 
 
 
 import com.org.server.chat.domain.ChatType;
+import com.org.server.redis.service.RedisIntegralService;
 import com.org.server.ticket.service.TicketService;
-import com.org.server.websocket.domain.AlertKey;
-import com.org.server.websocket.domain.AlertMessageDto;
+import com.org.server.eventListener.domain.AlertKey;
+import com.org.server.eventListener.domain.AlertMessageDto;
 import com.org.server.websocket.domain.EventEnvelope;
-import com.org.server.websocket.service.RedisStompService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.event.EventListener;
@@ -16,7 +16,6 @@ import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.messaging.SessionDisconnectEvent;
 import org.springframework.web.socket.messaging.SessionSubscribeEvent;
-import org.springframework.web.socket.messaging.SessionUnsubscribeEvent;
 
 import java.util.Map;
 
@@ -25,7 +24,7 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class StompEventListener {
 
-    private final RedisStompService redisStompService;
+    private final RedisIntegralService redisIntegralService;
     private final SimpMessagingTemplate simpMessagingTemplate;
     private final static String chatRoomPreFix="/topic/chatroom-";
     private final TicketService ticketService;
@@ -51,7 +50,7 @@ public class StompEventListener {
     @EventListener
     public void catchDisConnectEvent(SessionDisconnectEvent event) {
         if(event.getUser()!=null) {
-            redisStompService.removeSubScribeDest(event.getUser().getName());
+            redisIntegralService.removeSubScribeDest(event.getUser().getName());
         }
     }
     private EventEnvelope createEnv(Map<String,Object> data) {

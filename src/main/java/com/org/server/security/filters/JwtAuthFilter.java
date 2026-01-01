@@ -4,7 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.org.server.exception.MoiraException;
 import com.org.server.member.domain.Member;
-import com.org.server.redis.service.RedisUserInfoService;
+import com.org.server.redis.service.RedisIntegralService;
 import com.org.server.security.domain.CustomUserDetail;
 import com.org.server.util.jwt.JwtUtil;
 import jakarta.servlet.FilterChain;
@@ -18,8 +18,6 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import org.springframework.security.web.util.matcher.OrRequestMatcher;
-import org.springframework.security.web.util.matcher.RequestMatcher;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -31,15 +29,15 @@ import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 @Slf4j
 public class JwtAuthFilter extends UsernamePasswordAuthenticationFilter {
 
-    private  RedisUserInfoService redisUserInfoService;
+    private RedisIntegralService redisIntegralService;
     private  JwtUtil jwtUtils;
     private  AuthenticationManager authenticationManager;
 
     private ObjectMapper objectMapper;
 
-    public JwtAuthFilter(RedisUserInfoService redisUserInfoService, JwtUtil jwtUtils
-    ,AuthenticationManager authenticationManager,ObjectMapper objectMapper) {
-        this.redisUserInfoService = redisUserInfoService;
+    public JwtAuthFilter(RedisIntegralService redisIntegralService, JwtUtil jwtUtils
+    , AuthenticationManager authenticationManager, ObjectMapper objectMapper) {
+        this.redisIntegralService = redisIntegralService;
         this.jwtUtils = jwtUtils;
         this.authenticationManager=authenticationManager;
         this.objectMapper=objectMapper;
@@ -97,7 +95,7 @@ public class JwtAuthFilter extends UsernamePasswordAuthenticationFilter {
 
     private void settingUserInfo(Member m, String refreshToken)throws JsonProcessingException {
         String member=objectMapper.writeValueAsString(m);
-        redisUserInfoService.settingRefreshTokenMemberInfo(m.getId(),member,refreshToken);
+        redisIntegralService.settingRefreshTokenMemberInfo(m.getId(),member,refreshToken);
         /*redisUserInfoService.setUserInfo(m.getId(),member);
         redisUserInfoService.saveRefreshToken(m.getId(),refreshToken);*/
     }
