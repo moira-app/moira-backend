@@ -22,13 +22,22 @@ public class ProjectInfoDto {
     @Schema(description = "해당 프로젝트 내에서 권한")
     private Master master;
 
+    @Schema(description = "s3 get 경로")
+    private String imgGetUrl;
+
     @Builder
-    public ProjectInfoDto(Long projectId,  Long chatRoomId,String title, String projectUrl,String alias,Master master) {
+    public ProjectInfoDto(Long projectId,  Long chatRoomId,String title,
+                          String projectUrl,String alias,Master master,String imgGetUrl) {
         this.projectId = projectId;
         this.title = title;
         this.chatRoomId = chatRoomId;
         this.projectUrl=projectUrl;
         this.alias=alias;
         this.master=master;
+        this.imgGetUrl=imgGetUrl;
+
+    }
+    public void updateProjectImgUrl(String url){
+        this.imgGetUrl=url;
     }
 }

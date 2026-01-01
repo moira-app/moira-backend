@@ -8,6 +8,7 @@ import com.org.server.security.domain.*;
 import com.org.server.util.RandomCharSet;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.kafka.KafkaProperties;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
@@ -21,7 +22,8 @@ import com.org.server.exception.MoiraException;
 
 @Slf4j
 public class CustomOAuth2Service extends DefaultOAuth2UserService {
-
+    @Value("${spring.cloud.aws.s3.personal-base-img}")
+    private String baseImgUrl;
     private  MemberRepository memberRepository;
 
     public CustomOAuth2Service(MemberRepository memberRepository) {
@@ -70,6 +72,7 @@ public class CustomOAuth2Service extends DefaultOAuth2UserService {
                 .email(response.getEmail())
                 .memberType(response.getProvider())
                 .nickName(RandomCharSet.createRandomName())
+                .imgUrl(baseImgUrl)
                 .build();
 
         newMember=memberRepository.save(newMember);

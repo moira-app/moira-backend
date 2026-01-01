@@ -42,7 +42,7 @@ public class TestMongoTransaction extends IntegralTestEnv {
 
         String time=DateTimeMapUtil.parseServerTimeToClientFormat(LocalDateTime.now());
         LocalDateTime now=DateTimeMapUtil.parseClientTimetoServerFormat(time);
-        root=new Root(rootID, now,1L,"root");
+        root=new Root(rootID,1L,"root");
         root=graphRepository.save(root);
         Map<String, Properties> propertiesMap=new HashMap<>();
         for(int j=0;5>j;j++){
@@ -50,7 +50,7 @@ public class TestMongoTransaction extends IntegralTestEnv {
             propertiesMap.put(0+"-"+j,properties);
         }
         e =new Element(UUID.randomUUID().toString(),
-                root.getId(),propertiesMap,now);
+                root.getId(),propertiesMap);
         graphRepository.save(e);
 
     }

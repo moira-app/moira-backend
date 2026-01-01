@@ -1,11 +1,11 @@
 package com.org.server.member;
 
-import com.org.server.eventListener.domain.AlertMessageDto;
 import com.org.server.eventListener.domain.RedisEvent;
 import com.org.server.member.domain.Member;
-import com.org.server.member.domain.MemberImgUpdate;
 import com.org.server.member.domain.MemberSignInDto;
 import com.org.server.member.domain.MemberUpdateDto;
+import com.org.server.s3.domain.ImgAnsDto;
+import com.org.server.s3.domain.ImgUpdateDto;
 import com.org.server.security.domain.CustomUserDetail;
 import com.org.server.support.IntegralTestEnv;
 import com.org.server.eventListener.domain.MemberAlertMessageDto;
@@ -141,10 +141,12 @@ public class MemberCreateTest extends IntegralTestEnv {
 
         Mockito.when(securityMemberReadService.securityMemberRead())
                 .thenReturn(member);
-        String imgUrl= memberService.updateMemberImg(new MemberImgUpdate("test"),
-                "image/png");
+        ImgAnsDto imgUrl= memberService.updateMemberImg(ImgUpdateDto.builder()
+                        .fileName("test")
+                        .contentType("image/png")
+                .build());
 
-        assertThat(imgUrl!=null).isTrue();
+        assertThat(imgUrl.getPutUrl()).isNotEmpty();
         Member m2=memberRepository.findById(member.getId()).get();
         assertThat(m2.getImgUrl()!=null).isTrue();
 

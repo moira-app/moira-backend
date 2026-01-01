@@ -15,6 +15,10 @@ import com.org.server.project.repository.ProjectRepository;
 import com.org.server.eventListener.domain.RedisEvent;
 import com.org.server.eventListener.domain.RedisEventEnum;
 import com.org.server.redis.service.RedisIntegralService;
+import com.org.server.s3.domain.ImgAnsDto;
+import com.org.server.s3.domain.ImgType;
+import com.org.server.s3.domain.ImgUpdateDto;
+import com.org.server.s3.S3Service;
 import com.org.server.ticket.domain.Master;
 import com.org.server.ticket.domain.Ticket;
 import com.org.server.ticket.service.TicketService;
@@ -46,14 +50,15 @@ public class ProjectMeetEntranceService {
     private final MeetService meetService;
     private final ProjectRepository projectRepository;
     private final TicketService ticketService;
-    private final RedisIntegralService redisUserInfoService;
     private final ChatRoomService chatRoomService;
     private final ApplicationEventPublisher eventPublisher;
+    private final S3Service s3Service;
 
 
     public List<ProjectInfoDto> getProejctList(){
         Member m=securityMemberReadService.securityMemberRead();
-        return projectCertRepo.getProjectList(m);
+        List<ProjectInfoDto> projectInfoDtos= projectCertRepo.getProjectList(m);
+        return projectInfoDtos;
     }
     public ProjectEnterAnsDto createTicket(String projectUrl, AliasDto ticketDto){
         Optional<Project> project=projectRepository.findByProjectUrl(projectUrl);
@@ -87,6 +92,21 @@ public class ProjectMeetEntranceService {
         ticket.updateAlias(alias);
         publishEvent(projectId,AlertKey.MEMBERALIAS,Map.of("memberId",m.getId(), "alias",alias));
     }
+
+    public ImgAnsDto updateProjectImg(ImgUpdateDto imgUpdateDto, Long projectId){
+        Optional<Project> project=projectRepository.findById(projectId);
+        if(project.isEmpty()||project.get().getDeleted()){
+            throw new MoiraException("없는 프로젝트입니다", HttpStatus.BAD_REQUEST);
+        }
+        ImgAnsDto imgAnsDto=s3Service.savePreSignUrl(imgUpdateDto,projectId,ImgType.PROJECT);
+        project.get().updateImgUrl(imgAnsDto.getGetUrl());
+        publishEvent(projectId,AlertKey.IMAGECHANGE,Map.of("getUrl",
+                imgAnsDto.getGetUrl(),"projectId",projectId));
+
+        return imgAnsDto;
+    }
+
+
     public MeetConnectDto checkInMeet(MeetEnterDto meetEnterDto, Long projectId) {
         LocalDateTime now =LocalDateTime.parse(meetEnterDto.getEntranceTime(),DateTimeMapUtil.FLEXIBLE_NANO_FORMATTER);
         Meet meet = meetService.findById(meetEnterDto.getMeetId());

@@ -36,7 +36,7 @@ public class GraphUpdateTest extends IntegralTestEnv {
         LocalDateTime date=DateTimeMapUtil.parseClientTimetoServerFormat(time);
 
 
-        root=new Root(rootID, date,1L,"root");
+        root=new Root(rootID,1L,"root");
         root=graphRepository.save(root);
         for(int i=0;10>i;i++){
 
@@ -46,9 +46,9 @@ public class GraphUpdateTest extends IntegralTestEnv {
                 propertiesMap.put(i+"-"+j,properties);
             }
             Element pages = graphs.isEmpty() ? new Element(UUID.randomUUID().toString(),
-                    root.getId(),propertiesMap,LocalDateTime.now()) :
+                    root.getId(),propertiesMap):
                     new Element(UUID.randomUUID().toString(),
-                            graphs.get(i-1).getId(),propertiesMap,date);
+                            graphs.get(i-1).getId(),propertiesMap);
 
             graphs.add(pages);
             graphRepository.save(pages);

@@ -22,13 +22,18 @@ public class Project extends BaseTime{
     private String title;
     private Boolean deleted=false;
     private String projectUrl;
+    private String imgUrl;
 
 
-    public Project(String title,String projectUrl) {
+    public Project(String title,String projectUrl,String imgUrl) {
         this.title = title;
         this.projectUrl=projectUrl;
+        this.imgUrl=imgUrl;
     }
     public void updateDeleted(){
         this.deleted=!this.deleted;
+    }
+    public void updateImgUrl(String imgUrl){
+        this.imgUrl=imgUrl;
     }
 }

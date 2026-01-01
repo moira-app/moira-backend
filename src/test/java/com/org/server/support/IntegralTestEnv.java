@@ -149,6 +149,7 @@ public class IntegralTestEnv {
                 .nickName("test"+idx)
                 .password(passwordEncoder.encode("1234"))
                 .memberType(MemberType.LOCAL)
+                .imgUrl("test")
                 .build();
         member=memberRepository.save(member);
         return member;
@@ -176,7 +177,7 @@ public class IntegralTestEnv {
     }
 
     protected Project createProject(String title,String projectUrl){
-        Project p=new Project(title,projectUrl);
+        Project p=new Project(title,projectUrl,"test");
         return projectRepository.save(p);
     }
 

@@ -6,6 +6,8 @@ import com.org.server.certification.service.ProjectMeetEntranceService;
 import com.org.server.meet.domain.*;
 import com.org.server.project.domain.ProjectEnterAnsDto;
 import com.org.server.project.domain.ProjectInfoDto;
+import com.org.server.s3.domain.ImgAnsDto;
+import com.org.server.s3.domain.ImgUpdateDto;
 import com.org.server.util.ApiResponseUtil;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -48,6 +50,31 @@ public class ProjectMeetEntranceController {
         return ResponseEntity.ok(ApiResponseUtil.CreateApiResponse("ok",
                 projectCertService.getProejctList()));
     }
+    @Operation(summary = "프로젝트 이미지 변경",description = "특정 프로젝트의 이미지를 변경합니다.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "생성 성공",
+                    useReturnTypeSchema = true),
+            @ApiResponse(responseCode = "401", description = "권한이 부족합니다.",
+                    content = @Content(schema = @Schema(implementation = ApiResponseUtil.class)))
+    })
+    @Parameter(name = "Authorization",
+            description = "jwt값",
+            required = true,
+            in = ParameterIn.HEADER)
+    @Parameter(name = "projectId",
+            description = "프로젝트 id값",
+            required = true,
+            in = ParameterIn.PATH)
+    @GetMapping("/{projectId}/change/img")
+    public ResponseEntity<ApiResponseUtil<ImgAnsDto>> changeProjectImg(
+            @Valid @RequestBody ImgUpdateDto imgUpdateDto,
+            @PathVariable(name = "projectId")Long projectId){
+        return ResponseEntity.ok(ApiResponseUtil.CreateApiResponse("ok",
+                projectCertService.updateProjectImg(imgUpdateDto,projectId)));
+    }
+
+
+
     @Operation(summary = "프로젝트 url 검증",description = "프로젝트에 대한 url을 바탕으로 해당 프로젝트에 대한 ticket을 발행 및 필요한 project data를 전송합니다.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "생성 성공",

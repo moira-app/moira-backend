@@ -24,9 +24,7 @@ public class GraphEnvelopService {
                 NodeType nodeType = NodeType.valueOf((String) eventEnvelope.data().get("nodeType"));
                 Map<String, PropertiesDto> propertiesDtoMap =
                         (Map<String, PropertiesDto>) eventEnvelope.data().getOrDefault("properties",Map.of());
-
                 String rootName = (String) eventEnvelope.data().getOrDefault("rootName",null);
-                String createDate=(String) eventEnvelope.data().get("createDate");
                 return NodeCreateDto.builder()
                         .nodeId(nodeId)
                         .rootId(rootId)
@@ -36,7 +34,6 @@ public class GraphEnvelopService {
                         .graphActionType(graphActionType)
                         .propertiesMap(propertiesDtoMap)
                         .rootName(rootName)
-                        .createDate(createDate)
                         .build();
             }
             case GraphActionType.Delete -> {

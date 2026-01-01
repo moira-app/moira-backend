@@ -153,8 +153,6 @@ public class SocketGuideController {
         private String rootName;
         @Schema(description = "생성하는 노드의 속성값. key값으로 이름을 value로 PropertisDto를 주시면됩니다.")
         private Map<String, PropertiesDto> properties;
-        @Schema(example = "yyyy-MM-dd HH:mm:ss",description = "생성 시각")
-        private String createDate;
     }
     @Getter
     private class NodePropertyClass{
@@ -176,7 +174,7 @@ public class SocketGuideController {
         private String rootId;
         @Schema(description = "부모 노드의 id값입니다. rootnode의 경우에는 빈값을 주면됩니다.")
         private String parentId;
-        @Schema(description = "클라이언트에서 생성하는 요청에대한 unique한 id값입니다.")
+        @Schema(description = "클라이언트에서 생성하는 요청에대한 unique한 id값입니다. 나중에 undo로그용으로 만들어둔것.")
         private String requestId;
         @Schema(description = "소켓 전송경로를 위한 projectid값.")
         private Long projectId;

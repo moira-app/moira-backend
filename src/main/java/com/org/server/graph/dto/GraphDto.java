@@ -17,13 +17,12 @@ public class GraphDto {
     @Field("_id")
     private String startId;
     private NodeType nodeType;
-    private LocalDateTime createDate;
+
     private List<Graph> descendants;
 
-    public GraphDto(String startId, NodeType nodeType, LocalDateTime createDate, List<Graph> descendants) {
+    public GraphDto(String startId, NodeType nodeType,List<Graph> descendants) {
         this.startId = startId;
         this.nodeType = nodeType;
-        this.createDate = createDate;
         this.descendants =descendants;
     }
 }

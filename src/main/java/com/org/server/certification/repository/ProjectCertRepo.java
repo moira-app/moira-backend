@@ -31,7 +31,8 @@ public class ProjectCertRepo {
                         project.title,
                         project.projectUrl,
                         ticket.alias,
-                        ticket.master
+                        ticket.master,
+                        project.imgUrl
                 ))
                 .from(ticket)
                 .join(project)

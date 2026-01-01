@@ -3,6 +3,7 @@ package com.org.server.security.handlers;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.org.server.member.repository.MemberRepository;
 import com.org.server.redis.service.RedisIntegralService;
+import com.org.server.s3.S3Service;
 import com.org.server.security.domain.CustomOAuth2User;
 import com.org.server.util.jwt.JwtUtil;
 import jakarta.servlet.ServletException;

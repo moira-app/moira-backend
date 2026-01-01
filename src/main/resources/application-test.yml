@@ -6,10 +6,11 @@ spring:
         secret-key: "1234"
       s3:
         bucket: "1234"
-
+        personal-base-img: ""
+        project-base-img: ""
       region:
         static: "ap-northeast-2"
-  #profiles:
+    #profiles:
     #active: test
 
   datasource:
@@ -99,6 +100,3 @@ spring:
 jwt:
   issuer: "JWT_ISSUER"
   secret-key: "mySuperSecretKeyForJwtAuthThatIsLongEnough1234"
-
-
-

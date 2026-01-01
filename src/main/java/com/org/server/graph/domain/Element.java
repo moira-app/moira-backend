@@ -14,9 +14,8 @@ import java.util.Map;
 public class Element extends Graph{
     private String parentId;
     private Map<String,Properties> properties;
-    public Element(String id, String parentId, Map<String,Properties>properties,
-                    LocalDateTime createTime) {
-        super(id, NodeType.ELEMENT,createTime,null);
+    public Element(String id, String parentId, Map<String,Properties>properties) {
+        super(id, NodeType.ELEMENT,null);
         this.parentId=parentId;
         this.properties=properties;
     }

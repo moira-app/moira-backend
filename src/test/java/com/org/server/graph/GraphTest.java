@@ -24,10 +24,9 @@ public class GraphTest extends IntegralTestEnv {
     String rootID= UUID.randomUUID().toString();
     @BeforeEach
     void settingBeforeTest(){
-        root=new Root(rootID,LocalDateTime.now(),1L,"root");
+        root=new Root(rootID,1L,"root");
         root=graphRepository.save(root);
-        Root root2=new Root(UUID.randomUUID().toString()
-                ,LocalDateTime.now(),1L,"root");
+        Root root2=new Root(UUID.randomUUID().toString(),1L,"root");
         graphRepository.save(root2);
 
         for(int i=0;300>i;i++){
@@ -38,9 +37,9 @@ public class GraphTest extends IntegralTestEnv {
                 propertiesMap.put(i+"-"+j,properties);
             }
             Element pages = graphs.isEmpty() ? new Element(UUID.randomUUID().toString(),
-                    root.getId(),propertiesMap,LocalDateTime.now()) :
+                    root.getId(),propertiesMap) :
                     new Element(UUID.randomUUID().toString(),
-                            graphs.get(i-1).getId(),propertiesMap,LocalDateTime.now());
+                            graphs.get(i-1).getId(),propertiesMap);
 
             graphs.add(pages);
             graphRepository.save(pages);
@@ -64,7 +63,6 @@ public class GraphTest extends IntegralTestEnv {
                         .parentId(rootID)
                         .nodeType(NodeType.ELEMENT)
                         .propertiesMap(Map.of())
-                        .createDate("2025-12-30 20:27:11")
                 .build(),1L);
 
         graphData=graphService.getWholeGraph(rootID);

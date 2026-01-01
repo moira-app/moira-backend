@@ -11,8 +11,8 @@ public class Root extends Graph {
 
 
     private String rootName;
-    public Root(String id, LocalDateTime localDateTime, Long projectId, String rootName) {
-        super(id, NodeType.ROOT,localDateTime,projectId);
+    public Root(String id, Long projectId, String rootName) {
+        super(id, NodeType.ROOT,projectId);
         this.rootName=rootName;
 
     }
