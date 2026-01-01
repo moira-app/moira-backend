@@ -35,14 +35,13 @@ import java.util.Map;
 
 
 @Controller
-@Tag(name = "소켓 데이터 교환에대한 api 문서",description = "crdt,시그널링,채팅에 관한 문서입니다.경로는 구독해야되는 경로입니다." +
-        "특별한 기재사항이 없다면 data 영역에 값을 key:value로 넣어주시면됩니다.")
+@Tag(name = "소켓 데이터 교환에대한 api 문서",description = "crdt,시그널링,채팅,알림 에관한 api입니다")
 public class SocketGuideController {
 
 
     @Operation(summary = "시그널링", description = "시그널링 과정에 대해서 설명해 놓았습니다. 아래 클래스에 명기된 프로퍼티들은 필수값입니다." +
-            " 그외의 ice 데이터등 교환시에 필요한것 들은 " +
-            "같은 경로로 보내주시면되며,EventEnvelope의 data에 추가로 넣어주시면됩니다.")
+            " 그외의 ice 데이터등 추가적으로 필요한 데이터는 " +
+            "같은 경로로 보내주시면되며,필요한 데이터들은 프론트에서 편하신대로 설정하면됩니다..")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "전송은 보낸 eventenvelope이 그대로 전송됩니다."),
     })
@@ -125,7 +124,7 @@ public class SocketGuideController {
         return AlertMessageDto.builder().build();}
 
     @Operation(summary = "화이트 보드 편집시 기본 데이터", description = "화이트 보드 동시 편집시 모든 요청에 대해서 필요한 데이터입니다." +
-            "노드 삭제,구조 수정 요청, 구독 경로는 basicnodeclass를 따라갑니다.")
+            "노드 삭제,구조 수정 요청, 구독 경로는 해당 api의 주소를 따라가며 데이터 구조도 해당 api를 계승합니다.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "전송 성공"),}
     )
@@ -169,13 +168,13 @@ public class SocketGuideController {
     private class SingalingDataClass{
         @Schema(description =" crdt.webrtc 를넣어주세요. EventEnvelope의 type에 해당됩니다.")
         private String type;
-        @Schema(description = "입장하는 사람은 offer를, 기존에 있던 인원이 입장하는 사람에대한 응답을 보낼시엔 ANSWER를 넣어주세요")
+        @Schema(description = "입장하는 사람은 offer를, 기존에 있던 인원이 입장하는 사람에대한 응답을 보낼시엔 ANSWER를 넣어주세요+\"EventEnvelope의 data에 넣어주세요\"")
         private WebRtcDataType webRtcDataType;
-        @Schema(description = "보낸이의 id값입니다. 서버에서 처리합니다.")
+        @Schema(description = "보낸이의 id값입니다. 서버에서 처리합니다.+\"EventEnvelope의 data에 넣어주세요\"")
         private String senderId;
-        @Schema(description = "받는이의 회원 id값. 클라이언트에서 answer를 보낼시에 넣어주십시오.")
+        @Schema(description = "받는이의 회원 id값. 클라이언트에서 answer를 보낼시에 넣어주십시오.+\"EventEnvelope의 data에 넣어주세요\"")
         private String targetId;
-        @Schema(description = "회의 id값,클라이언트에서 넣어주세요.")
+        @Schema(description = "회의 id값,클라이언트에서 넣어주세요.+\"EventEnvelope의 data에 넣어주세요\"")
         private String meetId;
     }
     @Getter
@@ -207,20 +206,20 @@ public class SocketGuideController {
     }
     @Getter
     private class NodeCreateClass{
-        @Schema(description = "create시 nodetype을 의미합니다. 일반 노드면 element를 해주시면됩니다.")
+        @Schema(description = "create시 nodetype을 의미합니다. 일반 노드면 element를 해주시면됩니다.+\"EventEnvelope의 data에 넣어주세요\"")
         private NodeType nodeType;
-        @Schema(description = "생성하는 루트 노드의 이름. 즉 화이트 보드의 이름입니다.")
+        @Schema(description = "생성하는 루트 노드의 이름. 즉 화이트 보드의 이름입니다.+\"EventEnvelope의 data에 넣어주세요\"")
         private String rootName;
-        @Schema(description = "생성하는 노드의 속성값. key값으로 이름을 value로 PropertisDto를 주시면됩니다.")
+        @Schema(description = "생성하는 노드의 속성값. key값으로 이름을 value로 PropertisDto를 주시면됩니다.+\"EventEnvelope의 data에 넣어주세요\"")
         private Map<String, PropertiesDto> properties;
     }
     @Getter
     private class NodePropertyClass{
-        @Schema(description = "수정 하려는 property 값의 이름")
+        @Schema(description = "수정 하려는 property 값의 이름+\"EventEnvelope의 data에 넣어주세요\"")
         private String name;
-        @Schema(description = "수정 하려는 property 값")
+        @Schema(description = "수정 하려는 property 값+\"EventEnvelope의 data에 넣어주세요\"")
         private String value;
-        @Schema(example = "yyyy-MM-dd HH:mm:ss",description = "수정 하려는 property의 수정 날짜.")
+        @Schema(example = "yyyy-MM-dd HH:mm:ss",description = "수정 하려는 property의 수정 날짜.+\"EventEnvelope의 data에 넣어주세요\"")
         private String updateDate;
     }
 
@@ -228,17 +227,18 @@ public class SocketGuideController {
     private class BasicNdoeClass{
         @Schema(description ="crdt.action 를넣어주세요. EventEnvelope의 type에 해당됩니다.")
         private String type;
-        @Schema(description = "생성시엔 create, 삭제시인 delete, 속성 수정시엔 property, 트리구조 수정시엔 structure 입니다.")
+        @Schema(description = "생성시엔 create, 삭제시인 delete, 속성 수정시엔 property, 트리구조 수정시엔 structure 입니다."+"EventEnvelope의 data에 넣어주세요")
         private GraphActionType actionType;
-        @Schema(description = "모든 노드의 조상이되는 rootNode의 id값입니다. root노드를 create시엔 빈값을 주시면됩니다.")
+        @Schema(description = "모든 노드의 조상이되는 rootNode의 id값입니다. root노드를 create시엔 빈값을 주시면됩니다."+"EventEnvelope의 data에 넣어주세요")
         private String rootId;
-        @Schema(description = "부모 노드의 id값입니다. rootnode의 경우에는 빈값을 주면됩니다.")
+        @Schema(description = "부모 노드의 id값입니다. rootnode의 경우에는 빈값을 주면됩니다. 만약 구조를 변경하고자하는 경우라면 " +
+                "새로 부모가되는 노드의 id값을 넣어주면됩니다.")
         private String parentId;
-        @Schema(description = "클라이언트에서 생성하는 요청에대한 unique한 id값입니다. 나중에 undo로그용으로 만들어둔것.")
+        @Schema(description = "클라이언트에서 생성하는 요청에대한 unique한 id값입니다. 나중에 undo로그용으로 만들어둔것."+"EventEnvelope의 data에 넣어주세요")
         private String requestId;
-        @Schema(description = "소켓 전송경로를 위한 projectid값.")
+        @Schema(description = "소켓 전송경로를 위한 projectid값."+"EventEnvelope의 data에 넣어주세요")
         private Long projectId;
-        @Schema(description = "노드의 id값입니다. 노드 생성시에는 서버에서 이값을 넣어줍니다.")
+        @Schema(description = "노드의 id값입니다. 노드 생성시에는 서버에서 이값을 넣어줍니다."+"EventEnvelope의 data에 넣어주세요")
         private String nodeId;
     }
 
