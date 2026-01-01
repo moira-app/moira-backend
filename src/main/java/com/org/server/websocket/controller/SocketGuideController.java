@@ -1,9 +1,11 @@
 package com.org.server.websocket.controller;
 
 
+import com.fasterxml.jackson.databind.DatabindException;
 import com.org.server.chat.domain.ChatEvent;
 import com.org.server.chat.domain.ChatMessageDto;
 import com.org.server.chat.domain.ChatType;
+import com.org.server.eventListener.domain.AlertKey;
 import com.org.server.graph.GraphActionType;
 import com.org.server.graph.NodeType;
 import com.org.server.graph.domain.PropertiesDto;
@@ -12,9 +14,12 @@ import com.org.server.graph.dto.NodeDelDto;
 import com.org.server.graph.dto.PropertyChangeDto;
 import com.org.server.graph.dto.StructureChangeDto;
 import com.org.server.eventListener.domain.AlertMessageDto;
+import com.org.server.ticket.domain.Master;
+import com.org.server.ticket.domain.TicketInfoDto;
 import com.org.server.websocket.domain.EventEnvelope;
 import com.org.server.websocket.domain.WebRtcDataType;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -25,6 +30,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
+import java.util.List;
 import java.util.Map;
 
 
@@ -56,22 +62,76 @@ public class SocketGuideController {
             "속한 인원들이 알아야되는 알림 발생에 대한 설명입니다." +
             "구독 경로는 기존의 chatting과 똑같이 따라가되, project의 채팅방쪽으로 전송되는 알림입니다.")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "201", description = "전송 성공"),
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "alertmessage 기본꼴",
+                    // useReturnTypeSchema 대신 content를 직접 명시
+                    content = @Content(schema = @Schema(implementation = AlertMessageDto.class))
+            ),
+            @ApiResponse(
+                    responseCode = "201",
+                    description = "data영역에 alertkey를 제외한 데이터가 key:value로 들어갑니다.",
+                    // useReturnTypeSchema 대신 content를 직접 명시
+                    content = @Content(schema = @Schema(implementation = AlertMessageDto.MemberOutNotification.class))
+            ),
+            @ApiResponse(
+                    responseCode = "202",
+                    description = "data영역에 alertkey를 제외한 데이터가 key:value로 들어갑니다.\"",
+                    // useReturnTypeSchema 대신 content를 직접 명시
+                    content = @Content(schema = @Schema(implementation = AlertMessageDto.ImgChangeNotification.class))
+            ),
+            @ApiResponse(
+                    responseCode = "203",
+                    description = "data영역에 alertkey를 제외한 데이터가 key:value로 들어갑니다.",
+                    // useReturnTypeSchema 대신 content를 직접 명시
+                    content = @Content(schema = @Schema(implementation = AlertMessageDto.MemberListNotification.class))
+            ),
+            @ApiResponse(
+                    responseCode = "204",
+                    description = "data영역에 alertkey를 제외한 데이터가 key:value로 들어갑니다.",
+                    // useReturnTypeSchema 대신 content를 직접 명시
+                    content = @Content(schema = @Schema(implementation = AlertMessageDto.MeetDelNotification.class))
+            ),
+            @ApiResponse(
+                    responseCode = "205",
+                    description = "data영역에 alertkey를 제외한 데이터가 key:value로 들어갑니다.",
+                    // useReturnTypeSchema 대신 content를 직접 명시
+                    content = @Content(schema = @Schema(implementation = AlertMessageDto.CreateMeetNotification.class)
+            )),
+            @ApiResponse(
+                    responseCode = "206",
+                    description = "data영역에 alertkey를 제외한 데이터가 key:value로 들어갑니다.",
+                    // useReturnTypeSchema 대신 content를 직접 명시
+                    content = @Content(schema = @Schema(implementation = AlertMessageDto.MasterChangeNotification.class)
+                    )),
+            @ApiResponse(
+                    responseCode = "207",
+                    description = "data영역에 alertkey를 제외한 데이터가 key:value로 들어갑니다.",
+                    // useReturnTypeSchema 대신 content를 직접 명시
+                    content = @Content(schema = @Schema(implementation = AlertMessageDto.ProjectDelNotification.class))),
+            @ApiResponse(
+                    responseCode = "208",
+                    description = "data영역에 alertkey를 제외한 데이터가 key:value로 들어갑니다.",
+                    // useReturnTypeSchema 대신 content를 직접 명시
+                    content = @Content(schema = @Schema(implementation = AlertMessageDto.MemberInNotification.class))),
+            @ApiResponse(
+                    responseCode = "209",
+                    description = "data영역에 alertkey를 제외한 데이터가 key:value로 들어갑니다.",
+                    // useReturnTypeSchema 대신 content를 직접 명시
+                    content = @Content(schema = @Schema(implementation = AlertMessageDto.AliasNotification.class)))
     })
-
     @PutMapping("/topic/chatroom-{projectId}-{chatType}-{roomId}")
-    public AlertMessageDto chattingData(@RequestBody AlertMessageDto alertMessageDto){
-        return AlertMessageDto.builder().build();
-    }
+    public AlertMessageDto memberOut(){
+        return AlertMessageDto.builder().build();}
+
     @Operation(summary = "화이트 보드 편집시 기본 데이터", description = "화이트 보드 동시 편집시 모든 요청에 대해서 필요한 데이터입니다." +
             "노드 삭제,구조 수정 요청, 구독 경로는 basicnodeclass를 따라갑니다.")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "201", description = "전송 성공"),
-    })
+            @ApiResponse(responseCode = "200", description = "전송 성공"),}
+    )
     @PostMapping("/topic/crdt/{projectId}")
     public void baisnodeclass(@RequestBody BasicNdoeClass basicNdoeClass){
     }
-
     @Operation(summary = "화이트 보드 노드생성 요청", description = "baisnodeclass에서 이어지는 node create에 대한 내용입니다." )
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "전송 성공"),
@@ -181,5 +241,7 @@ public class SocketGuideController {
         @Schema(description = "노드의 id값입니다. 노드 생성시에는 서버에서 이값을 넣어줍니다.")
         private String nodeId;
     }
+
+
 
 }
