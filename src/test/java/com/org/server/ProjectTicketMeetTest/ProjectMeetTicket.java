@@ -1,6 +1,7 @@
 package com.org.server.ProjectTicketMeetTest;
 
 
+import ch.qos.logback.core.testUtil.MockInitialContext;
 import com.org.server.certification.domain.AliasDto;
 import com.org.server.chat.domain.ChatRoom;
 import com.org.server.eventListener.domain.RedisEvent;
@@ -9,6 +10,8 @@ import com.org.server.meet.domain.*;
 import com.org.server.project.domain.Project;
 
 import com.org.server.project.domain.ProjectInfoDto;
+import com.org.server.s3.domain.ImgAnsDto;
+import com.org.server.s3.domain.ImgUpdateDto;
 import com.org.server.support.IntegralTestEnv;
 import com.org.server.ticket.domain.Master;
 import com.org.server.ticket.domain.Ticket;
@@ -262,5 +265,20 @@ public class ProjectMeetTicket extends IntegralTestEnv {
         assertThat(tNew.isPresent()).isTrue();
         assertThat(tNew.get().getMaster()).isEqualTo(Master.MASTER);
 
+    }
+
+    @Test
+    @DisplayName("프로젝트 이미지 체인지 테스트")
+    void testProjectImgChange(){
+        Mockito.doNothing().when(alertEventListener)
+                .alertMessage(Mockito.any(AlertMessageDto.class));
+
+        ImgAnsDto imgAnsDto=projectCertService.updateProjectImg(ImgUpdateDto.builder()
+                .contentType("image/png")
+                .fileName("change").build(),p.getId());
+        assertThat(imgAnsDto.getGetUrl()).isEqualTo(projectRepository.findById(p.getId()).get().getImgUrl());
+
+        Mockito.verify(alertEventListener,Mockito.times(1))
+                .alertMessage(Mockito.any(AlertMessageDto.class));
     }
 }

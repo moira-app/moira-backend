@@ -138,6 +138,10 @@ public class MemberCreateTest extends IntegralTestEnv {
         Mockito.doNothing()
                 .when(redisEventListener)
                 .redisEventHandler(Mockito.any(RedisEvent.class));
+        Mockito.doNothing()
+                .when(alertEventListener)
+                .alertGlobalMessage(Mockito.any(MemberAlertMessageDto.class));
+
 
         Mockito.when(securityMemberReadService.securityMemberRead())
                 .thenReturn(member);
@@ -147,9 +151,12 @@ public class MemberCreateTest extends IntegralTestEnv {
                 .build());
 
         assertThat(imgUrl.getPutUrl()).isNotEmpty();
+
         Member m2=memberRepository.findById(member.getId()).get();
         assertThat(m2.getImgUrl()!=null).isTrue();
-
+        assertThat(imgUrl.getGetUrl()).isEqualTo(m2.getImgUrl());
+        Mockito.verify(alertEventListener,Mockito.times(1))
+                        .alertGlobalMessage(Mockito.any(MemberAlertMessageDto.class));
         Mockito.verify(redisEventListener,Mockito.times(1))
                 .redisEventHandler(Mockito.any(RedisEvent.class));
     }
