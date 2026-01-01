@@ -114,7 +114,7 @@ public class GraphUpdateTest extends IntegralTestEnv {
     @Test
     @DisplayName("속성 수정시에 이미 수정된 시간보다 이전의 수정 내역이 들어오면 거부함.")
     void lateUpdateTest(){
-        String modifyDate=DateTimeMapUtil.parseServerTimeToClientFormat(LocalDateTime.now().minusDays(1L));
+        String modifyDate="2025-12-30 20:27:10";
 
         PropertyChangeDto propertiesUpdateDto=PropertyChangeDto.builder()
                 .nodeId(graphs.get(0).getId())
