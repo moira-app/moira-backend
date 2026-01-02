@@ -2,6 +2,7 @@ package com.org.server.certification.controller;
 
 
 import com.org.server.certification.domain.AliasDto;
+import com.org.server.certification.domain.UserForBan;
 import com.org.server.certification.service.ProjectMeetEntranceService;
 import com.org.server.meet.domain.*;
 import com.org.server.project.domain.ProjectEnterAnsDto;
@@ -276,6 +277,32 @@ public class ProjectMeetEntranceController {
         return ResponseEntity.ok(ApiResponseUtil.CreateApiResponse("ok",
                 projectCertService.getMeetList(meetListDto,projectId)));
     }
+
+
+    @Operation(summary = "프로젝트 관리자의 차단 기능", description = "관리자 스스로를 제외한 차단 기능입니다.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "조회 성공",useReturnTypeSchema = true),
+            @ApiResponse(responseCode = "401", description = "권한이 부족합니다.",
+                    content = @Content(schema = @Schema(implementation = ApiResponseUtil.class)))
+    })
+    @Parameter(name="projectId",
+            description = "프로젝트 id값",
+            required = true,
+            in=ParameterIn.PATH)
+    @Parameter(name = "Authorization",
+            description = "요청시 토큰값을 넣어주셔야됩니다.",
+            required = true,
+            example = "Bearer [tokenvalue]",
+            in = ParameterIn.HEADER)
+    @PostMapping("/{projectId}/ban")
+    public ResponseEntity<ApiResponseUtil<String>> banUser(
+            @PathVariable(name ="projectId") Long projectId,
+            @RequestBody @Valid UserForBan user){
+        projectCertService.banTicket(projectId,user.getMemberId());
+        return ResponseEntity.ok(ApiResponseUtil.CreateApiResponse("ok",null
+               ));
+    }
+
 
 
 

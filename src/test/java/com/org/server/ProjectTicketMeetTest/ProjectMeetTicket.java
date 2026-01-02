@@ -1,12 +1,12 @@
 package com.org.server.ProjectTicketMeetTest;
 
 
-import ch.qos.logback.core.testUtil.MockInitialContext;
 import com.org.server.certification.domain.AliasDto;
 import com.org.server.chat.domain.ChatRoom;
 import com.org.server.eventListener.domain.RedisEvent;
 import com.org.server.exception.MoiraException;
 import com.org.server.meet.domain.*;
+import com.org.server.member.service.SecurityMemberReadService;
 import com.org.server.project.domain.Project;
 
 import com.org.server.project.domain.ProjectInfoDto;
@@ -18,11 +18,8 @@ import com.org.server.ticket.domain.Ticket;
 import com.org.server.util.DateTimeMapUtil;
 import com.org.server.eventListener.domain.AlertMessageDto;
 
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.*;
 import com.org.server.member.domain.Member;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import java.time.LocalDate;
@@ -73,6 +70,7 @@ public class ProjectMeetTicket extends IntegralTestEnv {
 
             throw new RuntimeException("Failed to register H2 DATE_FORMAT alias", e);
         }
+
     }
 
 
@@ -114,6 +112,7 @@ public class ProjectMeetTicket extends IntegralTestEnv {
         Mockito.when(securityMemberReadService.securityMemberRead())
                 .thenReturn(m);
         List<ProjectInfoDto> projectDtoList=projectCertService.getProejctList();
+
         assertThat(projectDtoList.size()).isEqualTo(1);
     }
 
@@ -281,4 +280,36 @@ public class ProjectMeetTicket extends IntegralTestEnv {
         Mockito.verify(alertEventListener,Mockito.times(1))
                 .alertMessage(Mockito.any(AlertMessageDto.class));
     }
+
+
+    @Test
+    @DisplayName("관리자 차단 기능 테스트")
+    void testMasterBan(){
+        Mockito.doNothing().when(alertEventListener)
+                .alertMessage(Mockito.any(AlertMessageDto.class));
+        Mockito.doNothing().when(redisEventListener)
+                .redisEventHandler(Mockito.any(RedisEvent.class));
+        createTicket(m2,p,"p2",Master.ELSE);
+        projectCertService.banTicket(p.getId(),m2.getId());
+
+        Mockito.when(securityMemberReadService.securityMemberRead())
+                .thenReturn(m);
+        assertThatThrownBy(()->projectCertService.banTicket(p.getId(),m.getId()))
+                .isInstanceOf(MoiraException.class);
+        Mockito.when(securityMemberReadService.securityMemberRead())
+                .thenReturn(m2);
+        assertThatThrownBy(()->projectCertService.banTicket(p.getId(),m.getId()))
+                .isInstanceOf(MoiraException.class);
+
+
+        assertThat(ticketService.findByProjectIdAndMemberId(p.getId(),m2.getId()).getDeleted())
+                .isTrue();
+
+        Mockito.verify(alertEventListener,Mockito.times(1))
+                .alertMessage(Mockito.any(AlertMessageDto.class));
+        Mockito.verify(redisEventListener,Mockito.times(1))
+                .redisEventHandler(Mockito.any(RedisEvent.class));
+    }
+
+
 }
