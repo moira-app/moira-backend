@@ -135,6 +135,20 @@ public class ProjectMeetEntranceService {
                 "meetName",meetDto.getMeetName(),"startTime", meetDto.getStartTime()));
     }
 
+    public void banTicket(Long projectId,Long memberId){
+        Member m=securityMemberReadService.securityMemberRead();
+        if(ticketService.checkIsMaster(projectId,m.getId())&&m.getId()!=memberId){
+            ticketService.delTicket(projectId,memberId);
+            publishEvent(projectId, AlertKey.MEMBEROUT, Map.of("memberId", m.getId()));
+            publishRedisEvent(RedisEventEnum.TICKETDEL
+                    ,Map.of("memberId",memberId.toString(),
+                            "projectId",projectId.toString()));
+            return ;
+        }
+
+        throw new MoiraException("관리자 권한이 필요 혹은 자기자신은 불가합니다",HttpStatus.BAD_REQUEST);
+    }
+
     public void delTicket(Long projectId,Long nextMaster){
         Member m=securityMemberReadService.securityMemberRead();
 
